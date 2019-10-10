@@ -1,0 +1,12 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+<Qt_DEFINES_>UNICODE;_UNICODE;WIN32;WIN64;QT_OPENGL_LIB;QT_WIDGETS_LIB;QT_OPENGLEXTENSIONS_LIB;QT_GUI_LIB;QT_CORE_LIB</Qt_DEFINES_>
+<Qt_INCLUDEPATH_>C:/Qt/5.11.1/msvc2015_64/include;C:/Qt/5.11.1/msvc2015_64/include/QtOpenGL;C:/Qt/5.11.1/msvc2015_64/include/QtWidgets;C:/Qt/5.11.1/msvc2015_64/include/QtOpenGLExtensions;C:/Qt/5.11.1/msvc2015_64/include/QtGui;C:/Qt/5.11.1/msvc2015_64/include/QtANGLE;C:/Qt/5.11.1/msvc2015_64/include/QtCore</Qt_INCLUDEPATH_>
+<Qt_LIBS_>C:\Qt\5.11.1\msvc2015_64\lib\Qt5Core.lib;C:\Qt\5.11.1\msvc2015_64\lib\Qt5Gui.lib;C:\Qt\5.11.1\msvc2015_64\lib\Qt5OpenGLExtensions.lib;C:\Qt\5.11.1\msvc2015_64\lib\Qt5Widgets.lib;C:\Qt\5.11.1\msvc2015_64\lib\Qt5OpenGL.lib;shell32.lib;C:\Qt\5.11.1\msvc2015_64\lib\qtmain.lib</Qt_LIBS_>
+</PropertyGroup>
+  <ItemGroup>
+    <QtVar Include="Qt_DEFINES_"><Value>$(Qt_DEFINES_)</Value></QtVar>
+<QtVar Include="Qt_INCLUDEPATH_"><Value>$(Qt_INCLUDEPATH_)</Value></QtVar>
+<QtVar Include="Qt_LIBS_"><Value>$(Qt_LIBS_)</Value></QtVar>
+  </ItemGroup>
+</Project>
