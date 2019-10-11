@@ -26,6 +26,8 @@ private:
 	QOpenGLTexture* m_texture = nullptr;
 
 	QOpenGLShaderProgram* m_gridProgram = nullptr;
+	QOpenGLVertexArrayObject m_gridVao;
+	QOpenGLBuffer m_vbo, m_gridEbo;
 	GLuint m_gridposAttr, m_gridcolAttr, m_gridmatrixUniform;
 	int m_gridLineCt = 0;
 

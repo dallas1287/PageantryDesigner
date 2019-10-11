@@ -18,6 +18,5 @@ private:
 
 
 	QOpenGLShaderProgram* m_program;
-	QOpenGLTexture* m_texture;
 };
 

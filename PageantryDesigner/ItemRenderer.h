@@ -26,7 +26,6 @@ protected:
 	QOpenGLVertexArrayObject m_vao;
 	QOpenGLBuffer m_vbo, m_ebo;
 	QOpenGLTexture* m_texture = nullptr;
-	QOpenGLBuffer m_arrayBuf, m_indexBuf;
 	GLuint m_posAttr, m_colAttr, m_texCoordAttr, m_matrixUniform;
 };
 
