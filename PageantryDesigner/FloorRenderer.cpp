@@ -21,7 +21,8 @@ void FloorRenderer::initialize()
 	initShaders();
 	initTextures("../tattoo_comic.jpg");
 	setupAttributes();
-	generateBuffers();
+	m_gridLineCt = generateGridLines(4);
+	//generateBuffers();
 }
 
 void FloorRenderer::initShaders()
@@ -87,9 +88,9 @@ void FloorRenderer::setMatrix(QMatrix4x4 matrix)
 
 void FloorRenderer::Draw()
 {
-	drawBuffers();
+	//drawBuffers();
 	//drawFloor();
-	//drawGridLines();
+	drawGridLines();
 }
 
 void FloorRenderer::drawFloor()
@@ -143,11 +144,6 @@ void FloorRenderer::generateFloor()
 
 int FloorRenderer::generateGridLines(int lineCount)
 {
-	//GridMaker::createGrid(lineCount, &m_FloorData.gridVertices, m_FloorData.vSize, m_FloorData.gridIndices, m_FloorData.iSize);
-	return 1;
-}
-void FloorRenderer::drawGridLines()
-{
 	VertexData* vertices;
 	GLushort* indices;
 	int vSize, iSize;
@@ -155,31 +151,43 @@ void FloorRenderer::drawGridLines()
 	GridMaker::createGrid(4, &vertices, vSize, &indices, iSize);
 
 	m_gridProgram->bind();
+	m_vao.bind();
 
 	if (!m_vbo.isCreated())
 		m_vbo.create();
 	m_vbo.bind();
-
 	m_vbo.allocate(vertices, vSize * sizeof(VertexData));
+	
 	m_gridProgram->enableAttributeArray(m_posAttr);
 	m_gridProgram->setAttributeBuffer(m_posAttr, GL_FLOAT, 0, 3, sizeof(VertexData));
 
-	m_vbo.release();
-
 	if (!m_ebo.isCreated())
 		m_ebo.create();
-	m_ebo.allocate(indices, iSize * sizeof(GLushort));
 	m_ebo.bind();
+	m_ebo.allocate(indices, iSize * sizeof(GLushort));
+	
+	m_vao.release();
+	m_vbo.release();
+	m_ebo.release();
+	m_gridProgram->release();
+	
+	delete[] vertices;
+	delete[] indices;
+
+	return iSize;
+}
+void FloorRenderer::drawGridLines()
+{
+	m_gridProgram->bind();
+	m_vao.bind();
 
 	glLineWidth(5.0);
 	glDrawElements(GL_LINES, 8, GL_UNSIGNED_SHORT, 0);
 	glLineWidth(2.0);
-	glDrawElements(GL_LINES, iSize, GL_UNSIGNED_SHORT, 0);
+	glDrawElements(GL_LINES, m_gridLineCt, GL_UNSIGNED_SHORT, 0);
 
+	m_vao.release();
 	m_gridProgram->release();
-
-	delete[] vertices;
-	delete[] indices;
 }
 
 void FloorRenderer::generateBuffers()

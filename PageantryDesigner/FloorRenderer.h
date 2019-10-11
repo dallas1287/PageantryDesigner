@@ -1,34 +1,6 @@
 #pragma once
 #include "ItemRenderer.h"
 
-/*struct FloorData
-{
-	FloorData() : gridVertices(nullptr), gridIndices(nullptr) {}
-	~FloorData()
-	{
-		if (gridVertices)
-			delete[] gridVertices;
-		if (gridIndices)
-			delete[] gridIndices;
-	}
-
-	void resetFloorData()
-	{
-		if (gridVertices)
-			delete[] gridVertices;
-		if (gridIndices)
-			delete[] gridIndices;
-		vSize = 0;
-		iSize = 0;
-	}
-
-	int vSize = 0;
-	int iSize = 0;
-	VertexData* gridVertices = nullptr;
-	GLushort* gridIndices = nullptr;
-};*/
-
-
 class FloorRenderer : public ItemRenderer
 {
 public:
