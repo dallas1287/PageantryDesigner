@@ -88,8 +88,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DotsRenderer.cpp" />
     <ClCompile Include="FloorRenderer.cpp" />
     <ClCompile Include="GraphicsPanel.cpp" />
+    <ClCompile Include="ItemRenderer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="TopWindow.cpp" />
   </ItemGroup>
@@ -104,16 +106,18 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="GraphicsPanel.h" />
+    <ClInclude Include="DotsRenderer.h" />
     <ClInclude Include="FloorRenderer.h" />
+    <ClInclude Include="ItemRenderer.h" />
     <ClInclude Include="ShapeCreator.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="dots_fragment.glsl" />
+    <None Include="dots_vertex.glsl" />
     <None Include="floor_fragment.glsl" />
     <None Include="floor_vertex.glsl" />
-    <None Include="fragment.glsl" />
     <None Include="grid_fragment.glsl" />
     <None Include="grid_vertex.glsl" />
-    <None Include="vertex.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

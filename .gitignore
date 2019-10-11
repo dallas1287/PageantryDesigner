@@ -1,0 +1,7 @@
+
+*.ipch
+.vs/PageantryDesigner/v16/.suo
+.vs/PageantryDesigner/v16/Browse.VC.db
+.vs/PageantryDesigner/v16/Browse.VC.opendb
+*.obj
+*.tlog

@@ -23,6 +23,9 @@
       <Extensions>qrc;*</Extensions>
       <ParseFiles>false</ParseFiles>
     </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{f8f8a8f5-4df3-4919-98a8-5af3d8050bcf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -35,6 +38,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FloorRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DotsRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ItemRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -63,13 +72,31 @@
     <ClInclude Include="FloorRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DotsRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ItemRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="fragment.glsl" />
-    <None Include="vertex.glsl" />
-    <None Include="grid_vertex.glsl" />
-    <None Include="grid_fragment.glsl" />
-    <None Include="floor_vertex.glsl" />
-    <None Include="floor_fragment.glsl" />
+    <None Include="floor_fragment.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="floor_vertex.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="grid_fragment.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="grid_vertex.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="dots_fragment.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="dots_vertex.glsl">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

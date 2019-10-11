@@ -5,7 +5,7 @@ in vec2 texCoordAttr;
 out vec4 color;
 out vec2 texCoord;
 uniform mat4 matrix;
-uniform mat4 transform;
+
 void main() 
 {
    color = colAttr;

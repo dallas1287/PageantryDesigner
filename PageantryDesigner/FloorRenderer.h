@@ -1,47 +1,62 @@
 #pragma once
-#include <QOpenGLWidget>
-#include <QOpenGLFunctions>
-#include <QOpenGLShaderProgram>
-#include <QOpenGLTexture>
-#include <QOpenGLBuffer>
-#include <QOpenGLVertexArrayObject>
-#include "ShapeCreator.h"
+#include "ItemRenderer.h"
 
-class GraphicsPanel;
+/*struct FloorData
+{
+	FloorData() : gridVertices(nullptr), gridIndices(nullptr) {}
+	~FloorData()
+	{
+		if (gridVertices)
+			delete[] gridVertices;
+		if (gridIndices)
+			delete[] gridIndices;
+	}
 
-class FloorRenderer : protected QOpenGLFunctions
+	void resetFloorData()
+	{
+		if (gridVertices)
+			delete[] gridVertices;
+		if (gridIndices)
+			delete[] gridIndices;
+		vSize = 0;
+		iSize = 0;
+	}
+
+	int vSize = 0;
+	int iSize = 0;
+	VertexData* gridVertices = nullptr;
+	GLushort* gridIndices = nullptr;
+};*/
+
+
+class FloorRenderer : public ItemRenderer
 {
 public:
 	FloorRenderer(GraphicsPanel* parent);
 	~FloorRenderer();
 
 	void Draw();
-
 	void setMatrix(QMatrix4x4 matrix);
-	const QOpenGLShaderProgram* FloorShaderProgram() const { return m_floorProgram; }
-	const QOpenGLShaderProgram* FloorGridShaderProgram() const { return m_gridProgram; }
 
 private:
-	void initialize();
-	void initShaders();
-	void initTexture(const QString& path);
-	void setupAttributes();
-	void drawBuffers();
+	virtual void initialize() override;
+	virtual void initShaders() override;
+	virtual void initTextures(const QString& path) override;
+	virtual void setupAttributes() override;
+	void generateFloor();
 	void drawFloor();
+	int generateGridLines(int lineCount);
 	void drawGridLines();
-	
-	GraphicsPanel* m_parent;
+	void generateBuffers();
+	void drawBuffers();
 
-	QOpenGLVertexArrayObject m_vao;
-	QOpenGLBuffer m_vbo, m_ebo;
 	QOpenGLShaderProgram* m_floorProgram = nullptr;
 	QOpenGLTexture* m_texture = nullptr;
-	QOpenGLBuffer m_arrayBuf, m_indexBuf;
-	GLuint m_posAttr, m_colAttr, m_texCoordAttr, m_matrixUniform;
 
 	QOpenGLShaderProgram* m_gridProgram = nullptr;
 	GLuint m_gridposAttr, m_gridcolAttr, m_gridmatrixUniform;
-	VertexData* m_gridData = nullptr;
-	GLushort* m_gridIndices = nullptr;
+	int m_gridLineCt = 0;
+
+	//FloorData m_FloorData;
 };
 
