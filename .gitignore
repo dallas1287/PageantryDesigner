@@ -5,3 +5,7 @@
 .vs/PageantryDesigner/v16/Browse.VC.opendb
 *.obj
 *.tlog
+x64/Debug/PageantryDesigner.exe
+x64/Debug/PageantryDesigner.ilk
+x64/Debug/PageantryDesigner.pdb
+PageantryDesigner/x64/Debug/vc142.pdb

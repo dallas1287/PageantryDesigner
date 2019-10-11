@@ -156,8 +156,6 @@ void FloorRenderer::drawGridLines()
 
 	m_gridProgram->bind();
 
-	glLineWidth(5.0);
-
 	if (!m_vbo.isCreated())
 		m_vbo.create();
 	m_vbo.bind();
@@ -173,6 +171,7 @@ void FloorRenderer::drawGridLines()
 	m_ebo.allocate(indices, iSize * sizeof(GLushort));
 	m_ebo.bind();
 
+	glLineWidth(5.0);
 	glDrawElements(GL_LINES, 8, GL_UNSIGNED_SHORT, 0);
 	glLineWidth(2.0);
 	glDrawElements(GL_LINES, iSize, GL_UNSIGNED_SHORT, 0);
