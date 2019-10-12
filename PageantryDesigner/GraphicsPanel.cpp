@@ -4,6 +4,7 @@
 #include <QVector3D>
 #include <QPainter>
 #include <QWheelEvent>
+#include "ShapeCreator.h"
 
 const QVector4D background = { (float)135 / 255, (float)206 / 255, (float)250 / 255, 1.0f };
 
@@ -23,6 +24,7 @@ GraphicsPanel::~GraphicsPanel()
 	makeCurrent();
 
 	delete m_floorRenderer;
+	delete m_dotsRenderer;
 
 	doneCurrent();
 };
@@ -32,6 +34,7 @@ void GraphicsPanel::initializeGL()
 	initializeOpenGLFunctions();
 	setBackground(background);
 	m_floorRenderer = new FloorRenderer(this);
+	m_dotsRenderer = new DotsRenderer(this);
 
 }
 
@@ -49,6 +52,7 @@ void GraphicsPanel::myPaint()
 	const qreal retinaScale = devicePixelRatio();
 	glViewport(0, 0, width() * retinaScale, height() * retinaScale);
 
+	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	QMatrix4x4 projection;
@@ -63,6 +67,16 @@ void GraphicsPanel::myPaint()
 
 	m_floorRenderer->setMVP(model, view, projection);
 	m_floorRenderer->Draw();
+
+	model.scale(.05);
+	model.translate(1.01 * Z);
+
+	for (int i = 0; i < 3; ++i)
+	{
+		model.translate(2.0* (X + Y));
+		m_dotsRenderer->setMVP(model, view, projection);
+		m_dotsRenderer->Draw();
+	}
 	
 	painter.end();
 

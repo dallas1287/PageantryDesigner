@@ -5,8 +5,8 @@
 #include <QOpenGLTexture>
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
-#include "ShapeCreator.h"
 #include "FloorRenderer.h"
+#include "DotsRenderer.h"
 
 
 class GraphicsPanel : public QOpenGLWidget, protected QOpenGLFunctions
@@ -34,5 +34,6 @@ private:
 	int m_frame = 0;
 	bool m_paused = false;
 	FloorRenderer* m_floorRenderer = nullptr;
+	DotsRenderer* m_dotsRenderer = nullptr;
 };
 

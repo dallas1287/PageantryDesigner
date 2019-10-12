@@ -4,6 +4,7 @@
 
 DotsRenderer::DotsRenderer(GraphicsPanel* parent) : ItemRenderer(parent)
 {
+	initialize();
 }
 
 DotsRenderer::~DotsRenderer()
@@ -28,9 +29,16 @@ void DotsRenderer::initTextures(const QString& path)
 	Dots.initTexture(path);
 }
 
+void DotsRenderer::setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection)
+{
+	Dots.setMVP(model, view, projection);
+}
+
 void DotsRenderer::Draw()
 {
-
+	Dots.bindToDraw();
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+	Dots.releaseFromDraw();
 }
 
 void DotsRenderer::generateDots()
