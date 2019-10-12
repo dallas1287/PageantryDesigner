@@ -1,4 +1,6 @@
 #include "DotsRenderer.h"
+#include <QPainter>
+#include "ShapeCreator.h"
 
 DotsRenderer::DotsRenderer(GraphicsPanel* parent) : ItemRenderer(parent)
 {
@@ -6,54 +8,54 @@ DotsRenderer::DotsRenderer(GraphicsPanel* parent) : ItemRenderer(parent)
 
 DotsRenderer::~DotsRenderer()
 {
-	delete m_texture;
-	delete m_program;
 }
 
 void DotsRenderer::initialize()
 {
+	initializeOpenGLFunctions();
 	initShaders();
 	initTextures("../flag.png");
+	generateDots();
 }
 
 void DotsRenderer::initShaders()
 {
-	m_program = new QOpenGLShaderProgram;
-	if (!m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, "dots_vertex.glsl"))
-		qDebug() << m_program->log();
-	if (!m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, "dots_fragment.glsl"))
-		qDebug() << m_program->log();
-
-	if (!m_program->link())
-		qDebug() << m_program->log();
-
+	Dots.initShader("dots_vertex.glsl", "dots_fragment.glsl");
 }
 
 void DotsRenderer::initTextures(const QString& path)
 {
-	//OpenGL flips the image so it needs to be mirrored when created
-	QImage image(path);
-	m_texture = new QOpenGLTexture(image.mirrored());
-
-	// Set nearest filtering mode for texture minification
-	m_texture->setMinificationFilter(QOpenGLTexture::Nearest);
-
-	// Set bilinear filtering mode for texture magnification
-	m_texture->setMagnificationFilter(QOpenGLTexture::Linear);
-
-	// Wrap texture coordinates by repeating
-	m_texture->setWrapMode(QOpenGLTexture::Repeat);
-}
-
-void DotsRenderer::setupAttributes()
-{
-	m_posAttr = m_program->attributeLocation("posAttr");
-	m_texCoordAttr = m_program->attributeLocation("texCoordAttr");
-	m_colAttr = m_program->attributeLocation("colAttr");
-	m_matrixUniform = m_program->uniformLocation("matrix");
+	Dots.initTexture(path);
 }
 
 void DotsRenderer::Draw()
 {
 
+}
+
+void DotsRenderer::generateDots()
+{
+	VertexData* vertices;
+	GLushort* indices;
+	int vSize;
+	int iSize;
+	GridMaker::Quad::createQuad(&vertices, vSize, &indices, iSize);
+
+	Dots.bindAll();
+	Dots.Vbo().allocate(vertices, vSize * sizeof(VertexData));
+
+	Dots.ShaderProgram()->enableAttributeArray(Dots.PosAttr());
+	Dots.ShaderProgram()->setAttributeBuffer(Dots.PosAttr(), GL_FLOAT, 0, 3, sizeof(VertexData));
+
+	Dots.ShaderProgram()->enableAttributeArray(Dots.TextureAttr());
+	Dots.ShaderProgram()->setAttributeBuffer(Dots.TextureAttr(), GL_FLOAT, sizeof(decltype(vertices->position)), 2, sizeof(VertexData));
+
+	Dots.ShaderProgram()->enableAttributeArray(Dots.ColorAttr());
+	Dots.ShaderProgram()->setAttributeBuffer(Dots.ColorAttr(), GL_FLOAT, sizeof(decltype(vertices->position)) + sizeof(decltype(vertices->texCoord)), 3, sizeof(VertexData));
+
+	Dots.Ebo().allocate(indices, iSize * sizeof(GLushort));
+	Dots.releaseAll();
+
+	delete[] vertices;
+	delete[] indices;
 }

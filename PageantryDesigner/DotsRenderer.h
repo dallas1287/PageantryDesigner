@@ -1,5 +1,6 @@
 #pragma once
 #include "ItemRenderer.h"
+#include "GraphicsObject.h"
 
 class DotsRenderer : public ItemRenderer
 {
@@ -12,11 +13,9 @@ protected:
 	virtual void initialize() override;
 	virtual void initShaders() override;
 	virtual void initTextures(const QString& path) override;
-	virtual void setupAttributes() override;
+	void generateDots();
 
 private:
-
-
-	QOpenGLShaderProgram* m_program;
+	GraphicsObject Dots;
 };
 

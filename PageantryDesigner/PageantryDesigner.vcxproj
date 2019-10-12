@@ -90,6 +90,7 @@
   <ItemGroup>
     <ClCompile Include="DotsRenderer.cpp" />
     <ClCompile Include="FloorRenderer.cpp" />
+    <ClCompile Include="GraphicsObject.cpp" />
     <ClCompile Include="GraphicsPanel.cpp" />
     <ClCompile Include="ItemRenderer.cpp" />
     <ClCompile Include="main.cpp" />
@@ -108,6 +109,7 @@
     <QtMoc Include="GraphicsPanel.h" />
     <ClInclude Include="DotsRenderer.h" />
     <ClInclude Include="FloorRenderer.h" />
+    <ClInclude Include="GraphicsObject.h" />
     <ClInclude Include="ItemRenderer.h" />
     <ClInclude Include="ShapeCreator.h" />
   </ItemGroup>

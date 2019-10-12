@@ -51,12 +51,17 @@ void GraphicsPanel::myPaint()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	QMatrix4x4 matrix;
-	matrix.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
-	matrix.translate(0, 0, -2);
-	//matrix.rotate(m_frame, 0, 1, 0);
+	QMatrix4x4 projection;
+	projection.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
+	projection.translate(0, 0, -2);
+	projection.rotate(m_frame, 0, 1, 0);
 	
-	m_floorRenderer->setMatrix(matrix);
+	QMatrix4x4 model;
+	model.setToIdentity();
+	QMatrix4x4 view;
+	view.setToIdentity();
+
+	m_floorRenderer->setMVP(model, view, projection);
 	m_floorRenderer->Draw();
 	
 	painter.end();

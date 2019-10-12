@@ -19,7 +19,6 @@ protected:
 	virtual void initialize() = 0;
 	virtual void initShaders() = 0;
 	virtual void initTextures(const QString& path) = 0;
-	virtual void setupAttributes() = 0;
 
 	GraphicsPanel* m_parent;
 
