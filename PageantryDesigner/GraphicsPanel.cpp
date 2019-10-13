@@ -117,9 +117,35 @@ void GraphicsPanel::wheelEvent(QWheelEvent* event)
 	}
 }
 
-void GraphicsPanel::cleanup()
+void GraphicsPanel::mouseMoveEvent(QMouseEvent* event)
 {
-	makeCurrent();
+	qDebug() << "Last: " << m_lastPos << " New: " << event->pos();
+	bool xGreater = abs(event->pos().x() - m_lastPos.x()) > abs(event->pos().y() - m_lastPos.y());
 
-	doneCurrent();
+	//screen coordinates for mouse are X - left to right & Y - up and down
+	//rotating around the x axis moves up and down and around the y axis moves left to right
+	//so the mouse y corresponds to an X rotation of the camera and vice versa
+	if (m_middlePressed)
+	{
+		if(!xGreater)
+			event->pos().y() > m_lastPos.y() ? m_camera.rotate(1.0, X) : m_camera.rotate(1.0, -1.0 * X);
+		else
+			event->pos().x() > m_lastPos.x() ? m_camera.rotate(1.0, Y) : m_camera.rotate(1.0, -1.0 * Y);
+		m_lastPos = event->pos();
+	}
+}
+
+void GraphicsPanel::mousePressEvent(QMouseEvent* event)
+{
+	if (event->button() == Qt::MouseButton::MiddleButton)
+	{
+		m_middlePressed = true;
+		m_lastPos = event->pos();
+	}
+}
+
+void GraphicsPanel::mouseReleaseEvent(QMouseEvent* event)
+{
+	if (event->button() == Qt::MouseButton::MiddleButton)
+		m_middlePressed = false;
 }

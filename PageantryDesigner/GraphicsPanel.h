@@ -16,13 +16,15 @@ class GraphicsPanel : public QOpenGLWidget, protected QOpenGLFunctions
 public:
 	GraphicsPanel(QWidget* parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
 	virtual ~GraphicsPanel();
-	void cleanup();
 
 public slots:
 	void onPlayClicked();
 
 protected:
 	virtual void wheelEvent(QWheelEvent* event);
+	virtual void mouseMoveEvent(QMouseEvent* event);
+	virtual void mousePressEvent(QMouseEvent* event);
+	virtual void mouseReleaseEvent(QMouseEvent* event);
 	virtual void initializeGL() override;
 	virtual void paintGL() override;
 	virtual void resizeGL(int w, int h) override;
@@ -34,6 +36,8 @@ private:
 	QWidget* m_parent = nullptr;
 	int m_frame = 0;
 	bool m_paused = false;
+	QPoint m_lastPos;
+	bool m_middlePressed = false;
 	SceneCamera m_camera;
 	FloorRenderer* m_floorRenderer = nullptr;
 	DotsRenderer* m_dotsRenderer = nullptr;

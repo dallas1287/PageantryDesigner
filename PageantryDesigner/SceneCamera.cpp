@@ -9,3 +9,8 @@ SceneCamera::SceneCamera()
 SceneCamera::~SceneCamera()
 {
 }
+
+void SceneCamera::rotate(float angle, const QVector3D& direction)
+{
+	m_perspective.rotate(angle, direction);
+}

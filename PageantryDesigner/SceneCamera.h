@@ -8,6 +8,7 @@ public:
 	~SceneCamera();
 	QMatrix4x4 Perspective() { return m_perspective; }
 	void setPerspective(QMatrix4x4& matrix) { m_perspective = matrix; }
+	void rotate(float angle, const QVector3D& direction);
 
 private:
 	QMatrix4x4 m_perspective;
