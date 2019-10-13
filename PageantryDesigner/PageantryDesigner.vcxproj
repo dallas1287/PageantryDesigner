@@ -94,6 +94,7 @@
     <ClCompile Include="GraphicsPanel.cpp" />
     <ClCompile Include="ItemRenderer.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="SceneCamera.cpp" />
     <ClCompile Include="TopWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -111,6 +112,7 @@
     <ClInclude Include="FloorRenderer.h" />
     <ClInclude Include="GraphicsObject.h" />
     <ClInclude Include="ItemRenderer.h" />
+    <ClInclude Include="SceneCamera.h" />
     <ClInclude Include="ShapeCreator.h" />
   </ItemGroup>
   <ItemGroup>

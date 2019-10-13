@@ -7,6 +7,7 @@
 #include <QOpenGLVertexArrayObject>
 #include "FloorRenderer.h"
 #include "DotsRenderer.h"
+#include "SceneCamera.h"
 
 
 class GraphicsPanel : public QOpenGLWidget, protected QOpenGLFunctions
@@ -33,6 +34,7 @@ private:
 	QWidget* m_parent = nullptr;
 	int m_frame = 0;
 	bool m_paused = false;
+	SceneCamera m_camera;
 	FloorRenderer* m_floorRenderer = nullptr;
 	DotsRenderer* m_dotsRenderer = nullptr;
 };

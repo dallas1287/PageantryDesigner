@@ -6,6 +6,12 @@ const QVector3D X(1.0f, 0.0f, 0.0f);
 const QVector3D Y(0.0f, 1.0f, 0.0f);
 const QVector3D Z(0.0f, 0.0f, 1.0f);
 
+const QVector4D X4(1.0f, 0.0f, 0.0f, 0.0f);
+const QVector4D Y4(0.0f, 1.0f, 0.0f, 0.0f);
+const QVector4D Z4(0.0f, 0.0f, 1.0f, 0.0f);
+const QVector4D W4(0.0f, 0.0f, 0.0f, 1.0f);
+
+
 struct VertexData
 {
 	VertexData(QVector3D position = QVector3D(), QVector2D texCoord = QVector2D(), QVector3D color = QVector3D()) : position(position), texCoord(texCoord), color(color) {};

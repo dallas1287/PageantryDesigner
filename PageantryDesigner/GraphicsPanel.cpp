@@ -55,17 +55,14 @@ void GraphicsPanel::myPaint()
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	QMatrix4x4 projection;
-	projection.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
-	projection.translate(0, 0, -2);
-	projection.rotate(m_frame, 0, 1, 0);
+	//projection.rotate(m_frame, 0, 1, 0);
 	
 	QMatrix4x4 model;
 	model.setToIdentity();
 	QMatrix4x4 view;
 	view.setToIdentity();
 
-	m_floorRenderer->setMVP(model, view, projection);
+	m_floorRenderer->setMVP(model, view, m_camera.Perspective());
 	m_floorRenderer->Draw();
 
 	model.scale(.05);
@@ -74,7 +71,7 @@ void GraphicsPanel::myPaint()
 	for (int i = 0; i < 3; ++i)
 	{
 		model.translate(2.0* (X + Y));
-		m_dotsRenderer->setMVP(model, view, projection);
+		m_dotsRenderer->setMVP(model, view, m_camera.Perspective());
 		m_dotsRenderer->Draw();
 	}
 	
@@ -107,7 +104,17 @@ void GraphicsPanel::onPlayClicked()
 
 void GraphicsPanel::wheelEvent(QWheelEvent* event)
 {
-	qDebug() << "Mouse wheel detected" << event->angleDelta();
+	QMatrix4x4 camPersp = m_camera.Perspective();
+	if (event->angleDelta().y() > 0)
+	{
+		camPersp.translate(Z * .01);
+		m_camera.setPerspective(camPersp);
+	}
+	else if (event->angleDelta().y() < 0)
+	{
+		camPersp.translate(Z * -.01);
+		m_camera.setPerspective(camPersp);
+	}
 }
 
 void GraphicsPanel::cleanup()
