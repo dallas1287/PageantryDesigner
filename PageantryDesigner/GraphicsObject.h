@@ -9,6 +9,7 @@ struct ShaderAttributes
 	GLuint m_posAttr = -1;
 	GLuint m_colAttr = -1;
 	GLuint m_texCoordAttr = -1;
+	GLuint m_normalAttr = -1;
 	GLuint m_modelUniform = -1;
 	GLuint m_viewUniform = -1;
 	GLuint m_projectionUniform = -1;
@@ -27,10 +28,11 @@ public:
 	GLuint PosAttr() { return m_shaderAttributes.m_posAttr; }
 	GLuint ColorAttr() { return m_shaderAttributes.m_colAttr; }
 	GLuint TextureAttr() { return m_shaderAttributes.m_texCoordAttr; }
+	GLuint NormAttr() { return m_shaderAttributes.m_normalAttr; }
 	GLuint ViewAttr() { return m_shaderAttributes.m_viewUniform; }
 	GLuint ProjAttr() { return m_shaderAttributes.m_projectionUniform; }
 	GLuint ModelAttr() { return m_shaderAttributes.m_modelUniform; }
-	void initShader(const QString& vertexPath, const QString& fragmentPath);
+	void initShaders(const QString& vertexPath, const QString& fragmentPath);
 	void initTexture(const QString& path);
 	void setupAttributes();
 	void setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection);

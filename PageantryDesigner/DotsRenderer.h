@@ -8,12 +8,12 @@ public:
 	DotsRenderer(GraphicsPanel* parent);
 	~DotsRenderer();
 	virtual void Draw() override;
-	void setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection);
+	virtual void setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection) override;
 
 protected:
 	virtual void initialize() override;
-	virtual void initShaders() override;
-	virtual void initTextures(const QString& path) override;
+	virtual void initShaders();
+	virtual void initTexture(const QString& path);
 
 private:
 	void generateDots();

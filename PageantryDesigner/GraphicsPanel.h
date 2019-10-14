@@ -7,8 +7,9 @@
 #include <QOpenGLVertexArrayObject>
 #include "FloorRenderer.h"
 #include "DotsRenderer.h"
+#include "FigureRenderer.h"
 #include "SceneCamera.h"
-
+#include "Mesh.h"
 
 class GraphicsPanel : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -41,5 +42,6 @@ private:
 	SceneCamera m_camera;
 	FloorRenderer* m_floorRenderer = nullptr;
 	DotsRenderer* m_dotsRenderer = nullptr;
+	FigureRenderer* m_figureRenderer = nullptr;
 };
 

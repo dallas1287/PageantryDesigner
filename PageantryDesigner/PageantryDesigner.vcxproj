@@ -30,9 +30,13 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <LibraryPath>$(SolutionDir)PageantryDesigner\Libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)PageantryDesigner\Includes;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IncludePath>$(SolutionDir)PageantryDesigner\Includes;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)PageantryDesigner\Libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
     <Message Importance="High" Text="QtMsBuild: could not locate qt.targets, qt.props; project may not build correctly." />
@@ -72,6 +76,7 @@
       <SubSystem>Windows</SubSystem>
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -85,15 +90,18 @@
       <SubSystem>Windows</SubSystem>
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalDependencies>assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DotsRenderer.cpp" />
+    <ClCompile Include="FigureRenderer.cpp" />
     <ClCompile Include="FloorRenderer.cpp" />
     <ClCompile Include="GraphicsObject.cpp" />
     <ClCompile Include="GraphicsPanel.cpp" />
     <ClCompile Include="ItemRenderer.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="SceneCamera.cpp" />
     <ClCompile Include="TopWindow.cpp" />
   </ItemGroup>
@@ -109,9 +117,11 @@
   <ItemGroup>
     <QtMoc Include="GraphicsPanel.h" />
     <ClInclude Include="DotsRenderer.h" />
+    <ClInclude Include="FigureRenderer.h" />
     <ClInclude Include="FloorRenderer.h" />
     <ClInclude Include="GraphicsObject.h" />
     <ClInclude Include="ItemRenderer.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="SceneCamera.h" />
     <ClInclude Include="ShapeCreator.h" />
   </ItemGroup>
@@ -122,6 +132,8 @@
     <None Include="floor_vertex.glsl" />
     <None Include="grid_fragment.glsl" />
     <None Include="grid_vertex.glsl" />
+    <None Include="mesh_fragment.glsl" />
+    <None Include="mesh_vertex.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

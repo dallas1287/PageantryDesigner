@@ -7,20 +7,17 @@ class FloorRenderer : public ItemRenderer
 public:
 	FloorRenderer(GraphicsPanel* parent);
 	~FloorRenderer();
-	void setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection);
-
-	void Draw();
+	virtual void setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection) override;
+	virtual void Draw() override;
 
 private:
 	virtual void initialize() override;
-	virtual void initShaders() override;
-	virtual void initTextures(const QString& path) override;
+	void initShaders();
+	void initTextures(const QString& path);
 	void generateFloor();
 	void drawFloor();
 	int generateGridLines(int lineCount);
 	void drawGridLines();
-	void generateBuffers();
-	void drawBuffers();
 
 	GraphicsObject Floor;
 	GraphicsObject Grid;

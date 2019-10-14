@@ -13,18 +13,12 @@ class ItemRenderer : protected QOpenGLFunctions
 public:
 	ItemRenderer(GraphicsPanel* parent);
 	virtual ~ItemRenderer();
+	virtual void setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection) = 0;
 	virtual void Draw() = 0;
 
 protected:
-	virtual void initialize() = 0;
-	virtual void initShaders() = 0;
-	virtual void initTextures(const QString& path) = 0;
+	virtual void initialize();
 
 	GraphicsPanel* m_parent;
-
-	QOpenGLVertexArrayObject m_vao;
-	QOpenGLBuffer m_vbo, m_ebo;
-	QOpenGLTexture* m_texture = nullptr;
-	GLuint m_posAttr, m_colAttr, m_texCoordAttr, m_matrixUniform;
 };
 

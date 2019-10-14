@@ -25,6 +25,7 @@ GraphicsPanel::~GraphicsPanel()
 
 	delete m_floorRenderer;
 	delete m_dotsRenderer;
+	delete m_figureRenderer;
 
 	doneCurrent();
 };
@@ -35,7 +36,7 @@ void GraphicsPanel::initializeGL()
 	setBackground(background);
 	m_floorRenderer = new FloorRenderer(this);
 	m_dotsRenderer = new DotsRenderer(this);
-
+	m_figureRenderer = new FigureRenderer(this, "../N&I_rig.fbx");
 }
 
 void GraphicsPanel::setBackground(QVector4D background)
@@ -61,6 +62,9 @@ void GraphicsPanel::myPaint()
 	model.setToIdentity();
 	QMatrix4x4 view;
 	view.setToIdentity();
+
+	m_figureRenderer->setMVP(model, view, m_camera.Perspective());
+	m_figureRenderer->Draw();
 
 	m_floorRenderer->setMVP(model, view, m_camera.Perspective());
 	m_floorRenderer->Draw();

@@ -52,6 +52,12 @@
     <ClCompile Include="SceneCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FigureRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="TopWindow.h">
@@ -90,6 +96,12 @@
     <ClInclude Include="SceneCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FigureRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="floor_fragment.glsl">
@@ -110,5 +122,7 @@
     <None Include="dots_vertex.glsl">
       <Filter>shaders</Filter>
     </None>
+    <None Include="mesh_vertex.glsl" />
+    <None Include="mesh_fragment.glsl" />
   </ItemGroup>
 </Project>

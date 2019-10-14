@@ -12,7 +12,7 @@ FloorRenderer::~FloorRenderer()
 
 void FloorRenderer::initialize()
 {
-	initializeOpenGLFunctions();
+	ItemRenderer::initialize();
 	initShaders();
 	initTextures("../tattoo_comic.jpg");
 	m_gridLineCt = generateGridLines(4);
@@ -21,8 +21,8 @@ void FloorRenderer::initialize()
 
 void FloorRenderer::initShaders()
 {
-	Floor.initShader("floor_vertex.glsl", "floor_fragment.glsl");
-	Grid.initShader("grid_vertex.glsl", "grid_fragment.glsl");
+	Floor.initShaders("floor_vertex.glsl", "floor_fragment.glsl");
+	Grid.initShaders("grid_vertex.glsl", "grid_fragment.glsl");
 }
 
 void FloorRenderer::initTextures(const QString& path)
@@ -51,52 +51,44 @@ void FloorRenderer::drawFloor()
 
 void FloorRenderer::generateFloor()
 {
-	VertexData* vertices;
-	GLushort* indices;
-	int vSize;
-	int iSize;
-	GridMaker::Quad::createQuad(&vertices, vSize, &indices, iSize);
+	std::vector<VertexData> vData;
+	std::vector<GLushort> iData;
+	GridMaker::Quad::createQuad(vData, iData);
 
 	Floor.bindAll();
-	Floor.Vbo().allocate(vertices, vSize * sizeof(VertexData));
+	Floor.Vbo().allocate(&vData[0], vData.size() * sizeof(VertexData));
 
 	Floor.ShaderProgram()->enableAttributeArray(Floor.PosAttr());
 	Floor.ShaderProgram()->setAttributeBuffer(Floor.PosAttr(), GL_FLOAT, 0, 3, sizeof(VertexData));
 
 	Floor.ShaderProgram()->enableAttributeArray(Floor.TextureAttr());
-	Floor.ShaderProgram()->setAttributeBuffer(Floor.TextureAttr(), GL_FLOAT, sizeof(decltype(vertices->position)), 2, sizeof(VertexData));
+	Floor.ShaderProgram()->setAttributeBuffer(Floor.TextureAttr(), GL_FLOAT, sizeof(decltype(vData[0].position)), 2, sizeof(VertexData));
 
 	Floor.ShaderProgram()->enableAttributeArray(Floor.ColorAttr());
-	Floor.ShaderProgram()->setAttributeBuffer(Floor.ColorAttr(), GL_FLOAT, sizeof(decltype(vertices->position)) + sizeof(decltype(vertices->texCoord)), 3, sizeof(VertexData));
+	Floor.ShaderProgram()->setAttributeBuffer(Floor.ColorAttr(), GL_FLOAT, sizeof(decltype(vData[0].position)) + sizeof(decltype(vData[0].texCoord)), 3, sizeof(VertexData));
 
-	Floor.Ebo().allocate(indices, iSize * sizeof(GLushort));
+	Floor.Ebo().allocate(&iData[0], iData.size() * sizeof(GLushort));
 	Floor.releaseAll();
-
-	delete[] vertices;
-	delete[] indices;
 }
 
 int FloorRenderer::generateGridLines(int lineCount)
 {
-	VertexData* vertices;
-	GLushort* indices;
-	int vSize, iSize;
-	GridMaker::Lines::createGrid(4, &vertices, vSize, &indices, iSize);
+	std::vector<VertexData> vData;
+	std::vector<GLushort> iData;
+	GridMaker::Lines::makeGridLines(4, vData, iData);
 
 	Grid.bindAll();
-	Grid.Vbo().allocate(vertices, vSize * sizeof(VertexData));
-	
+	Grid.Vbo().allocate(&vData[0], vData.size() * sizeof(VertexData));
+
 	Grid.ShaderProgram()->enableAttributeArray(Grid.PosAttr());
 	Grid.ShaderProgram()->setAttributeBuffer(Grid.PosAttr(), GL_FLOAT, 0, 3, sizeof(VertexData));
 
-	Grid.Ebo().allocate(indices, iSize * sizeof(GLushort));
+	Grid.Ebo().allocate(&iData[0], iData.size() * sizeof(GLushort));
 	Grid.releaseAll();
-	
-	delete[] vertices;
-	delete[] indices;
 
-	return iSize;
+	return iData.size();
 }
+
 void FloorRenderer::drawGridLines()
 {
 	Grid.bindToDraw(false);
@@ -105,52 +97,4 @@ void FloorRenderer::drawGridLines()
 	glLineWidth(2.0);
 	glDrawElements(GL_LINES, m_gridLineCt, GL_UNSIGNED_SHORT, 0);
 	Grid.releaseFromDraw();
-}
-
-void FloorRenderer::generateBuffers()
-{
-	GLfloat vertices[] = 
-	{
-		1.0f, 1.0f, 0.0f,
-		-1.0f, -1.0f,  0.0f,
-		1.0f, -1.0f, 0.0f,
-		-1.0f, -1.0f, 0.0f,
-		1.0f, 1.0f, 0.0f,
-		-1.0f, 1.0f, 0.0f
-	};
-
-	GLfloat colors[] = {
-		1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 1.0f
-	};
-	Floor.ShaderProgram()->bind();
-	Floor.Vao().bind();
-	Floor.Vbo().bind();
-
-	Floor.Vbo().allocate((18 + 18) * sizeof(GLfloat));
-	Floor.Vbo().write(0, vertices, sizeof(vertices));
-	Floor.Vbo().write(sizeof(vertices), colors, sizeof(colors));
-
-	Floor.ShaderProgram()->enableAttributeArray(Floor.PosAttr());
-	Floor.ShaderProgram()->setAttributeBuffer(Floor.PosAttr(), GL_FLOAT, 0, 3);
-
-	Floor.ShaderProgram()->enableAttributeArray(Floor.ColorAttr());
-	Floor.ShaderProgram()->setAttributeBuffer(Floor.ColorAttr(), GL_FLOAT, sizeof(vertices), 3);
-
-	Floor.Vao().release();
-	Floor.Vbo().release();
-	Floor.ShaderProgram()->release();
-}
-
-void FloorRenderer::drawBuffers()
-{
-	Floor.ShaderProgram()->bind();
-	Floor.Vao().bind();
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	Floor.Vao().release();
-	Floor.ShaderProgram()->release();
 }
