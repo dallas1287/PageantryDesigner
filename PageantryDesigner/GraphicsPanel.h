@@ -26,6 +26,8 @@ protected:
 	virtual void mouseMoveEvent(QMouseEvent* event);
 	virtual void mousePressEvent(QMouseEvent* event);
 	virtual void mouseReleaseEvent(QMouseEvent* event);
+	virtual void keyPressEvent(QKeyEvent* event);
+	virtual void keyReleaseEvent(QKeyEvent* event);
 	virtual void initializeGL() override;
 	virtual void paintGL() override;
 	virtual void resizeGL(int w, int h) override;
