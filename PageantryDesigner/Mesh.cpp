@@ -34,6 +34,14 @@ void MeshObject::initializeBuffers()
 	releaseAll();
 }
 
+aiBone* MeshObject::findBone(const std::string& name)
+{
+	auto boneIter = std::find_if(m_bones.begin(), m_bones.end(), [&](auto bone) {return std::string(bone->mName.C_Str()) == name; });
+	if (boneIter != m_bones.end())
+		return *boneIter;
+	return nullptr;
+}
+
 MeshManager::MeshManager()
 {
 }
@@ -99,16 +107,17 @@ bool MeshManager::import(const QString& path)
 			for(int index = 0; index < 3; ++index)
 				meshObj->getIndices().push_back(face.mIndices[index]);
 		}
+
+		if (mesh->HasBones())
+		{
+			for (int i = 0; i < mesh->mNumBones; ++i)
+				meshObj->Bones().push_back(mesh->mBones[i]);
+		}
 	}
-
-	qDebug() << "NumMeshes: " << scene->mNumMeshes;
-	qDebug() << "NumMaterials: " << scene->mNumMaterials;
-	qDebug() << "Has Normals " << scene->mMeshes[0]->HasNormals();
-	qDebug() << "Has Bones " << scene->mMeshes[0]->HasBones();
-	qDebug() << "NumBones: " << scene->mMeshes[0]->mNumBones;
-	qDebug() << "NumFaces: " << scene->mMeshes[0]->mNumFaces;
-	qDebug() << "NumVerts: " << scene->mMeshes[0]->mNumVertices;
-	qDebug() << "NumIndices" << scene->mMeshes[0]->mFaces[0].mNumIndices;
-
 	return true;
+}
+
+void MeshManager::moveArm()
+{
+
 }

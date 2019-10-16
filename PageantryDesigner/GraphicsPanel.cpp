@@ -64,12 +64,6 @@ void GraphicsPanel::myPaint()
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	/*if (m_frame % 3 == 0)
-	{
-		float newX = qSin(m_frame/3) * 3;
-		float newZ = qCos(m_frame/3) * 3;
-		m_camera.setPosition(QVector3D(newX, 2.0, newZ));
-	}*/
 	QMatrix4x4 model;
 	model.setToIdentity();
 	model.rotate(270, X);
@@ -126,19 +120,12 @@ void GraphicsPanel::wheelEvent(QWheelEvent* event)
 
 void GraphicsPanel::mouseMoveEvent(QMouseEvent* event)
 {
-	//screen coordinates for mouse are X - left to right & Y - up and down
-	//rotating around the x axis moves up and down and around the y axis moves left to right
-	//so the mouse y corresponds to an X rotation of the camera and vice versa
 	if (m_middlePressed)
 	{
-		//event->pos().y() > m_lastPos.y() ? m_camera.setPosition(m_camera.Position() + (.01 * Y)) : m_camera.setPosition(m_camera.Position() + (-.01 * Y));
-		//event->pos().x() > m_lastPos.x() ? m_camera.setPosition(m_camera.Position() + (-.01 * X)) : m_camera.setPosition(m_camera.Position() + (.01 * X));
-
-		int xChange = event->pos().x() - m_lastPos.x();
-
-		float newX = qSin(xChange);
-		float newZ = qCos(xChange);
-		m_camera.setPosition(m_camera.Position() + QVector3D(newX, 0.0, newZ));
+		if(abs(event->pos().x() - m_lastPos.x()) > abs(event->pos().y() - m_lastPos.y()))
+			m_camera.setYaw(m_camera.Yaw() + (event->pos().x() > m_lastPos.x() ? 1.0 : -1.0));
+		else
+			m_camera.setPitch(m_camera.Pitch() + (event->pos().y() > m_lastPos.y() ? 1.0 : -1.0));
 	}
 }
 
