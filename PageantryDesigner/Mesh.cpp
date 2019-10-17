@@ -34,9 +34,9 @@ void MeshObject::initializeBuffers()
 	releaseAll();
 }
 
-aiBone* MeshObject::findBone(const std::string& name)
+aiBone* MeshObject::findBone(const QString& name)
 {
-	auto boneIter = std::find_if(m_bones.begin(), m_bones.end(), [&](auto bone) {return std::string(bone->mName.C_Str()) == name; });
+	auto boneIter = std::find_if(m_bones.begin(), m_bones.end(), [&](auto bone) {return QString(bone->mName.C_Str()) == name; });
 	if (boneIter != m_bones.end())
 		return *boneIter;
 	return nullptr;
@@ -48,7 +48,7 @@ MeshManager::MeshManager()
 
 MeshManager::~MeshManager()
 {
-	for (auto meshObj : m_meshes)
+	for (auto meshObj : m_meshPool)
 		delete meshObj;
 }
 
@@ -70,15 +70,20 @@ bool MeshManager::import(const QString& path)
 		return false;
 	}
 
+	aiNode* root = scene->mRootNode;
+	if (root)
+	{
+		qDebug() << root->mTransformation.a1 << root->mTransformation.a2 << ", " << root->mTransformation.a3  << ", " << root->mTransformation.a4;
+	}
 	//add the meshes
 	for (int i = 0; i < scene->mNumMeshes; ++i)
 	{
-		m_meshes.push_back(new MeshObject(scene->mMeshes[i]));
+		m_meshPool.push_back(new MeshObject(scene->mMeshes[i]));
 	}
 	//add the vertex data
-	for (int i = 0; i < m_meshes.size(); ++i)
+	for (int i = 0; i < m_meshPool.size(); ++i)
 	{
-		MeshObject* meshObj = m_meshes[i];
+		MeshObject* meshObj = m_meshPool[i];
 		aiMesh* mesh = meshObj->getMeshRef();
 		VertexData point;
 		QVector3D pos, norm;
@@ -113,11 +118,10 @@ bool MeshManager::import(const QString& path)
 			for (int i = 0; i < mesh->mNumBones; ++i)
 				meshObj->Bones().push_back(mesh->mBones[i]);
 		}
+
+		aiNode* rig = root->FindNode("rig");
+		if (rig)
+			meshObj->getBoneRig().buildBones(rig);
 	}
 	return true;
-}
-
-void MeshManager::moveArm()
-{
-
 }
