@@ -9,6 +9,7 @@ public:
 
 	virtual void Draw() override;
 	virtual void setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection) override;
+	MeshManager& getMeshManager() { return m_meshManager; }
 
 protected:
 	virtual void initialize() override;

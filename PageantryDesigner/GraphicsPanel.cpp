@@ -39,10 +39,10 @@ void GraphicsPanel::initializeGL()
 	setBackground(background);
 	m_floorRenderer = new FloorRenderer(this);
 	m_dotsRenderer = new DotsRenderer(this);
-	m_figureRenderer = new FigureRenderer(this, "../N&I_rig.fbx");
+	//m_figureRenderer = new FigureRenderer(this, "../N&I_rig.fbx");
+	m_figureRenderer = new FigureRenderer(this, "../modelLoadingTest.fbx");
 	const qreal retinaScale = devicePixelRatio();
 	glViewport(0, 0, width() * retinaScale, height() * retinaScale);
-
 }
 
 void GraphicsPanel::setBackground(QVector4D background)
@@ -65,16 +65,22 @@ void GraphicsPanel::myPaint()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	QMatrix4x4 model;
-	model.setToIdentity();
-	model.rotate(270, X);
+	//model.setToIdentity();
+	//model.rotate(270, X);
 	
 	m_floorRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 	m_floorRenderer->Draw();
 
+	model.scale(.1);
 	m_figureRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
+	//move bone test
+	m_figureRenderer->getMeshManager().getMeshes()[0]->moveBone("Bone.003", QVector3D(15.0, 0.0, 0.0));
+	m_figureRenderer->getMeshManager().getMeshes()[0]->initializeBuffers();
 	m_figureRenderer->Draw();
 
-	model.setToIdentity();
+	//m_figureRenderer->getMeshManager().getMeshes()[0]->getBoneRig().MeshTransformTest();
+
+	/*model.setToIdentity();
 	model.scale(.05);
 	model.translate(1.01 * Z);
 
@@ -83,7 +89,7 @@ void GraphicsPanel::myPaint()
 		model.translate(2.0* (X + Y));
 		m_dotsRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 		m_dotsRenderer->Draw();
-	}
+	}*/
 	
 	painter.end();
 
@@ -175,6 +181,18 @@ void GraphicsPanel::keyPressEvent(QKeyEvent* event)
 		break;
 	case Qt::Key_Space:
 		m_camera.resetView();
+		break;
+	case Qt::Key_1:
+		m_camera.moveCamPlaneLeft();
+		break;
+	case Qt::Key_3:
+		m_camera.moveCamPlaneRight();
+		break;
+	case Qt::Key_5:
+		m_camera.moveCamPlaneTop();
+		break;
+	case Qt::Key_7:
+		m_camera.moveCamPlaneBottom();
 		break;
 	default:
 		return;

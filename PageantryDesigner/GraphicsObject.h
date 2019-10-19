@@ -10,6 +10,10 @@ struct ShaderAttributes
 	GLuint m_colAttr = -1;
 	GLuint m_texCoordAttr = -1;
 	GLuint m_normalAttr = -1;
+	GLuint m_boneTransform0 = -1;
+	GLuint m_boneTransform1 = -1;
+	GLuint m_boneTransform2 = -1;
+	GLuint m_boneTransform3 = -1;
 	GLuint m_modelUniform = -1;
 	GLuint m_viewUniform = -1;
 	GLuint m_projectionUniform = -1;
@@ -32,6 +36,10 @@ public:
 	GLuint ViewAttr() { return m_shaderAttributes.m_viewUniform; }
 	GLuint ProjAttr() { return m_shaderAttributes.m_projectionUniform; }
 	GLuint ModelAttr() { return m_shaderAttributes.m_modelUniform; }
+	GLuint BoneAttr0() { return m_shaderAttributes.m_boneTransform0; }
+	GLuint BoneAttr1() { return m_shaderAttributes.m_boneTransform1; }
+	GLuint BoneAttr2() { return m_shaderAttributes.m_boneTransform2; }
+	GLuint BoneAttr3() { return m_shaderAttributes.m_boneTransform3; }
 	void initShaders(const QString& vertexPath, const QString& fragmentPath);
 	void initTexture(const QString& path);
 	void setupAttributes();

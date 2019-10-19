@@ -69,6 +69,10 @@ void GraphicsObject::setupAttributes()
 	m_shaderAttributes.m_texCoordAttr = m_program->attributeLocation("texCoordAttr");
 	m_shaderAttributes.m_colAttr = m_program->attributeLocation("colAttr");
 	m_shaderAttributes.m_normalAttr = m_program->attributeLocation("normAttr");
+	m_shaderAttributes.m_boneTransform0 = m_program->attributeLocation("boneTransform0");
+	m_shaderAttributes.m_boneTransform1 = m_program->attributeLocation("boneTransform1");
+	m_shaderAttributes.m_boneTransform2 = m_program->attributeLocation("boneTransform2");
+	m_shaderAttributes.m_boneTransform3 = m_program->attributeLocation("boneTransform3");
 	m_shaderAttributes.m_modelUniform = m_program->uniformLocation("model");
 	m_shaderAttributes.m_viewUniform = m_program->uniformLocation("view");
 	m_shaderAttributes.m_projectionUniform = m_program->uniformLocation("projection");

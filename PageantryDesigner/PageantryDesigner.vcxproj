@@ -94,6 +94,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Bone.cpp" />
+    <ClCompile Include="BoneRig.cpp" />
+    <ClCompile Include="Conversions.cpp" />
     <ClCompile Include="DotsRenderer.cpp" />
     <ClCompile Include="FigureRenderer.cpp" />
     <ClCompile Include="FloorRenderer.cpp" />
@@ -115,7 +118,11 @@
     <QtRcc Include="TopWindow.qrc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common.h" />
+    <ClInclude Include="utils.h" />
     <QtMoc Include="GraphicsPanel.h" />
+    <ClInclude Include="Bone.h" />
+    <ClInclude Include="BoneRig.h" />
     <ClInclude Include="DotsRenderer.h" />
     <ClInclude Include="FigureRenderer.h" />
     <ClInclude Include="FloorRenderer.h" />

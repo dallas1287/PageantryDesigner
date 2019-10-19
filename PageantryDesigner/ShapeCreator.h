@@ -1,25 +1,7 @@
 #pragma once
 #include <QVector2D>
 #include <QVector3D>
-
-const QVector3D X(1.0f, 0.0f, 0.0f);
-const QVector3D Y(0.0f, 1.0f, 0.0f);
-const QVector3D Z(0.0f, 0.0f, 1.0f);
-
-const QVector4D X4(1.0f, 0.0f, 0.0f, 0.0f);
-const QVector4D Y4(0.0f, 1.0f, 0.0f, 0.0f);
-const QVector4D Z4(0.0f, 0.0f, 1.0f, 0.0f);
-const QVector4D W4(0.0f, 0.0f, 0.0f, 1.0f);
-
-
-struct VertexData
-{
-	VertexData(QVector3D position = QVector3D(), QVector2D texCoord = QVector2D(), QVector3D norm = QVector3D()) : position(position), texCoord(texCoord), normal(norm) {};
-	~VertexData() {};
-	QVector3D position;
-	QVector2D texCoord;
-	QVector3D normal;
-};
+#include "common.h"
 
 const std::vector<VertexData> QuadTemplate =
 {

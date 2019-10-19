@@ -2,8 +2,8 @@
 #include <QMatrix4x4>
 #include <QtMath>
 
-const QVector3D DefaultPosition(0.0, 2.0, 3.0);
-const QVector3D DefaultTarget(0.0, 2.0, 0.0);
+const QVector3D DefaultPosition(0.0, 0.0, 3.0);
+const QVector3D DefaultTarget(0.0, 0.0, 0.0);
 const QVector3D DefaultCamUp(0.0, 1.0, 0.0);
 const QVector3D DefaultCamFront(0.0, 0.0, -1.0);
 const float DefaultYaw = -90.0;
@@ -34,11 +34,16 @@ public:
 	QVector3D& Front() { return m_camFront; }
 	void setFront(QVector3D& vector) { m_camFront = vector; }
 	void updateCamFront();
+	void moveCamPlaneLeft();
+	void moveCamPlaneRight();
+	void moveCamPlaneTop();
+	void moveCamPlaneBottom();
 	QVector3D& Up() { return m_camUp; }
 	void setCamUp(const QVector3D& vector) { m_camUp = vector; updateView(); }
 	QMatrix4x4& View() { return m_camView; }
 	void updateView();
 	void resetView();
+	void resetYPW();
 	QMatrix4x4& Perspective() { return m_perspective; }
 	void setPerspective(QMatrix4x4& matrix) { m_perspective.setToIdentity(); m_perspective = matrix; }
 

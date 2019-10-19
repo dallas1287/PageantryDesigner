@@ -1,12 +1,14 @@
 #include "Mesh.h"
 #include "GraphicsPanel.h"
 
-MeshObject::MeshObject(aiMesh* ref) : GraphicsObject(), m_meshRef(ref)
+MeshObject::MeshObject(aiMesh* ref) : GraphicsObject(), m_meshRef(ref), m_boneRig(BoneRig(this))
 {
 }
 
 MeshObject::~MeshObject()
 {
+	for (auto bone : m_deformBones)
+		delete bone;
 	m_meshRef = nullptr;
 }
 
@@ -21,35 +23,77 @@ void MeshObject::initializeBuffers()
 	bindAll();
 	Vbo().allocate(&m_meshData[0], m_meshData.size() * sizeof(VertexData));
 
+	int offset = 0;
+
 	ShaderProgram()->enableAttributeArray(PosAttr());
-	ShaderProgram()->setAttributeBuffer(PosAttr(), GL_FLOAT, 0, 3, sizeof(VertexData));
+	ShaderProgram()->setAttributeBuffer(PosAttr(), GL_FLOAT, offset, 3, sizeof(VertexData));
+
+	offset += sizeof(decltype(m_meshData[0].position));
 
 	ShaderProgram()->enableAttributeArray(TextureAttr());
-	ShaderProgram()->setAttributeBuffer(TextureAttr(), GL_FLOAT, sizeof(decltype(m_meshData[0].position)), 2, sizeof(VertexData));
+	ShaderProgram()->setAttributeBuffer(TextureAttr(), GL_FLOAT, offset, 2, sizeof(VertexData));
+
+	offset += sizeof(decltype(m_meshData[0].texCoord));
 
 	ShaderProgram()->enableAttributeArray(NormAttr());
-	ShaderProgram()->setAttributeBuffer(NormAttr(), GL_FLOAT, sizeof(decltype(m_meshData[0].position)) + sizeof(decltype(m_meshData[0].texCoord)), 3, sizeof(VertexData));
+	ShaderProgram()->setAttributeBuffer(NormAttr(), GL_FLOAT, offset, 3, sizeof(VertexData));
+
+	offset += sizeof(decltype(m_meshData[0].normal));
+
+	ShaderProgram()->enableAttributeArray(BoneAttr0());
+	ShaderProgram()->setAttributeBuffer(BoneAttr0(), GL_FLOAT, offset, 4, sizeof(VertexData));
+
+	offset += sizeof(QVector4D);
+
+	ShaderProgram()->enableAttributeArray(BoneAttr1());
+	ShaderProgram()->setAttributeBuffer(BoneAttr1(), GL_FLOAT, offset, 4, sizeof(VertexData));
+
+	offset += sizeof(QVector4D);
+
+	ShaderProgram()->enableAttributeArray(BoneAttr2());
+	ShaderProgram()->setAttributeBuffer(BoneAttr2(), GL_FLOAT, offset, 4, sizeof(VertexData));
+
+	offset += sizeof(QVector4D);
+
+	ShaderProgram()->enableAttributeArray(BoneAttr3());
+	ShaderProgram()->setAttributeBuffer(BoneAttr3(), GL_FLOAT, offset, 4, sizeof(VertexData));
 
 	Ebo().allocate(&m_indices[0], m_indices.size() * sizeof(GLushort));
 	releaseAll();
 }
 
-aiBone* MeshObject::findBone(const QString& name)
+Bone* MeshObject::findDeformBone(const QString& name)
 {
-	auto boneIter = std::find_if(m_bones.begin(), m_bones.end(), [&](auto bone) {return QString(bone->mName.C_Str()) == name; });
-	if (boneIter != m_bones.end())
+	auto boneIter = std::find_if(m_deformBones.begin(), m_deformBones.end(), [&](auto bone) {return bone->getName() == name; });
+	if (boneIter != m_deformBones.end())
 		return *boneIter;
 	return nullptr;
 }
 
-MeshManager::MeshManager()
+BoneData MeshObject::createBoneData(int id)
 {
+	BoneData bd; 
+	//find the bones that control the corresponding vertexId
+	auto bonesRange = VBMap().equal_range(id);
+	if (bonesRange.first != VBMap().end())
+	{
+		auto boneIter = bonesRange.first;
+		while (boneIter != bonesRange.second)
+		{
+			//find all the bones and their weights
+			Bone* defBone = findDeformBone(boneIter->second);
+			if (defBone)
+				bd.boneWeights[defBone] = defBone->findVertexWeight(id);
+			++boneIter;
+		}
+	}
+	bd.ID = id;
+	return bd;
 }
 
-MeshManager::~MeshManager()
+void MeshObject::moveBone(const QString& name, const QVector3D& location)
 {
-	for (auto meshObj : m_meshPool)
-		delete meshObj;
+	m_boneRig.moveBone(name, location);
 }
 
 bool MeshManager::import(const QString& path)
@@ -70,25 +114,17 @@ bool MeshManager::import(const QString& path)
 		return false;
 	}
 
-	aiNode* root = scene->mRootNode;
-	if (root)
-	{
-		qDebug() << root->mTransformation.a1 << root->mTransformation.a2 << ", " << root->mTransformation.a3  << ", " << root->mTransformation.a4;
-	}
 	//add the meshes
 	for (int i = 0; i < scene->mNumMeshes; ++i)
 	{
 		m_meshPool.push_back(new MeshObject(scene->mMeshes[i]));
-	}
-	//add the vertex data
-	for (int i = 0; i < m_meshPool.size(); ++i)
-	{
 		MeshObject* meshObj = m_meshPool[i];
 		aiMesh* mesh = meshObj->getMeshRef();
 		VertexData point;
 		QVector3D pos, norm;
 		QVector2D tex;
 
+		//add vertex data
 		for (int j = 0; j < mesh->mNumVertices; ++j)
 		{
 			pos = QVector3D(mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z);
@@ -97,7 +133,7 @@ bool MeshManager::import(const QString& path)
 			if (mesh->HasTextureCoords(0))
 				tex = QVector2D(mesh->mTextureCoords[0][j].x, mesh->mTextureCoords[0][j].y);
 			point = VertexData(pos, tex, norm);
-			meshObj->getData().push_back(point);
+			meshObj->getVertexData().push_back(point);
 		}
 
 		for (int k = 0; k < mesh->mNumFaces; ++k)
@@ -113,15 +149,41 @@ bool MeshManager::import(const QString& path)
 				meshObj->getIndices().push_back(face.mIndices[index]);
 		}
 
+		//create the deform bones vector
+		//recreates new custom objects from the assimp library objects
 		if (mesh->HasBones())
 		{
 			for (int i = 0; i < mesh->mNumBones; ++i)
-				meshObj->Bones().push_back(mesh->mBones[i]);
+			{
+				Bone* bone = new Bone();
+				bone->initBone(mesh->mBones[i]);
+				meshObj->DeformBones().push_back(bone);
+			}
 		}
 
-		aiNode* rig = root->FindNode("rig");
+		//create the deform bones map of vertices
+		for (auto bone : meshObj->DeformBones())
+		{
+			for (int i = 0; i < bone->WeightCount(); ++i)
+				meshObj->VBMap().insert({ bone->VertexWeights()[i].vertexID, bone->getName() });
+		}
+
+		//create the full bone rig hierarchy
+		//aiNode* rig = scene->mRootNode->FindNode("rig");
+		aiNode* rig = scene->mRootNode->FindNode("Armature");
 		if (rig)
-			meshObj->getBoneRig().buildBones(rig);
+		{
+			meshObj->getBoneRig().setSceneRoot(scene->mRootNode);
+			meshObj->getBoneRig().buildSkeleton(rig);
+		}
+		//create Bone to Vertex data for each vertex
+		for (int i = 0; i < meshObj->getMeshRef()->mNumVertices; ++i)
+		{
+			BoneData bd = meshObj->createBoneData(i);
+			meshObj->getBoneRig().getBoneData().push_back(bd);
+		}
+
+		meshObj->getBoneRig().buildVertexTransforms();
 	}
 	return true;
 }
