@@ -75,7 +75,7 @@ public:
 	void resetView();
 
 	QVector3D getForwardVector();
-	QVector3D getUpVector();
+	QVector3D getRightVector();
 
 	void moveCam(Direction::Movement dir);
 	void rollCam(Direction::Rotation rot);

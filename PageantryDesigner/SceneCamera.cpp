@@ -60,36 +60,37 @@ void SceneCamera::updateCamUp()
 
 QVector3D SceneCamera::getForwardVector()
 {
-	return QVector3D(Front().x() - Position().x(), Front().y() - Position().y(), Front().z() - Position().z());
+	return QVector3D(Target().x() - Position().x(), Target().y() - Position().y(), Target().z() - Position().z());
 }
 
-QVector3D SceneCamera::getUpVector()
+QVector3D SceneCamera::getRightVector()
 {
-	return QVector3D(Up().x() - Position().x(), Up().y() - Position().y(), Up().z() - Position().z());
+	return QVector3D::crossProduct(getForwardVector(), m_camUp);
 }
+
 
 void SceneCamera::moveCam(Direction::Movement dir)
 {
 	switch (dir)
 	{
 	case Direction::Forward:
-		setPosition(Position() + QVector3D(0.0, 0.0, -0.05));
-		//setPosition(Position() + 0.05 * getForwardVector());
+		setPosition(Position() + 0.05 * getForwardVector());
 		break;
 	case Direction::Backwards:
-		setPosition(Position() + QVector3D(0.0, 0.0, 0.05));
+		setPosition(Position() + -0.05 * getForwardVector());
 		break;
 	case Direction::Left:
-		setPosition(Position() + QVector3D(-0.05, 0.0, 0.0));
+		setPosition(Position() + -0.05 * getRightVector());
 		break;
 	case Direction::Right:
-		setPosition(Position() + QVector3D(0.05, 0.0, 0.0));
+		setPosition(Position() + 0.05 * getRightVector());
 		break;
 	case Direction::Up:
-		setPosition(Position() + QVector3D(0.0, 0.05, 0.0));
+		setPosition(Position() + 0.05 * Up());
 		break;
 	case Direction::Down:
-		setPosition(Position() + QVector3D(0.0, -0.05, 0.0));
+		setPosition(Position() + -0.05 * Up());
+		break;
 	default:
 		return;
 	}
