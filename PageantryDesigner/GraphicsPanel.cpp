@@ -153,46 +153,63 @@ void GraphicsPanel::mouseReleaseEvent(QMouseEvent* event)
 void GraphicsPanel::keyPressEvent(QKeyEvent* event)
 {
 	bool shiftPress = false;
+	bool ctrlPress = false;
 	if (QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
 		shiftPress = true;
+	if (QGuiApplication::keyboardModifiers() & Qt::ControlModifier)
+		ctrlPress = true;
 	switch (event->key())
 	{
 	case Qt::Key_Up:
-		shiftPress ? m_camera.setPitch(m_camera.Pitch() + 1.0) :
-			m_camera.setPosition(m_camera.Position() + QVector3D(0.0, 0.0, -0.05));
+		if (shiftPress)
+			m_camera.rotateCam(Direction::Up);
+		else if (ctrlPress)
+			m_camera.moveCam(Direction::Up);
+		else
+			m_camera.moveCam(Direction::Forward);
 		break;
 	case Qt::Key_Down:
-		shiftPress ? m_camera.setPitch(m_camera.Pitch() - 1.0) :
-			m_camera.setPosition(m_camera.Position() + QVector3D(0.0, 0.0, 0.05));
+		if (shiftPress)
+			m_camera.rotateCam(Direction::Down);
+		else if(ctrlPress)
+			m_camera.moveCam(Direction::Down);
+		else
+			m_camera.moveCam(Direction::Backwards);
 		break;
 	case Qt::Key_Left:
-		shiftPress ? m_camera.setYaw(m_camera.Yaw() - 1.0) :
-		m_camera.setPosition(m_camera.Position() + QVector3D(-0.05, 0.0, 0.0));
+		shiftPress ? m_camera.rotateCam(Direction::Left) :
+		m_camera.moveCam(Direction::Left);
 		break;
 	case Qt::Key_Right:
-		shiftPress ? m_camera.setYaw(m_camera.Yaw() + 1.0) :
-		m_camera.setPosition(m_camera.Position() + QVector3D(0.05, 0.0, 0.0));
+		shiftPress ? m_camera.rotateCam(Direction::Right) :
+		m_camera.moveCam(Direction::Right);
 		break;
 	case Qt::Key_A:
-		m_camera.setRoll(m_camera.Roll() + 1.0);
+		m_camera.rollCam(Direction::Rotation::CCW);
 		break;
 	case Qt::Key_D:
-		m_camera.setRoll(m_camera.Roll() - 1.0);
+		m_camera.rollCam(Direction::Rotation::CW);
 		break;
 	case Qt::Key_Space:
 		m_camera.resetView();
 		break;
 	case Qt::Key_1:
-		m_camera.moveCamPlaneLeft();
+		m_camera.moveCamPlane(Direction::Plane::East);
+		break;
+	case Qt::Key_2:
+		m_camera.moveCamPlane(Direction::Plane::West);
 		break;
 	case Qt::Key_3:
-		m_camera.moveCamPlaneRight();
+		m_camera.moveCamPlane(Direction::Plane::Top);
+		break;
+	case Qt::Key_4:
+		m_camera.moveCamPlane(Direction::Plane::Bottom);
 		break;
 	case Qt::Key_5:
-		m_camera.moveCamPlaneTop();
+		m_camera.moveCamPlane(Direction::Plane::Front);
 		break;
-	case Qt::Key_7:
-		m_camera.moveCamPlaneBottom();
+	case Qt::Key_6:
+		m_camera.moveCamPlane(Direction::Plane::Back);
 		break;
 	default:
 		return;

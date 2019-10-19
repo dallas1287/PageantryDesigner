@@ -14,15 +14,45 @@ const float DefaultAspectRatio = (4.0 / 3.0);
 const float DefaultNearPlane = 0.1;
 const float DefaultFarPlane = 100.0;
 
-class SceneCamera
+namespace Direction
 {
-public:
+	enum Movement
+	{
+		Forward,
+		Backwards,
+		Left,
+		Right,
+		Up,
+		Down
+	};
+
+	enum Plane
+	{
+		Front,
+		Back,
+		West,
+		East,
+		Top,
+		Bottom
+	};
+
+	enum Rotation
+	{
+		CW,
+		CCW
+	};
+
 	enum Axis
 	{
 		Xaxis,
 		Yaxis,
 		Zaxis
 	};
+}
+
+class SceneCamera
+{
+public:
 
 	SceneCamera();
 	~SceneCamera();
@@ -31,21 +61,26 @@ public:
 	void setPosition(const QVector3D& vector) { m_position = vector; updateView(); }
 	QVector3D& Target() { return m_lookTarget; }
 	void setTarget(const QVector3D& vector) { m_lookTarget = vector; }
+
 	QVector3D& Front() { return m_camFront; }
 	void setFront(QVector3D& vector) { m_camFront = vector; }
 	void updateCamFront();
-	void moveCamPlaneLeft();
-	void moveCamPlaneRight();
-	void moveCamPlaneTop();
-	void moveCamPlaneBottom();
+
 	QVector3D& Up() { return m_camUp; }
 	void setCamUp(const QVector3D& vector) { m_camUp = vector; updateView(); }
+	void updateCamUp();
+
 	QMatrix4x4& View() { return m_camView; }
 	void updateView();
 	void resetView();
-	void resetYPW();
-	QMatrix4x4& Perspective() { return m_perspective; }
-	void setPerspective(QMatrix4x4& matrix) { m_perspective.setToIdentity(); m_perspective = matrix; }
+
+	QVector3D getForwardVector();
+	QVector3D getUpVector();
+
+	void moveCam(Direction::Movement dir);
+	void rollCam(Direction::Rotation rot);
+	void rotateCam(Direction::Movement dir);
+	void moveCamPlane(Direction::Plane plane);
 
 	const float Yaw() const { return m_yaw; }
 	void setYaw(const float& val);
@@ -53,10 +88,12 @@ public:
 	void setPitch(const float& val);
 	const float Roll() const { return m_roll; }
 	void setRoll(const float& val);
+	void resetYPW();
 
+	QMatrix4x4& Perspective() { return m_perspective; }
+	void setPerspective(QMatrix4x4& matrix) { m_perspective.setToIdentity(); m_perspective = matrix; }
 	void zoomIn();
 	void zoomOut();
-
 
 private:
 	QVector3D m_position;

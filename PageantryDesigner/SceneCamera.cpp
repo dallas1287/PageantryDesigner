@@ -36,6 +36,7 @@ void SceneCamera::resetYPW()
 void SceneCamera::updateView()
 {
 	updateCamFront();
+	updateCamUp();
 	m_lookTarget = m_position + m_camFront;
 	m_camView.setToIdentity();
 	m_camView.lookAt(m_position, m_lookTarget, m_camUp);
@@ -43,43 +44,125 @@ void SceneCamera::updateView()
 
 void SceneCamera::updateCamFront()
 {
-	m_camFront = QVector3D(qCos(qDegreesToRadians(m_pitch)) * cos(qDegreesToRadians(m_yaw)),
+	m_camFront = QVector3D(qCos(qDegreesToRadians(m_pitch)) * qCos(qDegreesToRadians(m_yaw)),
 		qSin(qDegreesToRadians(m_pitch)),
 		qCos(qDegreesToRadians(m_pitch)) * qSin(qDegreesToRadians(m_yaw)));
 	m_camFront.normalize();
-	m_camUp = QVector3D(qCos(qDegreesToRadians(m_roll)), qSin(qDegreesToRadians(m_roll)), 0.0);
+}
+
+void SceneCamera::updateCamUp()
+{
+	m_camUp = QVector3D(qCos(qDegreesToRadians(m_roll)),
+		qSin(qDegreesToRadians(m_roll)) * qCos(qDegreesToRadians(m_pitch)),
+		qSin(qDegreesToRadians(m_pitch)));
 	m_camUp.normalize();
 }
 
-void SceneCamera::moveCamPlaneLeft()
+QVector3D SceneCamera::getForwardVector()
 {
-	setPosition(QVector3D(3.0, 0.0, 0.0)); 
-	resetYPW();
-	setYaw(-180); 
-	updateView();
+	return QVector3D(Front().x() - Position().x(), Front().y() - Position().y(), Front().z() - Position().z());
 }
 
-void SceneCamera::moveCamPlaneRight()
+QVector3D SceneCamera::getUpVector()
 {
-	setPosition(QVector3D(-3.0, 0.0, 0.0)); 
-	resetYPW();
-	setYaw(0); 
-	updateView();
+	return QVector3D(Up().x() - Position().x(), Up().y() - Position().y(), Up().z() - Position().z());
 }
 
-void SceneCamera::moveCamPlaneTop()
+void SceneCamera::moveCam(Direction::Movement dir)
 {
-	setPosition(QVector3D(0.0, 3.0, 0.0)); 
-	resetYPW(); 
-	setPitch(-90); 
-	updateView();
+	switch (dir)
+	{
+	case Direction::Forward:
+		setPosition(Position() + QVector3D(0.0, 0.0, -0.05));
+		//setPosition(Position() + 0.05 * getForwardVector());
+		break;
+	case Direction::Backwards:
+		setPosition(Position() + QVector3D(0.0, 0.0, 0.05));
+		break;
+	case Direction::Left:
+		setPosition(Position() + QVector3D(-0.05, 0.0, 0.0));
+		break;
+	case Direction::Right:
+		setPosition(Position() + QVector3D(0.05, 0.0, 0.0));
+		break;
+	case Direction::Up:
+		setPosition(Position() + QVector3D(0.0, 0.05, 0.0));
+		break;
+	case Direction::Down:
+		setPosition(Position() + QVector3D(0.0, -0.05, 0.0));
+	default:
+		return;
+	}
 }
 
-void SceneCamera::moveCamPlaneBottom()
+void SceneCamera::rotateCam(Direction::Movement dir)
 {
-	setPosition(QVector3D(0.0, -3.0, 0.0));
+	switch (dir)
+	{
+	case Direction::Left:
+		setYaw(Yaw() - 1.0);
+		break;
+	case Direction::Right:
+		setYaw(Yaw() + 1.0);
+		break;
+	case Direction::Up:
+		setPitch(Pitch() + 1.0);
+		break;
+	case Direction::Down:
+		setPitch(Pitch() - 1.0);
+		break;
+	default:
+		return;
+	}
+}
+
+void SceneCamera::rollCam(Direction::Rotation rot)
+{
+	switch (rot)
+	{
+	case Direction::CW:
+		setRoll(Roll() + 1.0);
+		break;
+	case Direction::CCW:
+		setRoll(Roll() - 1.0);
+		break;
+	default:
+		return;
+	}
+}
+
+void SceneCamera::moveCamPlane(Direction::Plane plane)
+{
 	resetYPW();
-	setPitch(90);
+	switch (plane)
+	{
+	case Direction::Front:
+		setPosition(DefaultPosition);
+		setYaw(DefaultYaw);
+		break;
+	case Direction::Back:
+		setPosition(QVector3D(0.0, 0.0, -3.0));
+		setYaw(90);
+		break;
+	case Direction::West:
+		setPosition(QVector3D(3.0, 0.0, 0.0));
+		setYaw(180);
+		break;
+	case Direction::East:
+		setPosition(QVector3D(-3.0, 0.0, 0.0));
+		setYaw(0);
+		break;
+	case Direction::Top:
+		setPosition(QVector3D(0.0, 3.0, 0.0));
+		setPitch(-90);
+		break;
+	case Direction::Bottom:
+		setPosition(QVector3D(0.0, -3.0, 0.0));
+		setPitch(90);
+		break;
+	default:
+		return;
+	}
 	updateView();
 }
 
