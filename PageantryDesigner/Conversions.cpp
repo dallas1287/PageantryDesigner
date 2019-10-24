@@ -50,3 +50,9 @@ QMatrix4x4 scalingVectorToMatrix(QVector3D& vector)
 	mat.setRow(2, mat.column(2) * vector.z());
 	return mat;
 }
+
+std::string vectorToStdString(const QVector3D& vector, int precision)
+{
+	QString transformStr = QString::number(vector.x(), 'f', precision) + ", " + QString::number(vector.y(), 'f', precision) + ", " + QString::number(vector.z(), 'f', precision);
+	return transformStr.toLocal8Bit().constData();
+}

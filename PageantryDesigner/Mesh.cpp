@@ -205,8 +205,7 @@ void MeshManager::animate()
 		return;
 	Animation anim = m_animations[0];
 	MeshObject* meshObj = getMeshes()[0];
-	std::vector<aiNode*> children;
-	LogDebugTransforms();
+
 	for (auto node : anim.getAnimNodes())
 	{
 		if (m_frameCt < node.getTransforms().size())
@@ -224,66 +223,39 @@ void MeshManager::animate()
 				bd.transformFromBones();
 		}
 	}
+	LogDebugTransforms();
 	m_frameCt++;
-	//if (m_frameCt > anim.getDuration())
-	//	m_frameCt = 0;
+	if (m_frameCt > anim.getDuration())
+		m_frameCt = 0;
 }
 
 void MeshManager::LogDebugTransforms()
 {
 	MeshObject* mesh = getMeshes()[0];
 	Animation anim = m_animations[0];
-
-	std::ofstream outfile("../logData.txt", std::ios_base::app);
-	std::ofstream transformfile("../logTransform.txt", std::ios_base::app);
-	std::ofstream index98("../index98.txt", std::ios_base::app);
 	
 	//log index 98 boneweights
 	if (m_frameCt == 0)
 	{
-		index98 << "Global Transform: " << std::endl << matrixToStdString(m_globalTransform);
+		std::ofstream index98("../index98.txt");
+		index98 << "Global Transform: " << std::endl << matrixToStdString(m_globalTransform) << std::endl;
 		for (auto bw : mesh->getBoneRig().getBoneData()[98].boneWeights)
 		{
 			index98 << bw.first->getName().toLocal8Bit().constData() << " Weight: " << bw.second << std::endl;
 			index98 << "Offset Matrix: " << std::endl << matrixToStdString(bw.first->OffsetMatrix());
 		}
 		index98 << std::endl;
-	}
-
-	outfile << "\t\t\t" << "Frame Number: " << m_frameCt << std::endl;
-	transformfile << "\t\t\t" << "Frame Number: " << m_frameCt << std::endl;
-	for (auto bd : mesh->getBoneRig().getBoneData())
-	{
-		QVector3D pos = mesh->getVertexData()[bd.ID].position;
+		QVector3D pos = mesh->getVertexData()[98].position;
 		QString originalPoint = QString::number(pos.x(), 'f', 2) + ", " + QString::number(pos.y(), 'f', 2) + ", " + QString::number(pos.z(), 'f', 2);
 		std::string data = originalPoint.toLocal8Bit().constData();
-		outfile << "Index: " << bd.ID << " " << data << "\t";
-		if (bd.ID == 98)
-			index98 << "Frame: " << m_frameCt << " - " << data << std::endl;
+		index98 << data << std::endl;
 
-		if (bd.transformFromBones())
-		{
-			mesh->getVertexData()[bd.ID].position = *bd.FinalTransform * pos;
-			pos = mesh->getVertexData()[bd.ID].position;
-			QString originalPoint = QString::number(pos.x(), 'f', 2) + ", " + QString::number(pos.y(), 'f', 2) + ", " + QString::number(pos.z(), 'f', 2);
-			data = originalPoint.toLocal8Bit().constData();
-			outfile << data;
-			if (bd.ID == 98)
-				index98 << "Frame: " << m_frameCt << " - " << data << std::endl;
-			transformfile << "Index: " << bd.ID << std::endl << matrixToStdString(*bd.FinalTransform) << std::endl;
-		}
-		outfile << std::endl;
-	}
-	outfile.close();
-	transformfile.close();
 
-	std::ofstream keysfile("../keys.txt");
-	for (auto node : anim.getAnimNodes())
-	{
-		if (node.getTransforms().size() < 32 || node.getName() != "Bone.003")
-			continue;
+		std::ofstream keysfile("../keys.txt");
+		auto node = anim.findAnimationNode("Bone.003");
 
 		keysfile << "Bone: " << node.getName().toLocal8Bit().constData() << std::endl;
+
 		for (int i = 0; i < node.getTransforms().size(); ++i)
 		{
 			keysfile << "Position: " << i << std::endl;
@@ -309,7 +281,11 @@ void MeshManager::LogDebugTransforms()
 
 			keysfile << std::endl << "Transform: " << i << std::endl;
 			keysfile << matrixToStdString(node.getTransforms()[i]) << std::endl;
+
+			QVector3D tPos = node.getTransforms()[i] * pos;
+			index98 << "Frame: " << i << std::endl << vectorToStdString(tPos) << std::endl;
 		}
+		index98.close();
+		keysfile.close();
 	}
-	keysfile.close();
 }

@@ -54,6 +54,7 @@ public:
 	bool import(const QString& path);
 	MeshObjectPool& getMeshes() { return m_meshPool; }
 	QMatrix4x4& GlobalTransform() { return m_globalTransform; }
+	QMatrix4x4& GlobalInverseTransform() { return m_globalTransform.inverted(); }
 	void animate();
 
 	void LogDebugTransforms();

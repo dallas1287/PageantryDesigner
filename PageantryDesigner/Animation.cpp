@@ -68,14 +68,12 @@ bool AnimationNode::initialize()
 
 void AnimationNode::buildTransforms()
 {
-	QMatrix4x4 translateMat, rotateMat, scaleMat;
-
 	for (int i = 0; i < m_positionKeys.size(); ++i)
 	{
-		translateMat = translationVectorToMatrix(m_positionKeys[i].value);
-		rotateMat = QMatrix4x4(m_rotationKeys[i].value.toRotationMatrix());
-		scaleMat = scalingVectorToMatrix(m_scalingKeys[i].value);
-		m_transforms.push_back(translateMat * rotateMat * scaleMat);
+		m_positionKeys[i].matrix = translationVectorToMatrix(m_positionKeys[i].value);
+		m_rotationKeys[i].matrix = QMatrix4x4(m_rotationKeys[i].value.toRotationMatrix());
+		m_scalingKeys[i].matrix = scalingVectorToMatrix(m_scalingKeys[i].value);
+		m_transforms.push_back(m_positionKeys[i].matrix * m_rotationKeys[i].matrix * m_scalingKeys[i].matrix);
 	}
 }
 
@@ -108,4 +106,26 @@ bool Animation::initialize()
 	}
 
 	return true;
+}
+
+AnimationNode& Animation::findAnimationNode(const QString& name)
+{
+	auto node = std::find_if(m_animNodes.begin(), m_animNodes.end(), [&](auto node) {return node.getName() == name; });
+	if (node != m_animNodes.end())
+		return *node;
+
+	//TODO: fix this, this is dumb
+	return *m_animNodes.begin();
+}
+
+void Animation::buildTransforms()
+{
+	for (auto anim : m_animNodes)
+	{
+		if (anim.getName() == "Armature")
+			continue;
+
+		for (int i = 0; i < anim.getPositionKeys().size(); ++i)
+			anim.getTransforms()[i];
+	}
 }

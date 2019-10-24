@@ -3,18 +3,23 @@
 #include <QString>
 #include <QVector3D>
 #include <QQuaternion>
+#include <QMatrix4x4>
 #include <vector>
+
+class MeshManager;
 
 struct VectorKey
 {
 	float time;
 	QVector3D value;
+	QMatrix4x4 matrix;
 };
 
 struct QuaternionKey
 {
 	float time;
 	QQuaternion value;
+	QMatrix4x4 matrix;
 };
 
 class AnimationNode
@@ -49,8 +54,11 @@ public:
 	float getFPS() { return m_fps; }
 	int getChannelCount() { return m_numChannels; }
 	std::vector<AnimationNode>& getAnimNodes() { return m_animNodes; }
+	AnimationNode& findAnimationNode(const QString& name);
 
 private:
+	void buildTransforms();
+
 	aiAnimation* m_animRef;
 	QString m_name;
 	float m_duration;

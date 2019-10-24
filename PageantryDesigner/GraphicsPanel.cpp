@@ -71,7 +71,7 @@ void GraphicsPanel::myPaint()
 	m_floorRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 	m_floorRenderer->Draw();
 
-	model.scale(.1);
+	model.scale(.01);
 	m_figureRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 	//move bone test
 	//m_figureRenderer->getMeshManager().getMeshes()[0]->moveBone("Bone.002", QVector3D());
