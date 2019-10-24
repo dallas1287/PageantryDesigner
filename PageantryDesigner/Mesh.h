@@ -6,6 +6,7 @@
 #include "ShapeCreator.h"
 #include "Bone.h"
 #include "BoneRig.h"
+#include "Animation.h"
 #include <unordered_map>
 
 //Key = VertexID - Value = boneName
@@ -52,9 +53,16 @@ public:
 	}
 	bool import(const QString& path);
 	MeshObjectPool& getMeshes() { return m_meshPool; }
+	QMatrix4x4& GlobalTransform() { return m_globalTransform; }
+	void animate();
+
+	void LogDebugTransforms();
 
 private:
 	Assimp::Importer m_importer;
+	QMatrix4x4 m_globalTransform;
 	MeshObjectPool m_meshPool;
+	std::vector<Animation> m_animations;
+	int m_frameCt = 0;
 };
 

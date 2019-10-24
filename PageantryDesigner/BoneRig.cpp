@@ -2,6 +2,7 @@
 #include <QDebug>
 #include "utils.h"
 #include "Mesh.h"
+#include <fstream>
 
 bool BoneRig::buildSkeleton(aiNode* rootBone)
 {
@@ -35,14 +36,22 @@ void BoneRig::buildVertexTransforms()
 		m_boneData[i].FinalTransform = &m_parent->getVertexData()[i].transform;
 }
 
-void BoneRig::getAllChildren(const QString& bone, std::vector<aiNode*>& children)
+aiNode* BoneRig::findBoneInSkeleton(const QString& bone)
 {
 	if (m_skeletonMap.find(bone) == m_skeletonMap.end())
-		return;
+		return nullptr;
 
-	aiNode* boneNode = m_skeletonMap[bone];
-	children.push_back(boneNode);
-	getAllChildrenRecursively(boneNode, children);
+	return m_skeletonMap[bone];
+}
+
+void BoneRig::getAllChildren(const QString& bone, std::vector<aiNode*>& children)
+{
+	aiNode* boneNode = findBoneInSkeleton(bone);
+	if (boneNode)
+	{
+		children.push_back(boneNode);
+		getAllChildrenRecursively(boneNode, children);
+	}
 }
 
 void BoneRig::getAllChildrenRecursively(aiNode* boneNode, std::vector<aiNode*>& children)
@@ -57,10 +66,7 @@ void BoneRig::getAllChildrenRecursively(aiNode* boneNode, std::vector<aiNode*>& 
 
 void BoneRig::getAllParents(const QString& bone, std::vector<aiNode*>& parents)
 {
-	if (m_skeletonMap.find(bone) == m_skeletonMap.end())
-		return;
-
-	aiNode* boneNode = m_skeletonMap[bone];
+	aiNode* boneNode = findBoneInSkeleton(bone);
 	aiNode* parent = boneNode->mParent;
 	while (parent && parent != m_rootBone->mParent) 
 	{
@@ -70,6 +76,42 @@ void BoneRig::getAllParents(const QString& bone, std::vector<aiNode*>& parents)
 }
 
 void BoneRig::moveBone(const QString& bone, const QVector3D& location)
+{
+	std::vector<aiNode*> children;
+
+	getAllChildren(bone, children);
+
+	QMatrix4x4 gTransform;
+	//gTransform.translate(location);
+	gTransform.rotate(270.0, QVector3D(0.0, 1.0, 0.0));
+	for (auto child : children)
+	{
+		Bone* childBone = m_parent->findDeformBone(QString(child->mName.data));
+		if (childBone)
+		{
+			childBone->setModified();
+			childBone->setTransform(gTransform);
+		}
+	}
+
+	for (auto bd : m_boneData)
+		bd.transformFromBones();
+}
+
+QMatrix4x4 BoneRig::getGlobalTransformation(std::vector<aiNode*>& parents)
+{
+	QMatrix4x4 globalTransform;
+	for (auto parent : parents)
+	{
+		QMatrix4x4 converted = convertTransformMatrix(parent->mTransformation);
+		globalTransform *= converted;
+	}
+
+	return globalTransform;
+}
+
+static bool alreadyWritten = false;
+void BoneRig::moveDirectly(const QString& bone)
 {
 	std::vector<aiNode*> children;
 
@@ -87,58 +129,30 @@ void BoneRig::moveBone(const QString& bone, const QVector3D& location)
 			childBone->setTransform(gTransform);
 		}
 	}
-
-	for (auto bd : m_boneData)
-		bd.transformFromBones();
-}
-
-QMatrix4x4 BoneRig::getGlobalTransformation(std::vector<aiNode*>& parents)
-{
-	getTransformDebug(m_sceneRoot);
-	QMatrix4x4 globalTransform;
-	for (auto parent : parents)
+	if (!alreadyWritten)
 	{
-		getTransformDebug(parent);
-		QMatrix4x4 converted = convertTransformMatrix(parent->mTransformation);
-		globalTransform *= converted;
-	}
+		std::ofstream outfile("../logData.txt");
+		std::ofstream transformfile("../logTransform.txt");
+		for (auto bd : m_boneData)
+		{
+			QVector3D pos = m_parent->getVertexData()[bd.ID].position;
+			QString originalPoint = QString::number(pos.x(), 'f', 2) + ", " + QString::number(pos.y(), 'f', 2) + ", " + QString::number(pos.z(), 'f', 2);
+			std::string data = originalPoint.toLocal8Bit().constData();
+			outfile << "Index: " << bd.ID << " " << data << "\t";
 
-	return globalTransform;
-}
-
-void BoneRig::getTransformDebug(aiNode* parent)
-{
-	qDebug() << "Name: " << parent->mName.data;
-	QMatrix4x4 transform = convertTransformMatrix(parent->mTransformation);
-	float* data = transform.data();
-	qDebug() << data[0] << " " << data[1] << " " << data[2] << " " << data[3];
-	qDebug() << data[4] << " " << data[5] << " " << data[6] << " " << data[7];
-	qDebug() << data[8] << " " << data[9] << " " << data[10] << " " << data[11];
-	qDebug() << data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
-}
-
-void BoneRig::MeshTransformTest()
-{
-	QMatrix4x4 temp;
-	temp.translate(1.0, 0.0, 0.0);
-	qDebug() << "Template Translated: " << temp;
-	std::vector<VertexData> firstVertexData, secondVertexData;
-
-	firstVertexData.assign(m_parent->getVertexData().size(), VertexData());
-	secondVertexData.assign(m_parent->getVertexData().size(), VertexData());
-
-	for (int i = 0; i < m_parent->getVertexData().size(); ++i)
-		firstVertexData[i].position = m_parent->getVertexData()[i].transform * m_parent->getVertexData()[i].position;
-
-	moveBone("Root", QVector3D(1.0, 0.0, 0.0));
-	
-	for (int i = 0; i < m_parent->getVertexData().size(); ++i)
-		secondVertexData[i].position = m_parent->getVertexData()[i].transform * m_parent->getVertexData()[i].position;
-
-	for (int i = 0; i < secondVertexData.size(); ++i)
-	{
-		qDebug() << "Element: " << i;
-		qDebug() << "Before: " << firstVertexData[i].position;
-		qDebug() << "After: " << secondVertexData[i].position << "\n";
+			if (bd.transformFromBones())
+			{
+				m_parent->getVertexData()[bd.ID].position = *bd.FinalTransform * pos;
+				pos = m_parent->getVertexData()[bd.ID].position;
+				QString originalPoint = QString::number(pos.x(), 'f', 2) + ", " + QString::number(pos.y(), 'f', 2) + ", " + QString::number(pos.z(), 'f', 2);
+				data = originalPoint.toLocal8Bit().constData();
+				outfile << data;
+				transformfile << "Index: " << bd.ID << std::endl << matrixToString(*bd.FinalTransform).toLocal8Bit().constData() << std::endl;
+			}
+			outfile << std::endl;		
+		}
+		outfile.close();
+		transformfile.close();
+		alreadyWritten = true;
 	}
 }

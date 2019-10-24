@@ -1,5 +1,7 @@
 #include "Mesh.h"
 #include "GraphicsPanel.h"
+#include <fstream>
+#include "utils.h"
 
 MeshObject::MeshObject(aiMesh* ref) : GraphicsObject(), m_meshRef(ref), m_boneRig(BoneRig(this))
 {
@@ -114,6 +116,14 @@ bool MeshManager::import(const QString& path)
 		return false;
 	}
 
+	m_globalTransform = convertTransformMatrix(scene->mRootNode->mTransformation);
+
+	if (scene->HasAnimations())
+	{
+		for (int i = 0; i < scene->mNumAnimations; ++i)
+			m_animations.emplace_back(Animation(scene->mAnimations[i]));
+	}
+
 	//add the meshes
 	for (int i = 0; i < scene->mNumMeshes; ++i)
 	{
@@ -141,7 +151,7 @@ bool MeshManager::import(const QString& path)
 			const aiFace& face = mesh->mFaces[k];
 			if (face.mNumIndices != 3)
 			{
-				//TODO: handle this error more completely
+				//TODO: handle this error more completely, send a pop up dialog in gui
 				qDebug() << "ERROR: Face NOT A TRIANGLE";
 				return false;
 			}
@@ -185,5 +195,121 @@ bool MeshManager::import(const QString& path)
 
 		meshObj->getBoneRig().buildVertexTransforms();
 	}
+
 	return true;
+}
+
+void MeshManager::animate()
+{
+	if (m_frameCt > 32)
+		return;
+	Animation anim = m_animations[0];
+	MeshObject* meshObj = getMeshes()[0];
+	std::vector<aiNode*> children;
+	LogDebugTransforms();
+	for (auto node : anim.getAnimNodes())
+	{
+		if (m_frameCt < node.getTransforms().size())
+		{
+			QMatrix4x4 gTransform = node.getTransforms()[m_frameCt];
+
+			Bone* childBone = meshObj->findDeformBone(node.getName());
+			if (childBone)
+			{
+				childBone->setModified();
+				childBone->setTransform(gTransform);
+			}
+
+			for (auto bd : meshObj->getBoneRig().getBoneData())
+				bd.transformFromBones();
+		}
+	}
+	m_frameCt++;
+	//if (m_frameCt > anim.getDuration())
+	//	m_frameCt = 0;
+}
+
+void MeshManager::LogDebugTransforms()
+{
+	MeshObject* mesh = getMeshes()[0];
+	Animation anim = m_animations[0];
+
+	std::ofstream outfile("../logData.txt", std::ios_base::app);
+	std::ofstream transformfile("../logTransform.txt", std::ios_base::app);
+	std::ofstream index98("../index98.txt", std::ios_base::app);
+	
+	//log index 98 boneweights
+	if (m_frameCt == 0)
+	{
+		index98 << "Global Transform: " << std::endl << matrixToStdString(m_globalTransform);
+		for (auto bw : mesh->getBoneRig().getBoneData()[98].boneWeights)
+		{
+			index98 << bw.first->getName().toLocal8Bit().constData() << " Weight: " << bw.second << std::endl;
+			index98 << "Offset Matrix: " << std::endl << matrixToStdString(bw.first->OffsetMatrix());
+		}
+		index98 << std::endl;
+	}
+
+	outfile << "\t\t\t" << "Frame Number: " << m_frameCt << std::endl;
+	transformfile << "\t\t\t" << "Frame Number: " << m_frameCt << std::endl;
+	for (auto bd : mesh->getBoneRig().getBoneData())
+	{
+		QVector3D pos = mesh->getVertexData()[bd.ID].position;
+		QString originalPoint = QString::number(pos.x(), 'f', 2) + ", " + QString::number(pos.y(), 'f', 2) + ", " + QString::number(pos.z(), 'f', 2);
+		std::string data = originalPoint.toLocal8Bit().constData();
+		outfile << "Index: " << bd.ID << " " << data << "\t";
+		if (bd.ID == 98)
+			index98 << "Frame: " << m_frameCt << " - " << data << std::endl;
+
+		if (bd.transformFromBones())
+		{
+			mesh->getVertexData()[bd.ID].position = *bd.FinalTransform * pos;
+			pos = mesh->getVertexData()[bd.ID].position;
+			QString originalPoint = QString::number(pos.x(), 'f', 2) + ", " + QString::number(pos.y(), 'f', 2) + ", " + QString::number(pos.z(), 'f', 2);
+			data = originalPoint.toLocal8Bit().constData();
+			outfile << data;
+			if (bd.ID == 98)
+				index98 << "Frame: " << m_frameCt << " - " << data << std::endl;
+			transformfile << "Index: " << bd.ID << std::endl << matrixToStdString(*bd.FinalTransform) << std::endl;
+		}
+		outfile << std::endl;
+	}
+	outfile.close();
+	transformfile.close();
+
+	std::ofstream keysfile("../keys.txt");
+	for (auto node : anim.getAnimNodes())
+	{
+		if (node.getTransforms().size() < 32 || node.getName() != "Bone.003")
+			continue;
+
+		keysfile << "Bone: " << node.getName().toLocal8Bit().constData() << std::endl;
+		for (int i = 0; i < node.getTransforms().size(); ++i)
+		{
+			keysfile << "Position: " << i << std::endl;
+			QVector3D pos = node.getPositionKeys()[i].value;
+			QString posStr = QString::number(pos.x(), 'f', 2) + ", " + QString::number(pos.y(), 'f', 2) + ", " + QString::number(pos.z(), 'f', 2);
+			keysfile << "Vector: " << posStr.toLocal8Bit().constData() << std::endl;
+			QMatrix4x4 posMat = translationVectorToMatrix(pos);
+			keysfile << "Matrix: " << std::endl << matrixToStdString(posMat);
+
+			keysfile << std::endl << "Rotation: " << i << std::endl;
+			QQuaternion rot = node.getRotationKeys()[i].value;
+			QString rotStr = QString::number(rot.x(), 'f', 2) + ", " + QString::number(rot.y(), 'f', 2) + ", " + QString::number(rot.z(), 'f', 2);
+			keysfile << "Quaternion: " << rotStr.toLocal8Bit().constData() << std::endl;
+			QMatrix4x4 rotMat = QMatrix4x4(rot.toRotationMatrix());
+			keysfile << "Matrix: " << std::endl << matrixToStdString(rotMat);
+
+			keysfile << std::endl << "Scaling: " << i << std::endl;
+			QVector3D scaling = node.getScalingKeys()[i].value;
+			QString scaleStr = QString::number(scaling.x(), 'f', 2) + ", " + QString::number(scaling.y(), 'f', 2) + ", " + QString::number(scaling.z(), 'f', 2);
+			keysfile << scaleStr.toLocal8Bit().constData() << std::endl;
+			QMatrix4x4 scaleMat = scalingVectorToMatrix(scaling);
+			keysfile << "Matrix: " << std::endl << matrixToStdString(scaleMat);
+
+			keysfile << std::endl << "Transform: " << i << std::endl;
+			keysfile << matrixToStdString(node.getTransforms()[i]) << std::endl;
+		}
+	}
+	keysfile.close();
 }

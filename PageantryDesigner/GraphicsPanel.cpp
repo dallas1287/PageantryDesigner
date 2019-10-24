@@ -74,10 +74,13 @@ void GraphicsPanel::myPaint()
 	model.scale(.1);
 	m_figureRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 	//move bone test
-	m_figureRenderer->getMeshManager().getMeshes()[0]->moveBone("Bone.003", QVector3D(15.0, 0.0, 0.0));
-	m_figureRenderer->getMeshManager().getMeshes()[0]->initializeBuffers();
-	m_figureRenderer->Draw();
-
+	//m_figureRenderer->getMeshManager().getMeshes()[0]->moveBone("Bone.002", QVector3D());
+	if (m_frame % 1 == 0)
+	{
+		m_figureRenderer->getMeshManager().animate();
+		m_figureRenderer->getMeshManager().getMeshes()[0]->initializeBuffers();
+		m_figureRenderer->Draw();
+	}
 	//m_figureRenderer->getMeshManager().getMeshes()[0]->getBoneRig().MeshTransformTest();
 
 	/*model.setToIdentity();

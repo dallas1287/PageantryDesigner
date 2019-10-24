@@ -22,14 +22,21 @@ struct BoneData
 	~BoneData() {}
 
 	void resetFinalTransform() { (*FinalTransform).setToIdentity(); }
-	void transformFromBones()
+	bool transformFromBones()
 	{
-		(*FinalTransform).setToIdentity();
+		bool ismodified = false;
+		(*FinalTransform).fill(0.0);
 		for (auto bone : boneWeights)
 		{
 			if (bone.first->isModified())
-				(*FinalTransform) += (bone.first->findVertexWeight(ID)* bone.first->getTransform());
+			{
+				(*FinalTransform) += (bone.first->findVertexWeight(ID) * bone.first->getTransform());
+				ismodified = true;
+			}
 		}
+		if (!ismodified)
+			resetFinalTransform();
+		return ismodified;
 	}
 };
 
@@ -43,12 +50,13 @@ public:
 	void setSceneRoot(aiNode* sceneRoot) { m_sceneRoot = sceneRoot; }
 	void buildVertexTransforms();
 	void moveBone(const QString& bone, const QVector3D& location);
+	aiNode* findBoneInSkeleton(const QString& bone);
 	void getAllChildren(const QString& bone, std::vector<aiNode*>& children);
 	void getAllParents(const QString& bone, std::vector<aiNode*>& parents);
 	QMatrix4x4 getGlobalTransformation(std::vector<aiNode*>& parents);
 	std::vector<BoneData>& getBoneData() { return m_boneData; }
 
-	void MeshTransformTest();
+	void moveDirectly(const QString& bone);
 
 private:
 	void buildSkeletonRecursively(aiNode* bone);
@@ -59,7 +67,4 @@ private:
 	aiNode* m_sceneRoot = nullptr;
 	std::vector<BoneData> m_boneData;
 	SkeletonMap m_skeletonMap;
-
-	void getTransformDebug(aiNode* parent);
-
 };

@@ -2,5 +2,8 @@
 #include "Includes/assimp/scene.h"
 #include <QMatrix4x4>
 
-void convertTransformMatrix(aiMatrix4x4& in, QMatrix4x4& out);
 QMatrix4x4 convertTransformMatrix(aiMatrix4x4& in);
+QString matrixToString(const QMatrix4x4& mat);
+std::string matrixToStdString(const QMatrix4x4& mat);
+QMatrix4x4 translationVectorToMatrix(QVector3D& vector);
+QMatrix4x4 scalingVectorToMatrix(QVector3D& vector);
