@@ -24,16 +24,16 @@ void BoneRig::buildSkeletonRecursively(aiNode* bone)
 	}
 }
 
-void BoneRig::buildVertexTransforms()
+void BoneRig::buildVertexTransforms(MeshObject* meshObj)
 {
-	if (m_parent->getVertexData().size() != m_boneData.size())
+	if (meshObj->getVertexData().size() != m_boneData.size())
 	{
 		qDebug() << "MISMATCHED data containers!!!";
 		return;
 	}
 
 	for (int i = 0; i < m_boneData.size(); ++i)		
-		m_boneData[i].FinalTransform = &m_parent->getVertexData()[i].transform;
+		m_boneData[i].FinalTransform = &meshObj->getVertexData()[i].transform;
 }
 
 aiNode* BoneRig::findBoneInSkeleton(const QString& bone)
@@ -75,7 +75,7 @@ void BoneRig::getAllParents(const QString& bone, std::vector<aiNode*>& parents)
 	}
 }
 
-void BoneRig::moveBone(const QString& bone, const QVector3D& location)
+/*void BoneRig::moveBone(const QString& bone, const QVector3D& location)
 {
 	std::vector<aiNode*> children;
 
@@ -96,7 +96,7 @@ void BoneRig::moveBone(const QString& bone, const QVector3D& location)
 
 	for (auto bd : m_boneData)
 		bd.transformFromBones();
-}
+}*/
 
 QMatrix4x4 BoneRig::getGlobalTransformation(std::vector<aiNode*>& parents)
 {
@@ -110,7 +110,7 @@ QMatrix4x4 BoneRig::getGlobalTransformation(std::vector<aiNode*>& parents)
 	return globalTransform;
 }
 
-static bool alreadyWritten = false;
+/*static bool alreadyWritten = false;
 void BoneRig::moveDirectly(const QString& bone)
 {
 	std::vector<aiNode*> children;
@@ -155,4 +155,4 @@ void BoneRig::moveDirectly(const QString& bone)
 		transformfile.close();
 		alreadyWritten = true;
 	}
-}
+}*/

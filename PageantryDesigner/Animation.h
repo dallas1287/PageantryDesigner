@@ -5,8 +5,7 @@
 #include <QQuaternion>
 #include <QMatrix4x4>
 #include <vector>
-
-class MeshManager;
+#include "Bone.h"
 
 struct VectorKey
 {
@@ -38,6 +37,7 @@ private:
 
 	aiNodeAnim* m_ref;
 	QString m_name;
+	Bone* m_refBone;
 	std::vector<VectorKey> m_positionKeys;
 	std::vector<QuaternionKey> m_rotationKeys;
 	std::vector<VectorKey> m_scalingKeys;

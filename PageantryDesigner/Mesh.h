@@ -9,9 +9,6 @@
 #include "Animation.h"
 #include <unordered_map>
 
-//Key = VertexID - Value = boneName
-typedef std::unordered_multimap<unsigned int, QString> VertexBoneMap;
-
 class MeshObject : public GraphicsObject
 {
 public:
@@ -23,19 +20,18 @@ public:
 	std::vector<VertexData>& getVertexData() { return m_meshData; }
 	std::vector<GLushort>& getIndices() { return m_indices; }
 	std::vector<Bone*>& DeformBones() { return m_deformBones; }
-	BoneRig& getBoneRig() { return m_boneRig; }
-	VertexBoneMap& VBMap() { return m_vbMap; }
 	
 	Bone* findDeformBone(const QString& name);
+	std::vector<BoneData>& getBoneData() { return m_boneData; }
 	BoneData createBoneData(int id);
-	void moveBone(const QString& bone, const QVector3D& location);
 
 private:
+	void createBones();
+
 	std::vector<VertexData> m_meshData;
 	std::vector<GLushort> m_indices;
 	std::vector<Bone*> m_deformBones;
-	VertexBoneMap m_vbMap;
-	BoneRig m_boneRig;
+	std::vector<BoneData> m_boneData;
 	int numIndices = 0;
 	aiMesh* m_meshRef = nullptr;
 };
@@ -45,13 +41,14 @@ typedef std::vector<MeshObject*> MeshObjectPool;
 class MeshManager
 {
 public:
-	MeshManager() {};
+	MeshManager(): m_boneRig(BoneRig(this)) {};
 	~MeshManager()
 	{
 		for (auto meshObj : m_meshPool)
 			delete meshObj;
 	}
 	bool import(const QString& path);
+	BoneRig& getBoneRig() { return m_boneRig; }
 	MeshObjectPool& getMeshes() { return m_meshPool; }
 	QMatrix4x4& GlobalTransform() { return m_globalTransform; }
 	QMatrix4x4& GlobalInverseTransform() { return m_globalTransform.inverted(); }
@@ -60,8 +57,13 @@ public:
 	void LogDebugTransforms();
 
 private:
+	void createMeshes(const aiScene* scene);
+	void createSkeleton(const aiScene* scene);
+	void createBoneData();
+
 	Assimp::Importer m_importer;
 	QMatrix4x4 m_globalTransform;
+	BoneRig m_boneRig;
 	MeshObjectPool m_meshPool;
 	std::vector<Animation> m_animations;
 	int m_frameCt = 0;

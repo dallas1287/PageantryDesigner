@@ -3,8 +3,9 @@
 #include <fstream>
 #include "utils.h"
 
-MeshObject::MeshObject(aiMesh* ref) : GraphicsObject(), m_meshRef(ref), m_boneRig(BoneRig(this))
+MeshObject::MeshObject(aiMesh* ref) : GraphicsObject(), m_meshRef(ref)
 {
+	createBones();
 }
 
 MeshObject::~MeshObject()
@@ -64,6 +65,22 @@ void MeshObject::initializeBuffers()
 	releaseAll();
 }
 
+void MeshObject::createBones()
+{
+	if (!m_meshRef)
+		return;
+
+	if (m_meshRef->HasBones())
+	{
+		for (int i = 0; i < m_meshRef->mNumBones; ++i)
+		{
+			Bone* bone = new Bone();
+			bone->initBone(m_meshRef->mBones[i]);
+			m_deformBones.push_back(bone);
+		}
+	}
+}
+
 Bone* MeshObject::findDeformBone(const QString& name)
 {
 	auto boneIter = std::find_if(m_deformBones.begin(), m_deformBones.end(), [&](auto bone) {return bone->getName() == name; });
@@ -75,27 +92,15 @@ Bone* MeshObject::findDeformBone(const QString& name)
 BoneData MeshObject::createBoneData(int id)
 {
 	BoneData bd; 
-	//find the bones that control the corresponding vertexId
-	auto bonesRange = VBMap().equal_range(id);
-	if (bonesRange.first != VBMap().end())
+	for (auto bone : DeformBones())
 	{
-		auto boneIter = bonesRange.first;
-		while (boneIter != bonesRange.second)
+		for (auto boneVW : bone->getVertexWeightMap())
 		{
-			//find all the bones and their weights
-			Bone* defBone = findDeformBone(boneIter->second);
-			if (defBone)
-				bd.boneWeights[defBone] = defBone->findVertexWeight(id);
-			++boneIter;
+			bd.ID = boneVW.first;
+			bd.boneWeights[bone] = boneVW.second;
 		}
 	}
-	bd.ID = id;
 	return bd;
-}
-
-void MeshObject::moveBone(const QString& name, const QVector3D& location)
-{
-	m_boneRig.moveBone(name, location);
 }
 
 bool MeshManager::import(const QString& path)
@@ -124,6 +129,13 @@ bool MeshManager::import(const QString& path)
 			m_animations.emplace_back(Animation(scene->mAnimations[i]));
 	}
 
+	createMeshes(scene);
+
+	return true;
+}
+
+void MeshManager::createMeshes(const aiScene* scene)
+{
 	//add the meshes
 	for (int i = 0; i < scene->mNumMeshes; ++i)
 	{
@@ -153,50 +165,33 @@ bool MeshManager::import(const QString& path)
 			{
 				//TODO: handle this error more completely, send a pop up dialog in gui
 				qDebug() << "ERROR: Face NOT A TRIANGLE";
-				return false;
+				return;
 			}
-			for(int index = 0; index < 3; ++index)
+			for (int index = 0; index < 3; ++index)
 				meshObj->getIndices().push_back(face.mIndices[index]);
 		}
 
-		//create the deform bones vector
-		//recreates new custom objects from the assimp library objects
-		if (mesh->HasBones())
-		{
-			for (int i = 0; i < mesh->mNumBones; ++i)
-			{
-				Bone* bone = new Bone();
-				bone->initBone(mesh->mBones[i]);
-				meshObj->DeformBones().push_back(bone);
-			}
-		}
-
-		//create the deform bones map of vertices
-		for (auto bone : meshObj->DeformBones())
-		{
-			for (int i = 0; i < bone->WeightCount(); ++i)
-				meshObj->VBMap().insert({ bone->VertexWeights()[i].vertexID, bone->getName() });
-		}
-
-		//create the full bone rig hierarchy
-		//aiNode* rig = scene->mRootNode->FindNode("rig");
-		aiNode* rig = scene->mRootNode->FindNode("Armature");
-		if (rig)
-		{
-			meshObj->getBoneRig().setSceneRoot(scene->mRootNode);
-			meshObj->getBoneRig().buildSkeleton(rig);
-		}
 		//create Bone to Vertex data for each vertex
 		for (int i = 0; i < meshObj->getMeshRef()->mNumVertices; ++i)
 		{
 			BoneData bd = meshObj->createBoneData(i);
-			meshObj->getBoneRig().getBoneData().push_back(bd);
+			getBoneRig().getBoneData().push_back(bd);
 		}
 
-		meshObj->getBoneRig().buildVertexTransforms();
+		getBoneRig().buildVertexTransforms(meshObj);
 	}
+}
 
-	return true;
+//create the full bone rig hierarchy
+void MeshManager::createSkeleton(const aiScene* scene)
+{
+	//aiNode* rig = scene->mRootNode->FindNode("rig");
+	aiNode* rig = scene->mRootNode->FindNode("Armature");
+	if (rig)
+	{
+		m_boneRig.setSceneRoot(scene->mRootNode);
+		m_boneRig.buildSkeleton(rig);
+	}
 }
 
 void MeshManager::animate()
@@ -219,7 +214,7 @@ void MeshManager::animate()
 				childBone->setTransform(gTransform);
 			}
 
-			for (auto bd : meshObj->getBoneRig().getBoneData())
+			for (auto bd : getBoneRig().getBoneData())
 				bd.transformFromBones();
 		}
 	}
@@ -239,7 +234,7 @@ void MeshManager::LogDebugTransforms()
 	{
 		std::ofstream index98("../index98.txt");
 		index98 << "Global Transform: " << std::endl << matrixToStdString(m_globalTransform) << std::endl;
-		for (auto bw : mesh->getBoneRig().getBoneData()[98].boneWeights)
+		for (auto bw : getBoneRig().getBoneData()[98].boneWeights)
 		{
 			index98 << bw.first->getName().toLocal8Bit().constData() << " Weight: " << bw.second << std::endl;
 			index98 << "Offset Matrix: " << std::endl << matrixToStdString(bw.first->OffsetMatrix());
