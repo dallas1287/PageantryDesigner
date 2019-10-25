@@ -10,6 +10,7 @@ class Bone
 {
 public:
 	Bone() {};
+	Bone(aiBone* refBone) : m_refBone(refBone) { initBone(refBone); }
 	~Bone() {};
 	void initBone(aiBone* refBone);
 	const QString& getName() const { return m_name; }
@@ -23,6 +24,7 @@ public:
 	QMatrix4x4& getTransform() { return m_transformMatrix; }
 
 private:
+	aiBone* m_refBone;
 	QString m_name;
 	unsigned int m_numWeights;
 	QMatrix4x4 m_OffsetMatrix;

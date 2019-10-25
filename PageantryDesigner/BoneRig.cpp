@@ -4,14 +4,14 @@
 #include "Mesh.h"
 #include <fstream>
 
-bool BoneRig::buildSkeleton(aiNode* rootBone)
+bool BoneRig::buildSkeleton(aiNode* rootNode)
 {
-	if (!rootBone)
+	if (!rootNode)
 		return false;
 
-	buildSkeletonRecursively(rootBone);
+	buildSkeletonRecursively(rootNode);
 
-	m_rootBone = rootBone;
+	m_rootNode = rootNode;
 	return true;
 }
 
@@ -22,18 +22,6 @@ void BoneRig::buildSkeletonRecursively(aiNode* bone)
 		buildSkeletonRecursively(bone->mChildren[i]);
 		m_skeletonMap[QString(bone->mChildren[i]->mName.C_Str())] = bone->mChildren[i];
 	}
-}
-
-void BoneRig::buildVertexTransforms(MeshObject* meshObj)
-{
-	if (meshObj->getVertexData().size() != m_boneData.size())
-	{
-		qDebug() << "MISMATCHED data containers!!!";
-		return;
-	}
-
-	for (int i = 0; i < m_boneData.size(); ++i)		
-		m_boneData[i].FinalTransform = &meshObj->getVertexData()[i].transform;
 }
 
 aiNode* BoneRig::findBoneInSkeleton(const QString& bone)
@@ -61,17 +49,6 @@ void BoneRig::getAllChildrenRecursively(aiNode* boneNode, std::vector<aiNode*>& 
 		QString name(boneNode->mChildren[i]->mName.data);
 		getAllChildrenRecursively(boneNode->mChildren[i], children);
 		children.push_back(boneNode->mChildren[i]);
-	}
-}
-
-void BoneRig::getAllParents(const QString& bone, std::vector<aiNode*>& parents)
-{
-	aiNode* boneNode = findBoneInSkeleton(bone);
-	aiNode* parent = boneNode->mParent;
-	while (parent && parent != m_rootBone->mParent) 
-	{
-		parents.push_back(parent);
-		parent = parent->mParent;
 	}
 }
 

@@ -23,7 +23,8 @@ public:
 	
 	Bone* findDeformBone(const QString& name);
 	std::vector<BoneData>& getBoneData() { return m_boneData; }
-	BoneData createBoneData(int id);
+	void createBoneData();
+	void buildVertexTransforms();
 
 private:
 	void createBones();
@@ -58,8 +59,8 @@ public:
 
 private:
 	void createMeshes(const aiScene* scene);
-	void createSkeleton(const aiScene* scene);
-	void createBoneData();
+	void createSkeleton(aiNode* root);
+	void animateRecursively(aiNode* node, const QMatrix4x4& parentTransform);
 
 	Assimp::Importer m_importer;
 	QMatrix4x4 m_globalTransform;

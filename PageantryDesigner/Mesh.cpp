@@ -73,11 +73,7 @@ void MeshObject::createBones()
 	if (m_meshRef->HasBones())
 	{
 		for (int i = 0; i < m_meshRef->mNumBones; ++i)
-		{
-			Bone* bone = new Bone();
-			bone->initBone(m_meshRef->mBones[i]);
-			m_deformBones.push_back(bone);
-		}
+			m_deformBones.emplace_back(new Bone(m_meshRef->mBones[i]));
 	}
 }
 
@@ -89,18 +85,33 @@ Bone* MeshObject::findDeformBone(const QString& name)
 	return nullptr;
 }
 
-BoneData MeshObject::createBoneData(int id)
+void MeshObject::createBoneData()
 {
-	BoneData bd; 
-	for (auto bone : DeformBones())
+	for (int id = 0; id < m_meshData.size(); ++id)
 	{
-		for (auto boneVW : bone->getVertexWeightMap())
+		BoneData bd;
+		bd.ID = id;
+		for (auto bone : DeformBones())
 		{
-			bd.ID = boneVW.first;
-			bd.boneWeights[bone] = boneVW.second;
+			auto bdIter = bone->getVertexWeightMap().find(id);
+			if (bdIter != bone->getVertexWeightMap().end())
+				bd.boneWeights[bone] = bdIter->second;
 		}
+		m_boneData.push_back(bd);
 	}
-	return bd;
+
+}
+
+void MeshObject::buildVertexTransforms()
+{
+	if (getVertexData().size() != m_boneData.size())
+	{
+		qDebug() << "MISMATCHED data containers!!!";
+		return;
+	}
+
+	for (int i = 0; i < m_boneData.size(); ++i)
+		m_boneData[i].FinalTransform = &getVertexData()[i].transform;
 }
 
 bool MeshManager::import(const QString& path)
@@ -121,6 +132,7 @@ bool MeshManager::import(const QString& path)
 		return false;
 	}
 
+	createSkeleton(scene->mRootNode);
 	m_globalTransform = convertTransformMatrix(scene->mRootNode->mTransformation);
 
 	if (scene->HasAnimations())
@@ -171,25 +183,20 @@ void MeshManager::createMeshes(const aiScene* scene)
 				meshObj->getIndices().push_back(face.mIndices[index]);
 		}
 
-		//create Bone to Vertex data for each vertex
-		for (int i = 0; i < meshObj->getMeshRef()->mNumVertices; ++i)
-		{
-			BoneData bd = meshObj->createBoneData(i);
-			getBoneRig().getBoneData().push_back(bd);
-		}
+		meshObj->createBoneData();
 
-		getBoneRig().buildVertexTransforms(meshObj);
+		meshObj->buildVertexTransforms();
 	}
 }
 
 //create the full bone rig hierarchy
-void MeshManager::createSkeleton(const aiScene* scene)
+void MeshManager::createSkeleton(aiNode* root)
 {
 	//aiNode* rig = scene->mRootNode->FindNode("rig");
-	aiNode* rig = scene->mRootNode->FindNode("Armature");
+	aiNode* rig = root->FindNode("Armature");
 	if (rig)
 	{
-		m_boneRig.setSceneRoot(scene->mRootNode);
+		m_boneRig.setRootNode(root);
 		m_boneRig.buildSkeleton(rig);
 	}
 }
@@ -201,27 +208,36 @@ void MeshManager::animate()
 	Animation anim = m_animations[0];
 	MeshObject* meshObj = getMeshes()[0];
 
-	for (auto node : anim.getAnimNodes())
-	{
-		if (m_frameCt < node.getTransforms().size())
-		{
-			QMatrix4x4 gTransform = node.getTransforms()[m_frameCt];
+	//1. for each bone in the skeleton 
+	//2. Find corresponding animation node
+	//3. Get frame transform
+	//4. Finaltransform = GlobalInverse * parenttransform * node transform
 
-			Bone* childBone = meshObj->findDeformBone(node.getName());
-			if (childBone)
-			{
-				childBone->setModified();
-				childBone->setTransform(gTransform);
-			}
+	animateRecursively(getBoneRig().getRootNode(), QMatrix4x4());
 
-			for (auto bd : getBoneRig().getBoneData())
-				bd.transformFromBones();
-		}
-	}
-	LogDebugTransforms();
+	for (auto bd : meshObj->getBoneData())
+		bd.transformFromBones();
+
+	//LogDebugTransforms();
 	m_frameCt++;
 	if (m_frameCt > anim.getDuration())
 		m_frameCt = 0;
+}
+
+void MeshManager::animateRecursively(aiNode* node, const QMatrix4x4& parentTransform)
+{
+	AnimationNode animNode = m_animations[0].findAnimationNode(QString(node->mName.C_Str()));
+	QMatrix4x4 animTransform = m_frameCt < animNode.getTransforms().size() ? animNode.getTransforms()[m_frameCt] : animNode.getTransforms().back();
+	QMatrix4x4 globalTransform = GlobalInverseTransform() * parentTransform * animTransform;
+	Bone* childBone = m_meshPool[0]->findDeformBone(QString(node->mName.C_Str()));
+	if (childBone)
+	{
+		childBone->setModified();
+		childBone->setTransform(globalTransform * childBone->OffsetMatrix());
+	}
+
+	for(int i = 0; i < node->mNumChildren; ++i)
+	animateRecursively(node->mChildren[i], globalTransform);
 }
 
 void MeshManager::LogDebugTransforms()
@@ -234,7 +250,7 @@ void MeshManager::LogDebugTransforms()
 	{
 		std::ofstream index98("../index98.txt");
 		index98 << "Global Transform: " << std::endl << matrixToStdString(m_globalTransform) << std::endl;
-		for (auto bw : getBoneRig().getBoneData()[98].boneWeights)
+		for (auto bw : mesh->getBoneData()[98].boneWeights)
 		{
 			index98 << bw.first->getName().toLocal8Bit().constData() << " Weight: " << bw.second << std::endl;
 			index98 << "Offset Matrix: " << std::endl << matrixToStdString(bw.first->OffsetMatrix());
