@@ -17,6 +17,8 @@ class GraphicsPanel : public QOpenGLWidget, protected QOpenGLFunctions
 public:
 	GraphicsPanel(QWidget* parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
 	virtual ~GraphicsPanel();
+	SceneCamera& getCamera() { return m_camera; }
+	void updateFrameCt(int value);
 
 public slots:
 	void onPlayClicked();

@@ -8,6 +8,7 @@
 #include "BoneRig.h"
 #include "Animation.h"
 #include <unordered_map>
+#include "ItemRenderer.h"
 
 class MeshObject : public GraphicsObject
 {
@@ -42,7 +43,7 @@ typedef std::vector<MeshObject*> MeshObjectPool;
 class MeshManager
 {
 public:
-	MeshManager(): m_boneRig(BoneRig(this)) {};
+	MeshManager(ItemRenderer* parent): m_parent(parent), m_boneRig(BoneRig(this)) {};
 	~MeshManager()
 	{
 		for (auto meshObj : m_meshPool)
@@ -52,21 +53,26 @@ public:
 	BoneRig& getBoneRig() { return m_boneRig; }
 	MeshObjectPool& getMeshes() { return m_meshPool; }
 	QMatrix4x4& GlobalTransform() { return m_globalTransform; }
-	QMatrix4x4& GlobalInverseTransform() { return m_globalTransform.inverted(); }
+	QMatrix4x4 GlobalInverseTransform() { return m_globalTransform.inverted(); }
 	void animate();
-
-	void LogDebugTransforms();
+	void incrementFrame();
+	int getFrameCt() { return m_frameCt; }
 
 private:
 	void createMeshes(const aiScene* scene);
 	void createSkeleton(aiNode* root);
 	void animateRecursively(aiNode* node, const QMatrix4x4& parentTransform);
 
+	void traverseNodes(aiNode* node);
+	void LogAnimationData();
+
+	ItemRenderer* m_parent;
 	Assimp::Importer m_importer;
 	QMatrix4x4 m_globalTransform;
 	BoneRig m_boneRig;
 	MeshObjectPool m_meshPool;
 	std::vector<Animation> m_animations;
 	int m_frameCt = 0;
+	bool logStuff = true;
 };
 

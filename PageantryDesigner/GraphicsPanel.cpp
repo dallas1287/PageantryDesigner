@@ -6,6 +6,8 @@
 #include <QWheelEvent>
 #include "ShapeCreator.h"
 #include <QtMath>
+#include "utils.h"
+#include <fstream>
 
 const QVector4D background = { (float)135 / 255, (float)206 / 255, (float)250 / 255, 1.0f };
 
@@ -40,7 +42,10 @@ void GraphicsPanel::initializeGL()
 	m_floorRenderer = new FloorRenderer(this);
 	m_dotsRenderer = new DotsRenderer(this);
 	//m_figureRenderer = new FigureRenderer(this, "../N&I_rig.fbx");
-	m_figureRenderer = new FigureRenderer(this, "../modelLoadingTest.fbx");
+	//m_figureRenderer = new FigureRenderer(this, "../modelLoadingTest.fbx");
+	m_figureRenderer = new FigureRenderer(this, "../modeltest3.fbx");
+	//m_figureRenderer = new FigureRenderer(this, "../cylinderTest2.fbx");
+
 	const qreal retinaScale = devicePixelRatio();
 	glViewport(0, 0, width() * retinaScale, height() * retinaScale);
 }
@@ -58,30 +63,23 @@ void GraphicsPanel::myPaint()
 	painter.begin(this);
 	painter.beginNativePainting();
 
-	//glFrontFace(GL_CW);
-	//glCullFace(GL_FRONT);
-	//glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	QMatrix4x4 model;
-	//model.setToIdentity();
-	//model.rotate(270, X);
-	
-	m_floorRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
-	m_floorRenderer->Draw();
+	model.rotate(-90, X);
+	//model.scale(.1);
+	//m_floorRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
+	//m_floorRenderer->Draw();
 
-	model.scale(.1);
 	m_figureRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
-	//move bone test
-	//m_figureRenderer->getMeshManager().getMeshes()[0]->moveBone("Bone.002", QVector3D());
-	if (m_frame % 1 == 0)
+
+	if (m_frame % 5 == 0)
 	{
-		//m_figureRenderer->getMeshManager().animate();
-		//m_figureRenderer->getMeshManager().getMeshes()[0]->initializeBuffers();
-		m_figureRenderer->Draw();
+		m_figureRenderer->getMeshManager().animate();
+		m_figureRenderer->getMeshManager().getMeshes()[0]->initializeBuffers();
 	}
-	//m_figureRenderer->getMeshManager().getMeshes()[0]->getBoneRig().MeshTransformTest();
+	m_figureRenderer->Draw();
 
 	/*model.setToIdentity();
 	model.scale(.05);
@@ -94,6 +92,7 @@ void GraphicsPanel::myPaint()
 		m_dotsRenderer->Draw();
 	}*/
 	
+	updateFrameCt(m_figureRenderer->getMeshManager().getFrameCt());
 	painter.end();
 
 	++m_frame;
@@ -214,6 +213,9 @@ void GraphicsPanel::keyPressEvent(QKeyEvent* event)
 	case Qt::Key_6:
 		m_camera.moveCamPlane(Direction::Plane::Back);
 		break;
+	case Qt::Key_Equal:
+		m_figureRenderer->getMeshManager().incrementFrame();
+		break;
 	default:
 		return;
 	}
@@ -235,4 +237,9 @@ void GraphicsPanel::keyReleaseEvent(QKeyEvent* event)
 	default:
 		return;
 	}
+}
+
+void GraphicsPanel::updateFrameCt(int value)
+{
+	((TopWindow*)m_parent)->updateFrameCt(value);
 }

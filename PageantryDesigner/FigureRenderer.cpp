@@ -1,6 +1,6 @@
 #include "FigureRenderer.h"
 
-FigureRenderer::FigureRenderer(GraphicsPanel* parent, const QString& importPath) : ItemRenderer(parent)
+FigureRenderer::FigureRenderer(GraphicsPanel* parent, const QString& importPath) : ItemRenderer(parent), m_meshManager(MeshManager(this))
 {
 	initialize();
 	m_meshManager.import(importPath);

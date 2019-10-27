@@ -7,23 +7,32 @@
 #include <vector>
 #include "Bone.h"
 
-struct VectorKey
-{
-	float time;
-	QVector3D value;
-	QMatrix4x4 matrix;
-};
+//struct TransformKey
+//{
+	struct VectorKey
+	{
+		float time;
+		QVector3D value;
+		QMatrix4x4 matrix;
+	};
 
-struct QuaternionKey
-{
+	struct QuaternionKey
+	{
+		float time;
+		QQuaternion value;
+		QMatrix4x4 matrix;
+	};
+
+/*	VectorKey positionKey;
+	QuaternionKey rotationKey;
+	VectorKey scaleKey;
 	float time;
-	QQuaternion value;
-	QMatrix4x4 matrix;
-};
+};*/
 
 class AnimationNode
 {
 public:
+	AnimationNode() {};
 	AnimationNode(aiNodeAnim* node);
 	~AnimationNode();
 	bool initialize();
@@ -32,9 +41,9 @@ public:
 	std::vector<VectorKey>& getPositionKeys() { return m_positionKeys; }
 	std::vector<QuaternionKey>& getRotationKeys() { return m_rotationKeys; }
 	std::vector<VectorKey>& getScalingKeys() { return m_scalingKeys; }
-private:
-	void buildTransforms();
+	//QMatrix4x4& getClosestTransform(int frame);
 
+private:
 	aiNodeAnim* m_ref;
 	QString m_name;
 	Bone* m_refBone;
@@ -54,11 +63,9 @@ public:
 	float getFPS() { return m_fps; }
 	int getChannelCount() { return m_numChannels; }
 	std::vector<AnimationNode>& getAnimNodes() { return m_animNodes; }
-	AnimationNode& findAnimationNode(const QString& name);
+	bool findAnimationNode(const QString& name, AnimationNode& node);
 
 private:
-	void buildTransforms();
-
 	aiAnimation* m_animRef;
 	QString m_name;
 	float m_duration;

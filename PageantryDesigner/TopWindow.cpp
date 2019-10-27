@@ -8,3 +8,8 @@ TopWindow::TopWindow(QWidget *parent)
 	GraphicsPanel* gPanel = new GraphicsPanel(this);
 	ui.graphicsLayout->addWidget(gPanel);
 }
+
+void TopWindow::updateFrameCt(int value)
+{
+	ui.label_FrameCt->setText(QString::number(value));
+}

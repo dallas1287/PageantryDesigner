@@ -25,6 +25,19 @@
     </property>
     <layout class="QHBoxLayout" name="graphicsLayout"/>
    </widget>
+   <widget class="QLabel" name="label_FrameCt">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>675</y>
+      <width>181</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Frame</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

@@ -15,6 +15,7 @@ public:
 	virtual ~ItemRenderer();
 	virtual void setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection) = 0;
 	virtual void Draw() = 0;
+	GraphicsPanel* getParent() { return m_parent; }
 
 protected:
 	virtual void initialize();

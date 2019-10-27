@@ -51,8 +51,62 @@ QMatrix4x4 scalingVectorToMatrix(QVector3D& vector)
 	return mat;
 }
 
+QString vectorToString(const aiVector3D& vector, int precision)
+{
+	return QString::number(vector.x, 'f', precision) + ", " + QString::number(vector.y, 'f', precision) + ", " + QString::number(vector.z, 'f', precision);
+}
+
+std::string vectorToStdString(const aiVector3D& vector, int precision)
+{
+	QString transformStr = vectorToString(vector, precision);
+	return transformStr.toLocal8Bit().constData();
+}
+
+QString vectorToString(const QVector3D& vector, int precision)
+{
+	return QString::number(vector.x(), 'f', precision) + ", " + QString::number(vector.y(), 'f', precision) + ", " + QString::number(vector.z(), 'f', precision);
+}
+
 std::string vectorToStdString(const QVector3D& vector, int precision)
 {
-	QString transformStr = QString::number(vector.x(), 'f', precision) + ", " + QString::number(vector.y(), 'f', precision) + ", " + QString::number(vector.z(), 'f', precision);
+	QString transformStr = vectorToString(vector, precision);
 	return transformStr.toLocal8Bit().constData();
+}
+
+QString quaternionToString(const aiQuaternion& quat, int precision)
+{
+	return QString::number(quat.w, 'f', precision) + ", " + QString::number(quat.x, 'f', precision) + ", " + QString::number(quat.y, 'f', precision) + QString::number(quat.z, 'f', precision);
+}
+
+std::string quaternionToStdString(const aiQuaternion& quat, int precision)
+{
+	QString quatStr = quaternionToString(quat, precision);
+	return quatStr.toLocal8Bit().constData();
+}
+
+QString quaternionToString(const QQuaternion& quat, int precision)
+{
+	return QString::number(quat.scalar(), 'f', precision) + ", " + QString::number(quat.x(), 'f', precision) + ", " + QString::number(quat.y(), 'f', precision) + ", " + QString::number(quat.z(), 'f', precision);
+}
+
+std::string quaternionToStdString(const QQuaternion& quat, int precision)
+{
+	QString quatStr = quaternionToString(quat, precision);
+	return quatStr.toLocal8Bit().constData();
+}
+
+std::string LogCamera(SceneCamera& cam)
+{
+	return "Perspective:\n" + matrixToStdString(cam.Perspective()) +
+		"View:\n"  + matrixToStdString(cam.View());
+}
+
+std::string LogVertex(MeshObject* meshObj, int index)
+{
+	return "Position: " + vectorToStdString(meshObj->getVertexData()[index].position) + "\n";
+}
+
+std::string LogTransform(MeshManager& mm, int index)
+{
+	return "Transform:\n" + matrixToStdString(*(mm.getMeshes()[0]->getBoneData()[index].FinalTransform));
 }

@@ -31,6 +31,7 @@ bool AnimationNode::initialize()
 		VectorKey posKey;
 		posKey.time = key.mTime;
 		posKey.value = QVector3D (key.mValue.x, key.mValue.y, key.mValue.z);
+		posKey.matrix = translationVectorToMatrix(posKey.value);
 		m_positionKeys.push_back(posKey);
 	}
 
@@ -41,6 +42,7 @@ bool AnimationNode::initialize()
 		QuaternionKey rotKey;
 		rotKey.time = key.mTime;
 		rotKey.value = QQuaternion(QVector4D(key.mValue.x, key.mValue.y, key.mValue.z, key.mValue.w));
+		rotKey.matrix = QMatrix4x4(rotKey.value.toRotationMatrix());
 		m_rotationKeys.push_back(rotKey);
 	}
 
@@ -51,6 +53,7 @@ bool AnimationNode::initialize()
 		VectorKey scaleKey;
 		scaleKey.time = key.mTime;
 		scaleKey.value = QVector3D(key.mValue.x, key.mValue.y, key.mValue.z);
+		scaleKey.matrix = scalingVectorToMatrix(scaleKey.value);
 		m_scalingKeys.push_back(scaleKey);
 	}
 
@@ -61,21 +64,16 @@ bool AnimationNode::initialize()
 		return false;
 	}
 
-	buildTransforms();
+	for (int i = 0; i < m_positionKeys.size(); ++i)
+		m_transforms.push_back(m_positionKeys[i].matrix * m_rotationKeys[i].matrix /** m_scalingKeys[i].matrix*/);
 
 	return true;
 }
 
-void AnimationNode::buildTransforms()
+/*QMatrix4x4& AnimationNode::getClosestTransform(int frame)
 {
-	for (int i = 0; i < m_positionKeys.size(); ++i)
-	{
-		m_positionKeys[i].matrix = translationVectorToMatrix(m_positionKeys[i].value);
-		m_rotationKeys[i].matrix = QMatrix4x4(m_rotationKeys[i].value.toRotationMatrix());
-		m_scalingKeys[i].matrix = scalingVectorToMatrix(m_scalingKeys[i].value);
-		m_transforms.push_back(m_positionKeys[i].matrix * m_rotationKeys[i].matrix * m_scalingKeys[i].matrix);
-	}
-}
+
+}*/
 
 Animation::Animation(aiAnimation* ref) : m_animRef(ref)
 {
@@ -108,24 +106,14 @@ bool Animation::initialize()
 	return true;
 }
 
-AnimationNode& Animation::findAnimationNode(const QString& name)
+bool Animation::findAnimationNode(const QString& name, AnimationNode& node)
 {
-	auto node = std::find_if(m_animNodes.begin(), m_animNodes.end(), [&](auto node) {return node.getName() == name; });
-	if (node != m_animNodes.end())
-		return *node;
-
-	//TODO: fix this, this is dumb
-	return *m_animNodes.begin();
-}
-
-void Animation::buildTransforms()
-{
-	for (auto anim : m_animNodes)
+	auto n = std::find_if(m_animNodes.begin(), m_animNodes.end(), [&](auto node) {return node.getName() == name; });
+	if (n != m_animNodes.end())
 	{
-		if (anim.getName() == "Armature")
-			continue;
-
-		for (int i = 0; i < anim.getPositionKeys().size(); ++i)
-			anim.getTransforms()[i];
+		node = *n;
+		return true;
 	}
+
+	return false;
 }

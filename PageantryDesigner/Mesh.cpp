@@ -114,6 +114,21 @@ void MeshObject::buildVertexTransforms()
 		m_boneData[i].FinalTransform = &getVertexData()[i].transform;
 }
 
+void MeshManager::traverseNodes(aiNode* node)
+{
+	qDebug() << node->mName.C_Str();
+	qDebug() << matrixToString(convertTransformMatrix(node->mTransformation));
+	aiVector3D scale, position;
+	aiQuaternion rotate;
+	node->mTransformation.Decompose(scale, rotate, position);
+	qDebug() << "Position: " << vectorToString(position);
+	qDebug() << "Rotation: " << quaternionToString(rotate);
+	qDebug() << "Scale: " << vectorToString(scale);
+
+	for (int i = 0; i < node->mNumChildren; ++i)
+		traverseNodes(node->mChildren[i]);
+}
+
 bool MeshManager::import(const QString& path)
 {
 	std::string pathstd = path.toStdString();
@@ -142,6 +157,8 @@ bool MeshManager::import(const QString& path)
 	}
 
 	createMeshes(scene);
+
+	LogAnimationData();
 
 	return true;
 }
@@ -201,102 +218,97 @@ void MeshManager::createSkeleton(aiNode* root)
 	}
 }
 
+//1. for each bone in the skeleton 
+//2. Find corresponding animation node
+//3. Get frame transform
+//4. Finaltransform = GlobalInverse * parenttransform * node transform
 void MeshManager::animate()
 {
-	if (m_frameCt > 32)
-		return;
 	Animation anim = m_animations[0];
 	MeshObject* meshObj = getMeshes()[0];
 
-	//1. for each bone in the skeleton 
-	//2. Find corresponding animation node
-	//3. Get frame transform
-	//4. Finaltransform = GlobalInverse * parenttransform * node transform
-
 	animateRecursively(getBoneRig().getRootNode(), QMatrix4x4());
-
+	logStuff = false;
 	for (auto bd : meshObj->getBoneData())
 		bd.transformFromBones();
 
-	//LogDebugTransforms();
 	m_frameCt++;
 	if (m_frameCt > anim.getDuration())
 		m_frameCt = 0;
 }
 
+
 void MeshManager::animateRecursively(aiNode* node, const QMatrix4x4& parentTransform)
 {
-	AnimationNode animNode = m_animations[0].findAnimationNode(QString(node->mName.C_Str()));
+	AnimationNode animNode;
+	if (!m_animations[0].findAnimationNode(QString(node->mName.C_Str()), animNode))
+		return;
 	QMatrix4x4 animTransform = m_frameCt < animNode.getTransforms().size() ? animNode.getTransforms()[m_frameCt] : animNode.getTransforms().back();
-	QMatrix4x4 globalTransform = GlobalInverseTransform() * parentTransform * animTransform;
+	QMatrix4x4 globalTransform =  parentTransform * animTransform;
 	Bone* childBone = m_meshPool[0]->findDeformBone(QString(node->mName.C_Str()));
 	if (childBone)
 	{
 		childBone->setModified();
-		childBone->setTransform(globalTransform * childBone->OffsetMatrix());
+		childBone->setTransform(GlobalInverseTransform() * globalTransform * childBone->OffsetMatrix().transposed());
 	}
+	/*if (logStuff)
+	{
+		QString fileName = "../" + animNode.getName() + "_" + QString::number(m_frameCt) + ".txt";
+		std::ofstream outfile(fileName.toLocal8Bit().constData(), std::ios_base::app);
+		//outfile << LogCamera(m_parent->getParent()->getCamera());
+		outfile << "Frame: " << m_frameCt << std::endl;
+		outfile << animNode.getName().toLocal8Bit().constData() << std::endl;
+		outfile << "Global Inverse: " << std::endl;
+		outfile << matrixToStdString(GlobalInverseTransform());
+		outfile << "Parent Transform: " << std::endl;
+		outfile << matrixToStdString(parentTransform);
+		outfile << "anim Transform:" << std::endl;
+		outfile << matrixToStdString(animTransform);
+		outfile << "globalTransform:(parent * anim)" << std::endl;
+		outfile << matrixToStdString(globalTransform);
+		outfile << "Offset Matrix:" << std::endl;
+		if (childBone)
+			outfile << matrixToStdString(childBone->OffsetMatrix()) << std::endl;
+		else
+			outfile << "No offset matrix, not a deform bone";
+		outfile << "Final Transform:" << std::endl;
+		if(childBone)
+			outfile << matrixToStdString(GlobalInverseTransform() * globalTransform * childBone->OffsetMatrix()) << std::endl;
+		outfile.close();
+	}*/
 
 	for(int i = 0; i < node->mNumChildren; ++i)
-	animateRecursively(node->mChildren[i], globalTransform);
+		animateRecursively(node->mChildren[i], globalTransform);
 }
 
-void MeshManager::LogDebugTransforms()
+void MeshManager::incrementFrame()
 {
-	MeshObject* mesh = getMeshes()[0];
-	Animation anim = m_animations[0];
-	
-	//log index 98 boneweights
-	if (m_frameCt == 0)
+	m_frameCt++;
+	if (m_frameCt > m_animations[0].getDuration())
+		m_frameCt = 0;
+
+	logStuff = true;
+}
+
+void MeshManager::LogAnimationData()
+{
+	std::ofstream outfile("../AnimationData.txt");
+
+	for (int i = 0; i < m_animations[0].getAnimNodes().size(); ++i)
 	{
-		std::ofstream index98("../index98.txt");
-		index98 << "Global Transform: " << std::endl << matrixToStdString(m_globalTransform) << std::endl;
-		for (auto bw : mesh->getBoneData()[98].boneWeights)
+		AnimationNode node = m_animations[0].getAnimNodes()[i];
+		outfile << node.getName().toLocal8Bit().constData() << std::endl;
+		for (int j = 0; j < node.getPositionKeys().size(); ++j)
 		{
-			index98 << bw.first->getName().toLocal8Bit().constData() << " Weight: " << bw.second << std::endl;
-			index98 << "Offset Matrix: " << std::endl << matrixToStdString(bw.first->OffsetMatrix());
+			outfile << "\t\tFrame: " << j << std::endl;
+
+			outfile << "P Vector: " << vectorToStdString(node.getPositionKeys()[j].value) << std::endl;
+			outfile << "P Matrix: " << std::endl << matrixToStdString(node.getPositionKeys()[j].matrix) << std::endl;
+			outfile << "R Quaternion: " << quaternionToStdString(node.getRotationKeys()[j].value) << std::endl;
+			outfile << "R Matrix: " << std::endl << matrixToStdString(node.getRotationKeys()[j].matrix) << std::endl;
+			outfile << "S Vector: " << vectorToStdString(node.getScalingKeys()[j].value) << std::endl;
+			outfile << "S Matrix: " << std::endl << matrixToStdString(node.getScalingKeys()[j].matrix) << std::endl;
 		}
-		index98 << std::endl;
-		QVector3D pos = mesh->getVertexData()[98].position;
-		QString originalPoint = QString::number(pos.x(), 'f', 2) + ", " + QString::number(pos.y(), 'f', 2) + ", " + QString::number(pos.z(), 'f', 2);
-		std::string data = originalPoint.toLocal8Bit().constData();
-		index98 << data << std::endl;
-
-
-		std::ofstream keysfile("../keys.txt");
-		auto node = anim.findAnimationNode("Bone.003");
-
-		keysfile << "Bone: " << node.getName().toLocal8Bit().constData() << std::endl;
-
-		for (int i = 0; i < node.getTransforms().size(); ++i)
-		{
-			keysfile << "Position: " << i << std::endl;
-			QVector3D pos = node.getPositionKeys()[i].value;
-			QString posStr = QString::number(pos.x(), 'f', 2) + ", " + QString::number(pos.y(), 'f', 2) + ", " + QString::number(pos.z(), 'f', 2);
-			keysfile << "Vector: " << posStr.toLocal8Bit().constData() << std::endl;
-			QMatrix4x4 posMat = translationVectorToMatrix(pos);
-			keysfile << "Matrix: " << std::endl << matrixToStdString(posMat);
-
-			keysfile << std::endl << "Rotation: " << i << std::endl;
-			QQuaternion rot = node.getRotationKeys()[i].value;
-			QString rotStr = QString::number(rot.x(), 'f', 2) + ", " + QString::number(rot.y(), 'f', 2) + ", " + QString::number(rot.z(), 'f', 2);
-			keysfile << "Quaternion: " << rotStr.toLocal8Bit().constData() << std::endl;
-			QMatrix4x4 rotMat = QMatrix4x4(rot.toRotationMatrix());
-			keysfile << "Matrix: " << std::endl << matrixToStdString(rotMat);
-
-			keysfile << std::endl << "Scaling: " << i << std::endl;
-			QVector3D scaling = node.getScalingKeys()[i].value;
-			QString scaleStr = QString::number(scaling.x(), 'f', 2) + ", " + QString::number(scaling.y(), 'f', 2) + ", " + QString::number(scaling.z(), 'f', 2);
-			keysfile << scaleStr.toLocal8Bit().constData() << std::endl;
-			QMatrix4x4 scaleMat = scalingVectorToMatrix(scaling);
-			keysfile << "Matrix: " << std::endl << matrixToStdString(scaleMat);
-
-			keysfile << std::endl << "Transform: " << i << std::endl;
-			keysfile << matrixToStdString(node.getTransforms()[i]) << std::endl;
-
-			QVector3D tPos = node.getTransforms()[i] * pos;
-			index98 << "Frame: " << i << std::endl << vectorToStdString(tPos) << std::endl;
-		}
-		index98.close();
-		keysfile.close();
 	}
+	outfile.close();
 }

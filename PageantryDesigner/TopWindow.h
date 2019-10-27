@@ -9,6 +9,7 @@ class TopWindow : public QMainWindow
 
 public:
 	TopWindow(QWidget *parent = Q_NULLPTR);
+	void updateFrameCt(int value);
 
 private:
 	Ui::TopWindowClass ui;
