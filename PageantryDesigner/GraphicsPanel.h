@@ -11,6 +11,8 @@
 #include "SceneCamera.h"
 #include "Mesh.h"
 
+#define USE_COLLADA 0
+
 class GraphicsPanel : public QOpenGLWidget, protected QOpenGLFunctions
 {
 	Q_OBJECT

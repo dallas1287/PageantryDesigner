@@ -43,8 +43,8 @@ void GraphicsPanel::initializeGL()
 	m_dotsRenderer = new DotsRenderer(this);
 	//m_figureRenderer = new FigureRenderer(this, "../N&I_rig.fbx");
 	//m_figureRenderer = new FigureRenderer(this, "../modelLoadingTest.fbx");
-	m_figureRenderer = new FigureRenderer(this, "../modeltest3.fbx");
-	//m_figureRenderer = new FigureRenderer(this, "../cylinderTest2.fbx");
+	//m_figureRenderer = new FigureRenderer(this, "../modeltest7.fbx");
+	m_figureRenderer = new FigureRenderer(this, "../cylinderTest2.fbx");
 
 	const qreal retinaScale = devicePixelRatio();
 	glViewport(0, 0, width() * retinaScale, height() * retinaScale);
@@ -67,11 +67,13 @@ void GraphicsPanel::myPaint()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	QMatrix4x4 model;
-	model.rotate(-90, X);
-	//model.scale(.1);
+
 	//m_floorRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 	//m_floorRenderer->Draw();
 
+	//model.scale(.01);
+	//model.rotate(-90, X);
+	
 	m_figureRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 
 	if (m_frame % 5 == 0)
@@ -215,6 +217,9 @@ void GraphicsPanel::keyPressEvent(QKeyEvent* event)
 		break;
 	case Qt::Key_Equal:
 		m_figureRenderer->getMeshManager().incrementFrame();
+		break;
+	case Qt::Key_Minus:
+		m_figureRenderer->getMeshManager().decrementFrame();
 		break;
 	default:
 		return;

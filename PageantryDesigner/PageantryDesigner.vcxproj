@@ -107,6 +107,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="SceneCamera.cpp" />
+    <ClCompile Include="SceneNode.cpp" />
     <ClCompile Include="TopWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -121,6 +122,7 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="common.h" />
+    <ClInclude Include="SceneNode.h" />
     <ClInclude Include="utils.h" />
     <QtMoc Include="GraphicsPanel.h" />
     <ClInclude Include="Bone.h" />

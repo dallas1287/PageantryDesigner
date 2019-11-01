@@ -26,7 +26,6 @@ public:
 	//void moveBone(const QString& bone, const QVector3D& location);
 	aiNode* findBoneInSkeleton(const QString& bone);
 	void getAllChildren(const QString& bone, std::vector<aiNode*>& children);
-	QMatrix4x4 getGlobalTransformation(std::vector<aiNode*>& parents);
 	//void moveDirectly(const QString& bone);
 
 private:

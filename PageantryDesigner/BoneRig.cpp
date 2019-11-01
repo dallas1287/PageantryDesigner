@@ -10,8 +10,6 @@ bool BoneRig::buildSkeleton(aiNode* rootNode)
 		return false;
 
 	buildSkeletonRecursively(rootNode);
-
-	m_rootNode = rootNode;
 	return true;
 }
 
@@ -20,7 +18,9 @@ void BoneRig::buildSkeletonRecursively(aiNode* bone)
 	for (int i = 0; i < bone->mNumChildren; ++i)
 	{
 		buildSkeletonRecursively(bone->mChildren[i]);
-		m_skeletonMap[QString(bone->mChildren[i]->mName.C_Str())] = bone->mChildren[i];
+		//if it has meshes it's not a bone
+		if (bone->mChildren[i]->mNumMeshes == 0)
+			m_skeletonMap[QString(bone->mChildren[i]->mName.C_Str())] = bone->mChildren[i];
 	}
 }
 
@@ -74,18 +74,6 @@ void BoneRig::getAllChildrenRecursively(aiNode* boneNode, std::vector<aiNode*>& 
 	for (auto bd : m_boneData)
 		bd.transformFromBones();
 }*/
-
-QMatrix4x4 BoneRig::getGlobalTransformation(std::vector<aiNode*>& parents)
-{
-	QMatrix4x4 globalTransform;
-	for (auto parent : parents)
-	{
-		QMatrix4x4 converted = convertTransformMatrix(parent->mTransformation);
-		globalTransform *= converted;
-	}
-
-	return globalTransform;
-}
 
 /*static bool alreadyWritten = false;
 void BoneRig::moveDirectly(const QString& bone)

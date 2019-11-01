@@ -36,7 +36,7 @@ QMatrix4x4 translationVectorToMatrix(QVector3D& vector)
 {
 	QMatrix4x4 mat;
 	QVector4D translation(vector.x(), vector.y(), vector.z(), 1.0);
-	mat.setRow(3, translation); //this is counterintuitive as it sets the "column" in the visual sense
+	mat.setColumn(3, translation);
 	return mat;
 }
 

@@ -7,27 +7,26 @@
 #include <vector>
 #include "Bone.h"
 
-//struct TransformKey
-//{
-	struct VectorKey
-	{
-		float time;
-		QVector3D value;
-		QMatrix4x4 matrix;
-	};
-
-	struct QuaternionKey
-	{
-		float time;
-		QQuaternion value;
-		QMatrix4x4 matrix;
-	};
-
-/*	VectorKey positionKey;
-	QuaternionKey rotationKey;
-	VectorKey scaleKey;
+struct VectorKey
+{
 	float time;
-};*/
+	QVector3D value;
+	QMatrix4x4 matrix;
+};
+
+struct QuaternionKey
+{
+	float time;
+	QQuaternion value;
+	QMatrix4x4 matrix;
+};
+
+struct TransformKey
+{
+	float time;
+	QMatrix4x4 matrix;
+};
+
 
 class AnimationNode
 {
@@ -37,20 +36,25 @@ public:
 	~AnimationNode();
 	bool initialize();
 	const QString& getName() const { return m_name; }
-	std::vector<QMatrix4x4>& getTransforms() { return m_transforms; }
+	std::vector<TransformKey>& getTransformKeys() { return m_transformKeys; }
 	std::vector<VectorKey>& getPositionKeys() { return m_positionKeys; }
 	std::vector<QuaternionKey>& getRotationKeys() { return m_rotationKeys; }
 	std::vector<VectorKey>& getScalingKeys() { return m_scalingKeys; }
-	//QMatrix4x4& getClosestTransform(int frame);
+	bool getClosestTransform(int frame, QMatrix4x4& mat);
+
+	QQuaternion m_basis;
 
 private:
+	void buildTransformKeys();
+
 	aiNodeAnim* m_ref;
 	QString m_name;
 	Bone* m_refBone;
 	std::vector<VectorKey> m_positionKeys;
 	std::vector<QuaternionKey> m_rotationKeys;
 	std::vector<VectorKey> m_scalingKeys;
-	std::vector<QMatrix4x4> m_transforms;
+	std::vector<TransformKey> m_transformKeys;
+	
 };
 
 class Animation

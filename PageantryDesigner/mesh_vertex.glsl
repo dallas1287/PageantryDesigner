@@ -26,7 +26,7 @@ void main()
    boneTransform[1] = vec4(boneTransform0[1], boneTransform1[1], boneTransform2[1], boneTransform3[1]);
    boneTransform[2] = vec4(boneTransform0[2], boneTransform1[2], boneTransform2[2], boneTransform3[2]);
    boneTransform[3] = vec4(boneTransform0[3], boneTransform1[3], boneTransform2[3], boneTransform3[3]);
-   vec4 bonePos = boneTransform * posAttr;
+   vec4 bonePos = /*boneTransform **/ posAttr;
    gl_Position = projection * view * model * bonePos;
    texCoord = texCoordAttr;
    norm = normAttr;

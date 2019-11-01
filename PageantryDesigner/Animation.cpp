@@ -32,6 +32,8 @@ bool AnimationNode::initialize()
 		posKey.time = key.mTime;
 		posKey.value = QVector3D (key.mValue.x, key.mValue.y, key.mValue.z);
 		posKey.matrix = translationVectorToMatrix(posKey.value);
+		QVector4D pt(0.0, 1.0, 0.0, 1.0);
+		QVector4D testpt = posKey.matrix * pt;
 		m_positionKeys.push_back(posKey);
 	}
 
@@ -39,6 +41,7 @@ bool AnimationNode::initialize()
 	for (int j = 0; j < m_ref->mNumRotationKeys; ++j)
 	{
 		aiQuatKey key = m_ref->mRotationKeys[j];
+		
 		QuaternionKey rotKey;
 		rotKey.time = key.mTime;
 		rotKey.value = QQuaternion(QVector4D(key.mValue.x, key.mValue.y, key.mValue.z, key.mValue.w));
@@ -52,7 +55,12 @@ bool AnimationNode::initialize()
 		aiVectorKey key = m_ref->mScalingKeys[i];
 		VectorKey scaleKey;
 		scaleKey.time = key.mTime;
-		scaleKey.value = QVector3D(key.mValue.x, key.mValue.y, key.mValue.z);
+		//this is dumb and needs to be rectified with how things are imported
+		if (key.mValue.x < 100.0)
+			scaleKey.value = QVector3D(key.mValue.x, key.mValue.y, key.mValue.z);
+		else
+			scaleKey.value = QVector3D(1.0, 1.0, 1.0);
+
 		scaleKey.matrix = scalingVectorToMatrix(scaleKey.value);
 		m_scalingKeys.push_back(scaleKey);
 	}
@@ -64,16 +72,50 @@ bool AnimationNode::initialize()
 		return false;
 	}
 
-	for (int i = 0; i < m_positionKeys.size(); ++i)
-		m_transforms.push_back(m_positionKeys[i].matrix * m_rotationKeys[i].matrix /** m_scalingKeys[i].matrix*/);
+	buildTransformKeys();
 
 	return true;
 }
 
-/*QMatrix4x4& AnimationNode::getClosestTransform(int frame)
+void AnimationNode::buildTransformKeys()
 {
+	
+	for (int i = 0; i < m_positionKeys.size(); ++i)
+	{
+		TransformKey key;
+		key.time = m_positionKeys[i].time;
 
-}*/
+		QMatrix4x4 newmat;
+		QQuaternion newq = m_rotationKeys[i].value* m_basis;
+
+		key.matrix = m_positionKeys[i].matrix * m_rotationKeys[i].matrix /*QMatrix4x4(newq.toRotationMatrix())*/ * m_scalingKeys[i].matrix;
+		m_transformKeys.push_back(key);
+	}
+}
+
+bool AnimationNode::getClosestTransform(int frame, QMatrix4x4& mat)
+{
+	if (m_transformKeys.empty())
+		return false;
+
+	for (int i = 0; i < m_transformKeys.size(); ++i)
+	{
+		if (qRound(m_transformKeys[i].time) < frame)
+			continue;
+		if (qRound(m_transformKeys[i].time) == frame)
+		{
+			mat = m_transformKeys[i].matrix;
+			return true;
+		}
+		if (qRound(m_transformKeys[i].time) > frame)
+		{
+			mat = m_transformKeys[i - 1].matrix;
+			return true;
+		}
+	}
+	mat = m_transformKeys.back().matrix;
+	return true;
+}
 
 Animation::Animation(aiAnimation* ref) : m_animRef(ref)
 {
