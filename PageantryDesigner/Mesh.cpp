@@ -17,6 +17,7 @@ MeshObject::~MeshObject()
 
 void MeshObject::initialize()
 {
+	initializeOpenGLFunctions();
 	initShaders("mesh_vertex.glsl", "mesh_fragment.glsl");
 	initializeBuffers();
 }
@@ -114,6 +115,15 @@ void MeshObject::buildVertexTransforms()
 		m_boneData[i].FinalTransform = &getVertexData()[i].transform;
 }
 
+MeshManager::~MeshManager()
+{
+	for (auto meshObj : m_meshPool)
+		delete meshObj;
+	for (auto node : m_nodeMap)
+		delete node.second;
+	for (auto anim : m_animations)
+		delete anim;
+}
 
 bool MeshManager::import(const QString& path)
 {
@@ -139,7 +149,7 @@ bool MeshManager::import(const QString& path)
 	if (scene->HasAnimations())
 	{
 		for (int i = 0; i < scene->mNumAnimations; ++i)
-			m_animations.emplace_back(Animation(scene->mAnimations[i]));
+			m_animations.emplace_back(new Animation(scene->mAnimations[i]));
 	}
 
 	createMeshes(scene);
@@ -208,7 +218,7 @@ void MeshManager::createSkeleton(aiNode* root)
 //4. Finaltransform = GlobalInverse * parenttransform * node transform
 void MeshManager::animate()
 {
-	Animation anim = m_animations[0];
+	Animation* anim = m_animations[0];
 	MeshObject* meshObj = getMeshes()[0];
 	animateRecursively(getBoneRig().getRootNode(), QMatrix4x4());
 	for (auto bd : meshObj->getBoneData())
@@ -219,7 +229,7 @@ void MeshManager::animate()
 	if (m_frameCt >= 24)
 		m_frameCt = 0;
 #else
-	if (m_frameCt > anim.getDuration())
+	if (m_frameCt > anim->getDuration())
 		m_frameCt = 0;
 #endif
 }
@@ -228,13 +238,13 @@ void MeshManager::animate()
 void MeshManager::animateRecursively(aiNode* node, const QMatrix4x4& parentTransform)
 {
 	QMatrix4x4 globalTransform, animTransform;
-	AnimationNode animNode;
+	AnimationNode* animNode;
 
-	if (m_animations[0].findAnimationNode(QString(node->mName.C_Str()), animNode))
+	if (m_animations[0]->findAnimationNode(QString(node->mName.C_Str()), animNode))
 	{
 #if !USE_COLLADA
 		QMatrix4x4 animTransform;
-		if (!animNode.getClosestTransform(m_frameCt, animTransform))
+		if (!animNode->getClosestTransform(m_frameCt, animTransform))
 			return;
 #else
 		animTransform = animNode.getTransformKeys()[m_frameCt].matrix;
@@ -258,7 +268,7 @@ void MeshManager::incrementFrame()
 	if (m_frameCt > 24)
 		m_frameCt = 0;
 #else
-	if (m_frameCt > m_animations[0].getDuration())
+	if (m_frameCt > m_animations[0]->getDuration())
 		m_frameCt = 0;
 #endif
 }
@@ -271,7 +281,7 @@ void MeshManager::decrementFrame()
 		m_frameCt = 24;
 #else
 	if (m_frameCt < 0)
-		m_frameCt = m_animations[0].getDuration();
+		m_frameCt = m_animations[0]->getDuration();
 #endif
 }
 

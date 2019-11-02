@@ -119,6 +119,8 @@ Animation::Animation(aiAnimation* ref) : m_animRef(ref)
 
 Animation::~Animation()
 {
+	for (auto anode : m_animNodes)
+		delete anode;
 }
 
 bool Animation::initialize()
@@ -135,17 +137,14 @@ bool Animation::initialize()
 	m_numChannels = m_animRef->mNumChannels;
 
 	for (int i = 0; i < m_animRef->mNumChannels; ++i)
-	{
-		AnimationNode node(m_animRef->mChannels[i]);
-		m_animNodes.push_back(node);
-	}
+		m_animNodes.emplace_back(new AnimationNode(m_animRef->mChannels[i]));
 
 	return true;
 }
 
-bool Animation::findAnimationNode(const QString& name, AnimationNode& node)
+bool Animation::findAnimationNode(const QString& name, AnimationNode*& node)
 {
-	auto n = std::find_if(m_animNodes.begin(), m_animNodes.end(), [&](auto node) {return node.getName() == name; });
+	auto n = std::find_if(m_animNodes.begin(), m_animNodes.end(), [&](auto node) {return node->getName() == name; });
 	if (n != m_animNodes.end())
 	{
 		node = *n;

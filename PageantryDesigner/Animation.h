@@ -66,8 +66,8 @@ public:
 	float getDuration() { return m_duration; }
 	float getFPS() { return m_fps; }
 	int getChannelCount() { return m_numChannels; }
-	std::vector<AnimationNode>& getAnimNodes() { return m_animNodes; }
-	bool findAnimationNode(const QString& name, AnimationNode& node);
+	std::vector<AnimationNode*>& getAnimNodes() { return m_animNodes; }
+	bool findAnimationNode(const QString& name, AnimationNode*& node);
 
 private:
 	aiAnimation* m_animRef;
@@ -75,6 +75,6 @@ private:
 	float m_duration;
 	float m_fps;
 	int m_numChannels;
-	std::vector<AnimationNode> m_animNodes;
+	std::vector<AnimationNode*> m_animNodes;
 };
 

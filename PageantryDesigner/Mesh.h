@@ -10,8 +10,9 @@
 #include <unordered_map>
 #include "ItemRenderer.h"
 #include "SceneNode.h"
+#include <QOpenGLExtraFunctions>
 
-class MeshObject : public GraphicsObject
+class MeshObject : public GraphicsObject, protected QOpenGLExtraFunctions
 {
 public:
 	MeshObject(aiMesh* ref);
@@ -46,13 +47,8 @@ class MeshManager
 {
 public:
 	MeshManager(ItemRenderer* parent): m_parent(parent), m_boneRig(BoneRig(this)) {};
-	~MeshManager()
-	{
-		for (auto meshObj : m_meshPool)
-			delete meshObj;
-		for (auto node : m_nodeMap)
-			delete node.second;
-	}
+	~MeshManager();
+
 	bool import(const QString& path);
 	BoneRig& getBoneRig() { return m_boneRig; }
 	MeshObjectPool& getMeshes() { return m_meshPool; }
@@ -78,7 +74,7 @@ private:
 	BoneRig m_boneRig;
 	NodeMap m_nodeMap;
 	MeshObjectPool m_meshPool;
-	std::vector<Animation> m_animations;
+	std::vector<Animation*> m_animations;
 	int m_frameCt = 0;
 };
 
