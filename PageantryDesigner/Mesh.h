@@ -27,9 +27,7 @@ public:
 	std::vector<BoneData>& getBoneData() { return m_boneData; }
 	void createBoneData();
 	void buildVertexTransforms();
-	void moveDirectly();
 
-	std::vector<VertexData> m_copyData;
 private:
 	void createBones();
 
@@ -73,9 +71,6 @@ private:
 	void createSceneNodesRecursively(aiNode* node);
 	void createSceneTreeRecursively(aiNode* node);
 	void animateRecursively(aiNode* node, const QMatrix4x4& parentTransform);
-	QMatrix4x4 traverseTransforms(const QString& name);
-
-	void LogAnimationData();
 
 	ItemRenderer* m_parent;
 	Assimp::Importer m_importer;
@@ -85,6 +80,5 @@ private:
 	MeshObjectPool m_meshPool;
 	std::vector<Animation> m_animations;
 	int m_frameCt = 0;
-	bool logStuff = true;
 };
 

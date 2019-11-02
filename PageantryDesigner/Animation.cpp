@@ -56,7 +56,7 @@ bool AnimationNode::initialize()
 		VectorKey scaleKey;
 		scaleKey.time = key.mTime;
 		//this is dumb and needs to be rectified with how things are imported
-		if (key.mValue.x < 100.0)
+		if (key.mValue.x < 99.0)
 			scaleKey.value = QVector3D(key.mValue.x, key.mValue.y, key.mValue.z);
 		else
 			scaleKey.value = QVector3D(1.0, 1.0, 1.0);
@@ -78,17 +78,12 @@ bool AnimationNode::initialize()
 }
 
 void AnimationNode::buildTransformKeys()
-{
-	
+{	
 	for (int i = 0; i < m_positionKeys.size(); ++i)
 	{
 		TransformKey key;
 		key.time = m_positionKeys[i].time;
-
-		QMatrix4x4 newmat;
-		QQuaternion newq = m_rotationKeys[i].value* m_basis;
-
-		key.matrix = m_positionKeys[i].matrix * m_rotationKeys[i].matrix /*QMatrix4x4(newq.toRotationMatrix())*/ * m_scalingKeys[i].matrix;
+		key.matrix = m_positionKeys[i].matrix * m_rotationKeys[i].matrix * m_scalingKeys[i].matrix;
 		m_transformKeys.push_back(key);
 	}
 }

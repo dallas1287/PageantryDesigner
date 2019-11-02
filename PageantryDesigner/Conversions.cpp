@@ -43,11 +43,9 @@ QMatrix4x4 translationVectorToMatrix(QVector3D& vector)
 QMatrix4x4 scalingVectorToMatrix(QVector3D& vector)
 {
 	QMatrix4x4 mat;
-	//see comment above setting row counterintuitively because it's actually the column,
-	//most likely due to them being considered "row major"
-	mat.setRow(0, mat.column(0) * vector.x());
-	mat.setRow(1, mat.column(1) * vector.y());
-	mat.setRow(2, mat.column(2) * vector.z());
+	mat.setColumn(0, mat.column(0) * vector.x());
+	mat.setColumn(1, mat.column(1) * vector.y());
+	mat.setColumn(2, mat.column(2) * vector.z());
 	return mat;
 }
 

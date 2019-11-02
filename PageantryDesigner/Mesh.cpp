@@ -114,25 +114,6 @@ void MeshObject::buildVertexTransforms()
 		m_boneData[i].FinalTransform = &getVertexData()[i].transform;
 }
 
-static bool unwritten = true;
-void MeshObject::moveDirectly()
-{
-	for (auto bd : m_boneData)
-	{
-		m_meshData[bd.ID].position = (*bd.FinalTransform) * m_copyData[bd.ID].position;
-		/*if (m_copyData[bd.ID].position.z() > 2.0 && unwritten)
-		{
-			std::ofstream outfile("../data.txt", std::ios_base::app);
-			outfile << "Index: " << bd.ID << std::endl;
-			outfile << "Original Position: " << vectorToStdString(m_copyData[bd.ID].position) << std::endl;
-			outfile << "New Position: " << vectorToStdString(m_meshData[bd.ID].position) << std::endl;
-			outfile << bd.boneWeights.begin()->first->getName().toLocal8Bit().constData() <<  " Offset: " << std::endl << matrixToStdString(bd.boneWeights.begin()->first->OffsetMatrix());
-			outfile << "Transform Matrix: " << std::endl << matrixToStdString((*bd.FinalTransform)) << std::endl;
-		}*/
-	}
-	unwritten = false;
-}
-
 
 bool MeshManager::import(const QString& path)
 {
@@ -162,8 +143,6 @@ bool MeshManager::import(const QString& path)
 	}
 
 	createMeshes(scene);
-
-	//LogAnimationData();
 
 	return true;
 }
@@ -205,14 +184,9 @@ void MeshManager::createMeshes(const aiScene* scene)
 				meshObj->getIndices().push_back(face.mIndices[index]);
 		}
 
-		meshObj->m_copyData.assign(meshObj->getVertexData().begin(), meshObj->getVertexData().end());
-
 		meshObj->createBoneData();
 
 		meshObj->buildVertexTransforms();
-
-		//for (int i = 0; i < meshObj->getVertexData().size(); ++i)
-		//	meshObj->getVertexData()[i].position = m_nodeMap.find("Armature")->second->getTransformMatrix() * meshObj->m_copyData[i].position;
 	}
 }
 
@@ -237,10 +211,8 @@ void MeshManager::animate()
 	Animation anim = m_animations[0];
 	MeshObject* meshObj = getMeshes()[0];
 	animateRecursively(getBoneRig().getRootNode(), QMatrix4x4());
-	logStuff = false;
 	for (auto bd : meshObj->getBoneData())
 		bd.transformFromBones();
-	meshObj->moveDirectly();
 
 	m_frameCt++;
 #if USE_COLLADA
@@ -272,55 +244,8 @@ void MeshManager::animateRecursively(aiNode* node, const QMatrix4x4& parentTrans
 		if (childBone)
 		{
 			childBone->setModified();
-			QMatrix4x4 inv = GlobalInverseTransform();
-			QMatrix4x4 offset = childBone->OffsetMatrix();
-			QMatrix4x4 mul = inv * offset;
-			QMatrix4x4 huh = inv * globalTransform;
-			QMatrix4x4 final = inv * globalTransform * offset;
-			QMatrix4x4 trav = traverseTransforms(childBone->getName());
-			QMatrix4x4 exp =  offset.inverted()*trav;
 			childBone->setTransform(GlobalInverseTransform() * globalTransform * childBone->OffsetMatrix());
 		}
-		/*if (logStuff)
-		{
-			QString fileName = "../" + animNode.getName() + "_" + QString::number(m_frameCt) + ".txt";
-			std::ofstream outfile(fileName.toLocal8Bit().constData(), std::ios_base::app);
-			outfile << "Frame: " << m_frameCt << std::endl;
-			outfile << animNode.getName().toLocal8Bit().constData() << std::endl;
-			outfile << "Global Inverse: " << std::endl;
-			outfile << matrixToStdString(GlobalInverseTransform());
-			outfile << "Parent Transform: " << std::endl;
-			outfile << matrixToStdString(parentTransform);
-			outfile << "anim Transform:" << std::endl;
-			outfile << matrixToStdString(animTransform);
-			outfile << "globalTransform:(parent * anim)" << std::endl;
-			outfile << matrixToStdString(globalTransform);
-
-			if (childBone)
-			{
-				outfile << "Offset Matrix:" << std::endl;
-				outfile << matrixToStdString(childBone->OffsetMatrix()) << std::endl;
-			}
-			else
-				outfile << "No offset matrix, not a deform bone";
-
-			if (childBone)
-			{
-				outfile << "Final Transform:" << std::endl;
-				outfile << matrixToStdString(GlobalInverseTransform() * globalTransform * childBone->OffsetMatrix()) << std::endl;
-				QVector4D point(1, 1, 5, 0);
-				QMatrix4x4 rotate;
-				rotate.rotate(90, X);
-				outfile << "Rotation 90X:" << std::endl;
-				outfile << matrixToStdString(rotate) << std::endl;
-				QVector4D finalpt = rotate * GlobalInverseTransform() * globalTransform * childBone->OffsetMatrix() * point;
-				outfile << "Final Rotated Transform:" << std::endl;
-				outfile << matrixToStdString(rotate * GlobalInverseTransform() * globalTransform * childBone->OffsetMatrix()) << std::endl;
-				outfile << "(1,1,5) rotated 90 X:" << std::endl;
-				outfile << vectorToStdString(QVector3D(finalpt.x(), finalpt.y(), finalpt.z()));
-			}
-			outfile.close();
-		}*/
 	}
 	for(int i = 0; i < node->mNumChildren; ++i)
 		animateRecursively(node->mChildren[i], globalTransform);
@@ -336,7 +261,6 @@ void MeshManager::incrementFrame()
 	if (m_frameCt > m_animations[0].getDuration())
 		m_frameCt = 0;
 #endif
-	logStuff = true;
 }
 
 void MeshManager::decrementFrame()
@@ -349,30 +273,6 @@ void MeshManager::decrementFrame()
 	if (m_frameCt < 0)
 		m_frameCt = m_animations[0].getDuration();
 #endif
-}
-
-void MeshManager::LogAnimationData()
-{
-	std::ofstream outfile("../AnimationData.txt");
-
-	for (int i = 0; i < m_animations[0].getAnimNodes().size(); ++i)
-	{
-		AnimationNode node = m_animations[0].getAnimNodes()[i];
-		outfile << node.getName().toLocal8Bit().constData() << std::endl;
-		for (int j = 0; j < node.getPositionKeys().size(); ++j)
-		{
-			outfile << "\t\tFrame: " << j << std::endl;
-
-			outfile << "P Vector: " << vectorToStdString(node.getPositionKeys()[j].value) << std::endl;
-			outfile << "P Matrix: " << std::endl << matrixToStdString(node.getPositionKeys()[j].matrix) << std::endl;
-			outfile << "R Quaternion: " << quaternionToStdString(node.getRotationKeys()[j].value) << std::endl;
-			outfile << "R Matrix: " << std::endl << matrixToStdString(node.getRotationKeys()[j].matrix) << std::endl;
-			outfile << "S Vector: " << vectorToStdString(node.getScalingKeys()[j].value) << std::endl;
-			outfile << "S Matrix: " << std::endl << matrixToStdString(node.getScalingKeys()[j].matrix) << std::endl;
-			outfile << "T Matrix: " << std::endl << matrixToStdString(node.getTransformKeys()[j].matrix) << std::endl;
-		}
-	}
-	outfile.close();
 }
 
 void MeshManager::createSceneNodes(aiNode* root)
@@ -426,18 +326,4 @@ SceneNode* MeshManager::findSceneNode(const QString& name)
 {
 	auto nodeIter = m_nodeMap.find(name);
 	return nodeIter != m_nodeMap.end() ? nodeIter->second : nullptr;
-}
-
-QMatrix4x4 MeshManager::traverseTransforms(const QString& name)
-{
-	SceneNode* start = findSceneNode(name);
-	QMatrix4x4 tmat = start->getTransformMatrix();
-
-	SceneNode* parent = start->getParent();
-	while (parent)
-	{
-		tmat = parent->getTransformMatrix() * tmat;
-		parent = parent->getParent();
-	}
-	return tmat;
 }

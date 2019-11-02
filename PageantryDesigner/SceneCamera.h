@@ -2,7 +2,7 @@
 #include <QMatrix4x4>
 #include <QtMath>
 
-const QVector3D DefaultPosition(0.0, 0.0, 5.0);
+const QVector3D DefaultPosition(0.0, 0.0, 3.0);
 const QVector3D DefaultTarget(0.0, 0.0, 0.0);
 const QVector3D DefaultCamUp(0.0, 1.0, 0.0);
 const QVector3D DefaultCamFront(0.0, 0.0, -1.0);

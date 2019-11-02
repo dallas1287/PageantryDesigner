@@ -70,9 +70,6 @@ void GraphicsPanel::myPaint()
 
 	//m_floorRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 	//m_floorRenderer->Draw();
-
-	//model.scale(.01);
-	//model.rotate(-90, X);
 	
 	m_figureRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 
