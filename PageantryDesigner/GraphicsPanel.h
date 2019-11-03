@@ -21,9 +21,12 @@ public:
 	virtual ~GraphicsPanel();
 	SceneCamera& getCamera() { return m_camera; }
 	void updateFrameCt(int value);
+	void setAnimationFrame(int value);
+	bool isPaused() { return m_paused; }
+	void onPlayClicked();
 
 public slots:
-	void onPlayClicked();
+	void onAnimCbChanged(int index);
 
 protected:
 	virtual void wheelEvent(QWheelEvent* event);
@@ -39,10 +42,11 @@ protected:
 private:
 	void setBackground(QVector4D background);
 	void myPaint();
+	void populateAnimCb();
 
 	QWidget* m_parent = nullptr;
-	int m_frame = 0;
-	bool m_paused = false;
+	unsigned int m_frame = 0;
+	bool m_paused = true;
 	QPoint m_lastPos;
 	bool m_middlePressed = false;
 	SceneCamera m_camera;

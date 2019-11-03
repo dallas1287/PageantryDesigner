@@ -32,6 +32,7 @@ public:
 private:
 	void createBones();
 
+	QString m_name;
 	std::vector<VertexData> m_meshData;
 	std::vector<GLushort> m_indices;
 	std::vector<Bone*> m_deformBones;
@@ -41,6 +42,7 @@ private:
 };
 
 typedef std::vector<MeshObject*> MeshObjectPool;
+typedef std::vector<Animation*> AnimationPool;
 typedef std::map<QString, SceneNode*> NodeMap;
 
 class MeshManager
@@ -52,13 +54,21 @@ public:
 	bool import(const QString& path);
 	BoneRig& getBoneRig() { return m_boneRig; }
 	MeshObjectPool& getMeshes() { return m_meshPool; }
+	MeshObject* getCurrentMesh() { return m_currentMesh; }
+	void setCurrentMesh(MeshObject* meshObj) { m_currentMesh = meshObj; }
 	QMatrix4x4& GlobalTransform() { return m_globalTransform; }
 	QMatrix4x4 GlobalInverseTransform() { return m_globalTransform.inverted(); }
-	SceneNode* findSceneNode(const QString& name);
+	AnimationPool& getAnimations() { return m_animations; }
+	Animation* findAnimation(const QString& name);
+	Animation* getCurrentAnimation() { return m_currentAnimation; }
+	void setCurrentAnimation(int index);
+	void setCurrentAnimation(const QString& name) { m_currentAnimation = findAnimation(name); }
 	void animate();
 	void incrementFrame();
 	void decrementFrame();
 	int getFrameCt() { return m_frameCt; }
+	void setFrameCt(int frame) { m_frameCt = frame; }
+	SceneNode* findSceneNode(const QString& name);
 
 private:
 	void createMeshes(const aiScene* scene);
@@ -74,7 +84,9 @@ private:
 	BoneRig m_boneRig;
 	NodeMap m_nodeMap;
 	MeshObjectPool m_meshPool;
-	std::vector<Animation*> m_animations;
+	MeshObject* m_currentMesh = nullptr;
+	AnimationPool m_animations;
+	Animation* m_currentAnimation = nullptr;
 	int m_frameCt = 0;
 };
 

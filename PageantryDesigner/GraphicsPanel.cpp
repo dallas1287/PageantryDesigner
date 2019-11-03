@@ -41,10 +41,11 @@ void GraphicsPanel::initializeGL()
 	setBackground(background);
 	m_floorRenderer = new FloorRenderer(this);
 	m_dotsRenderer = new DotsRenderer(this);
-	//m_figureRenderer = new FigureRenderer(this, "../N&I_rig.fbx");
+	m_figureRenderer = new FigureRenderer(this, "../N&I_rig_baked.fbx");
 	//m_figureRenderer = new FigureRenderer(this, "../modelLoadingTest.fbx");
-	m_figureRenderer = new FigureRenderer(this, "../modeltest3.fbx");
+	//m_figureRenderer = new FigureRenderer(this, "../modeltest7_multi.fbx");
 	//m_figureRenderer = new FigureRenderer(this, "../cylinderTest2.fbx");
+	populateAnimCb();
 
 	const qreal retinaScale = devicePixelRatio();
 	glViewport(0, 0, width() * retinaScale, height() * retinaScale);
@@ -57,12 +58,6 @@ void GraphicsPanel::setBackground(QVector4D background)
 
 void GraphicsPanel::myPaint()
 {
-	LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
-	LARGE_INTEGER Frequency;
-
-	QueryPerformanceFrequency(&Frequency);
-	QueryPerformanceCounter(&StartingTime);
-
 	QPainter painter;
 	painter.begin(this);
 	painter.beginNativePainting();
@@ -74,32 +69,20 @@ void GraphicsPanel::myPaint()
 
 	//m_floorRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 	//m_floorRenderer->Draw();
-	
+
 	m_figureRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 
-	if (m_frame % 1 == 0)
+	if (m_frame % 5 == 0)
 	{
 		m_figureRenderer->getMeshManager().animate();
-		m_figureRenderer->getMeshManager().getMeshes()[0]->initializeBuffers();
+		m_figureRenderer->getMeshManager().getCurrentMesh()->initializeBuffers();
+		updateFrameCt(m_figureRenderer->getMeshManager().getFrameCt());
 	}
 	m_figureRenderer->Draw();
-	
-	updateFrameCt(m_figureRenderer->getMeshManager().getFrameCt());
+
+	++m_frame;	
 	painter.end();
-
-	++m_frame;
-
-	if (!m_paused)
-		update();
-
-	// Activity to be timed
-
-	QueryPerformanceCounter(&EndingTime);
-	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
-
-	ElapsedMicroseconds.QuadPart *= 1000000;
-	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-	qDebug() << ElapsedMicroseconds.QuadPart;
+	update();
 }
 
 void GraphicsPanel::paintGL()
@@ -246,4 +229,28 @@ void GraphicsPanel::keyReleaseEvent(QKeyEvent* event)
 void GraphicsPanel::updateFrameCt(int value)
 {
 	((TopWindow*)m_parent)->updateFrameCt(value);
+}
+
+void GraphicsPanel::onAnimCbChanged(int index)
+{
+	m_figureRenderer->getMeshManager().setCurrentAnimation(index);
+}
+
+void GraphicsPanel::populateAnimCb()
+{
+	std::vector<QString> names;
+	for (auto anim : m_figureRenderer->getMeshManager().getAnimations())
+		names.push_back(anim->getName());
+	((TopWindow*)m_parent)->populateAnimCb(names);
+}
+
+void GraphicsPanel::setAnimationFrame(int value)
+{
+	if (value > 100 || value < 0)
+		return;
+
+	float frame = value * m_figureRenderer->getMeshManager().getCurrentAnimation()->getDuration() / 100;
+
+	int final = qRound(frame);
+	m_figureRenderer->getMeshManager().setFrameCt(final);
 }

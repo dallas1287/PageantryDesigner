@@ -63,11 +63,12 @@ public:
 	Animation(aiAnimation* ref);
 	~Animation();
 	bool initialize();
+	const QString& getName() { return m_name; }
 	float getDuration() { return m_duration; }
 	float getFPS() { return m_fps; }
 	int getChannelCount() { return m_numChannels; }
 	std::vector<AnimationNode*>& getAnimNodes() { return m_animNodes; }
-	bool findAnimationNode(const QString& name, AnimationNode*& node);
+	AnimationNode* findAnimationNode(const QString& name);
 
 private:
 	aiAnimation* m_animRef;

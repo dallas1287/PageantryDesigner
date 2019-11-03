@@ -132,6 +132,7 @@ bool Animation::initialize()
 		return false;
 	}
 
+	m_name = m_animRef->mName.data;
 	m_duration = m_animRef->mDuration;
 	m_fps = m_animRef->mTicksPerSecond;
 	m_numChannels = m_animRef->mNumChannels;
@@ -142,14 +143,11 @@ bool Animation::initialize()
 	return true;
 }
 
-bool Animation::findAnimationNode(const QString& name, AnimationNode*& node)
+AnimationNode* Animation::findAnimationNode(const QString& name)
 {
 	auto n = std::find_if(m_animNodes.begin(), m_animNodes.end(), [&](auto node) {return node->getName() == name; });
 	if (n != m_animNodes.end())
-	{
-		node = *n;
-		return true;
-	}
+		return *n;
 
-	return false;
+	return nullptr;
 }

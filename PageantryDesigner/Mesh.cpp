@@ -3,7 +3,7 @@
 #include <fstream>
 #include "utils.h"
 
-MeshObject::MeshObject(aiMesh* ref) : GraphicsObject(), m_meshRef(ref)
+MeshObject::MeshObject(aiMesh* ref) : GraphicsObject(), m_meshRef(ref), m_name(ref->mName.data)
 {
 	createBones();
 }
@@ -150,6 +150,7 @@ bool MeshManager::import(const QString& path)
 	{
 		for (int i = 0; i < scene->mNumAnimations; ++i)
 			m_animations.emplace_back(new Animation(scene->mAnimations[i]));
+		setCurrentAnimation(0);
 	}
 
 	createMeshes(scene);
@@ -162,8 +163,10 @@ void MeshManager::createMeshes(const aiScene* scene)
 	//add the meshes
 	for (int i = 0; i < scene->mNumMeshes; ++i)
 	{
+		if (!scene->mMeshes[i]->HasBones())
+			continue;
 		m_meshPool.push_back(new MeshObject(scene->mMeshes[i]));
-		MeshObject* meshObj = m_meshPool[i];
+		MeshObject* meshObj = m_meshPool.back();
 		aiMesh* mesh = meshObj->getMeshRef();
 		VertexData point;
 		QVector3D pos, norm;
@@ -193,9 +196,7 @@ void MeshManager::createMeshes(const aiScene* scene)
 			for (int index = 0; index < 3; ++index)
 				meshObj->getIndices().push_back(face.mIndices[index]);
 		}
-
 		meshObj->createBoneData();
-
 		meshObj->buildVertexTransforms();
 	}
 }
@@ -203,8 +204,8 @@ void MeshManager::createMeshes(const aiScene* scene)
 //create the full bone rig hierarchy
 void MeshManager::createSkeleton(aiNode* root)
 {
-	//aiNode* rig = scene->mRootNode->FindNode("rig");
-	aiNode* rig = root->FindNode("Armature");
+	aiNode* rig = root->FindNode("rig");
+	//aiNode* rig = root->FindNode("Armature");
 	if (rig)
 	{
 		m_boneRig.setRootNode(root);
@@ -218,29 +219,39 @@ void MeshManager::createSkeleton(aiNode* root)
 //4. Finaltransform = GlobalInverse * parenttransform * node transform
 void MeshManager::animate()
 {
-	Animation* anim = m_animations[0];
-	MeshObject* meshObj = getMeshes()[0];
-	animateRecursively(getBoneRig().getRootNode(), QMatrix4x4());
-	for (auto bd : meshObj->getBoneData())
-		bd.transformFromBones();
+	if(!getCurrentAnimation())
+		return;
+	for (auto meshObj : getMeshes())
+	{
+		setCurrentMesh(meshObj);
+		animateRecursively(getBoneRig().getRootNode(), QMatrix4x4());
+		for (auto bd : meshObj->getBoneData())
+			bd.transformFromBones();
+	}
 
-	m_frameCt++;
+	if (!(FigureRenderer*)m_parent->getParent()->isPaused())
+	{
+		m_frameCt++;
 #if USE_COLLADA
-	if (m_frameCt >= 24)
-		m_frameCt = 0;
+		if (m_frameCt >= 24)
+			m_frameCt = 0;
 #else
-	if (m_frameCt > anim->getDuration())
-		m_frameCt = 0;
+		if (m_frameCt > getCurrentAnimation()->getDuration())
+			m_frameCt = 0;
 #endif
+	}
 }
 
 
 void MeshManager::animateRecursively(aiNode* node, const QMatrix4x4& parentTransform)
 {
-	QMatrix4x4 globalTransform, animTransform;
-	AnimationNode* animNode;
+	if (!node)
+		return;
 
-	if (m_animations[0]->findAnimationNode(QString(node->mName.C_Str()), animNode))
+	QMatrix4x4 globalTransform, animTransform;
+	AnimationNode* animNode = getCurrentAnimation()->findAnimationNode(QString(node->mName.C_Str()));
+
+	if (animNode)
 	{
 #if !USE_COLLADA
 		QMatrix4x4 animTransform;
@@ -250,7 +261,7 @@ void MeshManager::animateRecursively(aiNode* node, const QMatrix4x4& parentTrans
 		animTransform = animNode.getTransformKeys()[m_frameCt].matrix;
 #endif
 		globalTransform = parentTransform * animTransform;
-		Bone* childBone = m_meshPool[0]->findDeformBone(QString(node->mName.C_Str()));
+		Bone* childBone = getCurrentMesh()->findDeformBone(QString(node->mName.C_Str()));
 		if (childBone)
 		{
 			childBone->setModified();
@@ -268,7 +279,7 @@ void MeshManager::incrementFrame()
 	if (m_frameCt > 24)
 		m_frameCt = 0;
 #else
-	if (m_frameCt > m_animations[0]->getDuration())
+	if (m_frameCt > getCurrentAnimation()->getDuration())
 		m_frameCt = 0;
 #endif
 }
@@ -281,7 +292,7 @@ void MeshManager::decrementFrame()
 		m_frameCt = 24;
 #else
 	if (m_frameCt < 0)
-		m_frameCt = m_animations[0]->getDuration();
+		m_frameCt = getCurrentAnimation()->getDuration();
 #endif
 }
 
@@ -336,4 +347,21 @@ SceneNode* MeshManager::findSceneNode(const QString& name)
 {
 	auto nodeIter = m_nodeMap.find(name);
 	return nodeIter != m_nodeMap.end() ? nodeIter->second : nullptr;
+}
+
+void MeshManager::setCurrentAnimation(int index)
+{
+	if (m_animations.size() > index)
+		m_currentAnimation = m_animations[index];
+	else
+		m_currentAnimation = nullptr;
+}
+
+Animation* MeshManager::findAnimation(const QString& name)
+{
+	auto animIter = std::find_if(m_animations.begin(), m_animations.end(), [&](auto anim) {return anim->getName() == name; });
+	if (animIter != m_animations.end())
+		*animIter;
+
+	return false;
 }
