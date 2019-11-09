@@ -25,6 +25,12 @@ void MeshManager::resetData()
 	for (auto anim : m_animations)
 		delete anim;
 	m_animations.clear();
+	for (auto light : m_sceneLights)
+		delete light;
+	m_sceneLights.clear();
+	for (auto cam : m_sceneCameras)
+		delete cam;
+	m_sceneCameras.clear();
 	m_currentAnimation = nullptr;
 	m_frameCt = 0;
 }
@@ -48,20 +54,19 @@ bool MeshManager::import(const QString& path)
 	}
 
 	m_globalTransform = convertTransformMatrix(scene->mRootNode->mTransformation);
+	createSceneNodes(scene->mRootNode);
 
 	if (scene->HasCameras())
 	{
 		for (int i = 0; i < scene->mNumCameras; ++i)
-			qDebug() << "Camera: " << scene->mCameras[i]->mName.data;
+			m_sceneCameras.emplace_back(new SceneCamera(scene->mCameras[i]));
 	}
 
 	if (scene->HasLights())
 	{
 		for (int i = 0; i < scene->mNumLights; ++i)
-			qDebug() << "Light: " << scene->mLights[i]->mName.data;
+			m_sceneLights.emplace_back(new SceneLight(scene->mLights[i]));
 	}
-
-	createSceneNodes(scene->mRootNode);
 
 	if (scene->HasAnimations())
 	{

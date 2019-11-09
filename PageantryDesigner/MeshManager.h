@@ -7,11 +7,14 @@
 #include "Animation.h"
 #include "SceneNode.h"
 #include "BoneRig.h"
+#include "SceneLight.h"
 #include <QString>
 #include <vector>
 
 typedef std::vector<MeshObject*> MeshObjectPool;
 typedef std::vector<Animation*> AnimationPool;
+typedef std::vector<SceneLight*> LightPool;
+typedef std::vector<SceneCamera*> CameraPool;
 typedef std::map<QString, SceneNode*> NodeMap;
 
 class MeshManager
@@ -59,6 +62,8 @@ private:
 	MeshObject* m_currentMesh = nullptr;
 	AnimationPool m_animations;
 	Animation* m_currentAnimation = nullptr;
+	LightPool m_sceneLights;
+	CameraPool m_sceneCameras;
 	int m_frameCt = 0;
 };
 

@@ -1,4 +1,6 @@
 #pragma once
+#include "Includes/assimp/scene.h"
+#include "SceneObject.h"
 #include <QMatrix4x4>
 #include <QtMath>
 
@@ -50,11 +52,12 @@ namespace Direction
 	};
 }
 
-class SceneCamera
+class SceneCamera : public SceneObject
 {
 public:
 
 	SceneCamera();
+	SceneCamera(aiCamera* refCam);
 	~SceneCamera();
 
 	QVector3D& Position() { return m_position; }
@@ -96,12 +99,20 @@ public:
 	void zoomOut();
 
 private:
+	void initFromImport();
+
+	aiCamera* m_refCam = nullptr;
+
 	QVector3D m_position;
 	QVector3D m_lookTarget;
 	QVector3D m_camUp;
 	QVector3D m_camFront;
 	QMatrix4x4 m_camView;
 	QMatrix4x4 m_perspective;
+	float m_aspect;
+	float m_clipPlaneNear;
+	float m_clipPlaneFar;
+	float m_horizontalFov;
 
 	float m_yaw = DefaultYaw;
 	float m_pitch = DefaultPitch;

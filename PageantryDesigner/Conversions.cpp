@@ -93,10 +93,14 @@ std::string quaternionToStdString(const QQuaternion& quat, int precision)
 	return quatStr.toLocal8Bit().constData();
 }
 
-std::string LogCamera(SceneCamera& cam)
+QVector4D convertAiToVector(const aiColor3D& color)
 {
-	return "Perspective:\n" + matrixToStdString(cam.Perspective()) +
-		"View:\n"  + matrixToStdString(cam.View());
+	return QVector4D(color.r, color.g, color.b, 1.0);
+}
+
+QVector3D convertAiToVector(const aiVector3D& vector)
+{
+	return QVector3D(vector.x, vector.y, vector.z);
 }
 
 QVector4D gammaCorrected(const QVector4D& linear)

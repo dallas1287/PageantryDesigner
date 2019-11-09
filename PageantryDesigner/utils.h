@@ -22,6 +22,7 @@ std::string quaternionToStdString(const aiQuaternion& quad, int precision = 2);
 QString quaternionToString(const QQuaternion& quat, int precision = 2);
 std::string quaternionToStdString(const QQuaternion& quat, int precision = 2);
 
-std::string LogCamera(SceneCamera& cam);
+QVector4D convertAiToVector(const aiColor3D& color);
+QVector3D convertAiToVector(const aiVector3D& vector);
 
 QVector4D gammaCorrected(const QVector4D& linear);

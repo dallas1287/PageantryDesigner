@@ -29,23 +29,3 @@ aiNode* BoneRig::findBoneInSkeleton(const QString& bone)
 
 	return m_skeletonMap[bone];
 }
-
-void BoneRig::getAllChildren(const QString& bone, std::vector<aiNode*>& children)
-{
-	aiNode* boneNode = findBoneInSkeleton(bone);
-	if (boneNode)
-	{
-		children.push_back(boneNode);
-		getAllChildrenRecursively(boneNode, children);
-	}
-}
-
-void BoneRig::getAllChildrenRecursively(aiNode* boneNode, std::vector<aiNode*>& children)
-{
-	for (int i = 0; i < boneNode->mNumChildren; ++i)
-	{
-		QString name(boneNode->mChildren[i]->mName.data);
-		getAllChildrenRecursively(boneNode->mChildren[i], children);
-		children.push_back(boneNode->mChildren[i]);
-	}
-}

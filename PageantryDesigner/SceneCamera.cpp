@@ -1,4 +1,5 @@
 #include "SceneCamera.h"
+#include "utils.h"
 #include <QtMath>
 
 SceneCamera::SceneCamera(): m_position(DefaultPosition), m_lookTarget(DefaultTarget), m_camUp(DefaultCamUp), m_camFront(DefaultCamFront)
@@ -7,8 +8,28 @@ SceneCamera::SceneCamera(): m_position(DefaultPosition), m_lookTarget(DefaultTar
 	updateView();
 }
 
+SceneCamera::SceneCamera(aiCamera* refCam) : m_refCam(refCam)
+{
+	initFromImport();
+}
+
 SceneCamera::~SceneCamera()
 {
+}
+
+void SceneCamera::initFromImport()
+{
+	if (!m_refCam)
+		return;
+
+	m_name = QString(m_refCam->mName.C_Str());
+	m_aspect = m_refCam->mAspect;
+	m_clipPlaneFar = m_refCam->mClipPlaneFar;
+	m_clipPlaneNear = m_refCam->mClipPlaneNear;
+	m_horizontalFov = m_refCam->mHorizontalFOV;
+	m_lookTarget = convertAiToVector(m_refCam->mLookAt);
+	m_position = convertAiToVector(m_refCam->mPosition);
+	m_camUp = convertAiToVector(m_refCam->mUp);
 }
 
 void SceneCamera::resetView()
