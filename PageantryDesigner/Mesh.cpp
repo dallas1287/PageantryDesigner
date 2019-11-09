@@ -1,7 +1,6 @@
 #include "Mesh.h"
 #include "GraphicsPanel.h"
 #include <fstream>
-#include "utils.h"
 
 MeshObject::MeshObject(aiMesh* ref) : GraphicsObject(), m_meshRef(ref), m_name(ref->mName.data)
 {
@@ -18,7 +17,7 @@ MeshObject::~MeshObject()
 void MeshObject::initialize()
 {
 	initializeOpenGLFunctions();
-	initShaders("mesh_vertex.glsl", "mesh_fragment.glsl");
+	initShaders("mesh_vertex.glsl", "color_frag.glsl");
 	initializeBuffers();
 }
 
@@ -35,7 +34,7 @@ void MeshObject::initializeBuffers()
 	offset += sizeof(decltype(m_meshData[0].position));
 
 	ShaderProgram()->enableAttributeArray(TextureAttr());
-	ShaderProgram()->setAttributeBuffer(TextureAttr(), GL_FLOAT, offset, 2, sizeof(VertexData));
+	ShaderProgram()->setAttributeBuffer(TextureAttr(), GL_FLOAT, offset, 3, sizeof(VertexData));
 
 	offset += sizeof(decltype(m_meshData[0].texCoord));
 
@@ -43,6 +42,11 @@ void MeshObject::initializeBuffers()
 	ShaderProgram()->setAttributeBuffer(NormAttr(), GL_FLOAT, offset, 3, sizeof(VertexData));
 
 	offset += sizeof(decltype(m_meshData[0].normal));
+
+	ShaderProgram()->enableAttributeArray(ColorAttr());
+	ShaderProgram()->setAttributeBuffer(ColorAttr(), GL_FLOAT, offset, 4, sizeof(VertexData));
+
+	offset += sizeof(decltype(m_meshData[0].color));
 
 	ShaderProgram()->enableAttributeArray(BoneAttr0());
 	ShaderProgram()->setAttributeBuffer(BoneAttr0(), GL_FLOAT, offset, 4, sizeof(VertexData));
@@ -125,6 +129,24 @@ MeshManager::~MeshManager()
 		delete anim;
 }
 
+void MeshManager::resetData()
+{
+	m_globalTransform.setToIdentity();
+	m_boneRig.reset();
+	for (auto sceneNode : m_nodeMap)
+		delete sceneNode.second;
+	m_nodeMap.clear();
+	for (auto mesh : m_meshPool)
+		delete mesh;
+	m_meshPool.clear();
+	m_currentMesh = nullptr;
+	for (auto anim : m_animations)
+		delete anim;
+	m_animations.clear();
+	m_currentAnimation = nullptr;
+	m_frameCt = 0;
+}
+
 bool MeshManager::import(const QString& path)
 {
 	std::string pathstd = path.toStdString();
@@ -142,9 +164,22 @@ bool MeshManager::import(const QString& path)
 		qDebug() << m_importer.GetErrorString();
 		return false;
 	}
-	createSceneNodes(scene->mRootNode);
-	createSkeleton(scene->mRootNode);
+
 	m_globalTransform = convertTransformMatrix(scene->mRootNode->mTransformation);
+
+	if (scene->HasCameras())
+	{
+		for (int i = 0; i < scene->mNumCameras; ++i)
+			qDebug() << "Camera: " << scene->mCameras[i]->mName.data;
+	}
+
+	if (scene->HasLights())
+	{
+		for (int i = 0; i < scene->mNumLights; ++i)
+			qDebug() << "Light: " << scene->mLights[i]->mName.data;
+	}
+
+	createSceneNodes(scene->mRootNode);
 
 	if (scene->HasAnimations())
 	{
@@ -154,8 +189,79 @@ bool MeshManager::import(const QString& path)
 	}
 
 	createMeshes(scene);
-
+	createSkeleton(scene);
 	return true;
+}
+
+SceneNode* MeshManager::findArmatureNode(const aiScene* scene)
+{
+	if (!scene)
+		return nullptr;
+	std::vector<QString> names;
+
+	for (int i = 0; i < scene->mRootNode->mNumChildren; ++i)
+	{
+		bool foundName = false;
+		QString name(scene->mRootNode->mChildren[i]->mName.data);
+		//not a mesh
+		if (findMesh(name))
+			foundName = true;
+
+		if (!foundName && scene->HasLights())
+		{
+			for (int i = 0; i < scene->mNumLights; ++i)
+			{
+				QString lightName(scene->mLights[i]->mName.data);
+				if (lightName.compare(name) == 0)
+				{
+					foundName = true;
+					break;
+				}
+			}
+		}
+
+		if (!foundName && scene->HasCameras())
+		{
+			for (int i = 0; i < scene->mNumCameras; ++i)
+			{
+				QString camName(scene->mCameras[i]->mName.data);
+				if (camName.compare(name) == 0)
+				{
+					foundName = true;
+					break;
+				}
+			}
+		}
+
+		if (!foundName)
+			names.push_back(name);
+	}
+
+	if (names.size() == 0)
+		return nullptr;
+
+	if (names.size() == 1)
+		return findSceneNode(names.front());
+
+	auto iter = names.begin();
+	while(iter != names.end())
+	{
+		bool foundBone = false;
+		for (auto mesh : getMeshes())
+		{
+			if (mesh->findDeformBone(*iter))
+			{
+				foundBone = true;
+				continue;
+			}
+		}
+		if (!foundBone)
+			iter = names.erase(iter);
+		else
+			++iter;
+	}
+
+	return findSceneNode(names.front());
 }
 
 void MeshManager::createMeshes(const aiScene* scene)
@@ -163,24 +269,75 @@ void MeshManager::createMeshes(const aiScene* scene)
 	//add the meshes
 	for (int i = 0; i < scene->mNumMeshes; ++i)
 	{
-		if (!scene->mMeshes[i]->HasBones())
-			continue;
-		m_meshPool.push_back(new MeshObject(scene->mMeshes[i]));
+		m_meshPool.emplace_back(new MeshObject(scene->mMeshes[i]));
 		MeshObject* meshObj = m_meshPool.back();
+		meshObj->setIsRigged(scene->mMeshes[i]->HasBones());
 		aiMesh* mesh = meshObj->getMeshRef();
 		VertexData point;
 		QVector3D pos, norm;
-		QVector2D tex;
+		QVector3D tex;
+
+		if (scene->mNumMaterials > mesh->mMaterialIndex)
+		{
+			meshObj->setMaterialIndex(mesh->mMaterialIndex);
+			aiMaterial* material = scene->mMaterials[meshObj->getMaterialIndex()];
+			if (material)
+			{
+				aiString name;
+				if (material->Get(AI_MATKEY_NAME, name))
+					qDebug() << name.data;
+				aiColor3D diffuseColor(0.0, 0.0, 0.0);
+				if (material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor) == AI_SUCCESS)
+					meshObj->setMeshColor(diffuseColor);
+			}
+		}
+
+		if (scene->mNumMaterials)
+		{
+			for (int i = 0; i < scene->mNumMaterials; ++i)
+			{
+				aiMaterial* material = scene->mMaterials[i];
+				aiString name;
+				if (AI_SUCCESS == material->Get(AI_MATKEY_NAME, name))
+					qDebug() << name.data;
+				aiColor3D difColor(0.0, 0.0, 0.0);
+				if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, difColor))
+					qDebug() << "Has Color Diffuse";
+				aiColor3D specColor(0.0, 0.0, 0.0);
+				if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_SPECULAR, specColor))
+					qDebug() << "Has Specular Color";
+				aiColor3D ambColor(0.0, 0.0, 0.0);
+				if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_AMBIENT, ambColor))
+					qDebug() << "Has Ambient Color";
+				aiColor3D emissiveColor(0.0, 0.0, 0.0);
+				if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor))
+					qDebug() << "Has Emissive Color";
+				aiColor3D transColor(0.0, 0.0, 0.0);
+				if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_TRANSPARENT, transColor))
+					qDebug() << "Has Transparent Color";
+				float shininess = 0.0;
+				if (AI_SUCCESS == material->Get(AI_MATKEY_SHININESS, shininess));
+				float opacity = 0.0;
+				if (AI_SUCCESS == material->Get(AI_MATKEY_OPACITY, opacity))
+					qDebug() << opacity;
+				aiString file;
+				if (AI_SUCCESS == material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), file))
+					qDebug() << "Holy shit found a texture";
+				unsigned int type = -1;
+				if (AI_SUCCESS == material->Get(AI_MATKEY_SHADING_MODEL, type))
+					qDebug() << "Has shading model";
+			}
+		}
 
 		//add vertex data
 		for (int j = 0; j < mesh->mNumVertices; ++j)
 		{
 			pos = QVector3D(mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z);
 			norm = QVector3D(mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z);
-			//not sure how this works as 3D coords but as far as I've seen the models I use don't have texture coordinates in the vertex data
+			//not sure how this works as 3D coords
 			if (mesh->HasTextureCoords(0))
-				tex = QVector2D(mesh->mTextureCoords[0][j].x, mesh->mTextureCoords[0][j].y);
-			point = VertexData(pos, tex, norm);
+				tex = QVector3D(mesh->mTextureCoords[0][j].x, mesh->mTextureCoords[0][j].y, mesh->mTextureCoords[0][j].z);
+			point = VertexData(pos, tex, norm, meshObj->getMeshColor());
 			meshObj->getVertexData().push_back(point);
 		}
 
@@ -201,15 +358,29 @@ void MeshManager::createMeshes(const aiScene* scene)
 	}
 }
 
-//create the full bone rig hierarchy
-void MeshManager::createSkeleton(aiNode* root)
+MeshObject* MeshManager::findMesh(const QString& name)
 {
-	aiNode* rig = root->FindNode("rig");
-	//aiNode* rig = root->FindNode("Armature");
+	auto meshIter = std::find_if(m_meshPool.begin(), m_meshPool.end(), [&](auto mesh) {return mesh->getName() == name; });
+	if (meshIter != m_meshPool.end())
+		return *meshIter;
+	return nullptr;
+}
+
+//create the full bone rig hierarchy
+void MeshManager::createSkeleton(const aiScene* scene)
+{
+	if (!scene)
+		return;
+	if (!m_boneRig)
+		m_boneRig.reset(new BoneRig(this));
+
+	SceneNode* sn = findArmatureNode(scene);
+
+	aiNode* rig = scene->mRootNode->FindNode(sn->getName().toLocal8Bit().constData());
 	if (rig)
 	{
-		m_boneRig.setRootNode(root);
-		m_boneRig.buildSkeleton(rig);
+		m_boneRig->setRootNode(scene->mRootNode);
+		m_boneRig->buildSkeleton(rig);
 	}
 }
 
@@ -224,9 +395,10 @@ void MeshManager::animate()
 	for (auto meshObj : getMeshes())
 	{
 		setCurrentMesh(meshObj);
-		animateRecursively(getBoneRig().getRootNode(), QMatrix4x4());
+		animateRecursively(getBoneRig()->getRootNode(), QMatrix4x4());
 		for (auto bd : meshObj->getBoneData())
 			bd.transformFromBones();
+		meshObj->initializeBuffers();
 	}
 
 	if (!(FigureRenderer*)m_parent->getParent()->isPaused())

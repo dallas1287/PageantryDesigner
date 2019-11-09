@@ -1,7 +1,7 @@
 #version 440
 in vec4 posAttr;
 in vec4 colAttr;
-in vec2 texCoordAttr;
+in vec3 texCoordAttr;
 in vec3 normAttr;
 in vec4 boneTransform0;
 in vec4 boneTransform1;
@@ -24,6 +24,7 @@ void main()
 
    vec4 bonePos = boneTransform * posAttr;
    gl_Position = projection * view * model * bonePos;
-   texCoord = texCoordAttr;
+   texCoord = texCoordAttr.xy;
    norm = normAttr;
+   color = colAttr;
 };

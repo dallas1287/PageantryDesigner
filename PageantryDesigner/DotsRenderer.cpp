@@ -54,8 +54,9 @@ void DotsRenderer::generateDots()
 	Dots.ShaderProgram()->setAttributeBuffer(Dots.PosAttr(), GL_FLOAT, 0, 3, sizeof(VertexData));
 
 	Dots.ShaderProgram()->enableAttributeArray(Dots.TextureAttr());
-	Dots.ShaderProgram()->setAttributeBuffer(Dots.TextureAttr(), GL_FLOAT, sizeof(decltype(vData[0].position)), 2, sizeof(VertexData));
+	Dots.ShaderProgram()->setAttributeBuffer(Dots.TextureAttr(), GL_FLOAT, sizeof(decltype(vData[0].position)), 3, sizeof(VertexData));
 
+	//TODO: correct this to account for norms and colors and other added vertex data
 	Dots.ShaderProgram()->enableAttributeArray(Dots.ColorAttr());
 	Dots.ShaderProgram()->setAttributeBuffer(Dots.ColorAttr(), GL_FLOAT, sizeof(decltype(vData[0].position)) + sizeof(decltype(vData[0].texCoord)), 3, sizeof(VertexData));
 

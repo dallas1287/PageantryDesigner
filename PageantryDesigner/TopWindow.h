@@ -11,13 +11,18 @@ public:
 	TopWindow(QWidget *parent = Q_NULLPTR);
 	void updateFrameCt(int value);
 	void populateAnimCb(std::vector<QString>& name);
+	void populateMeshesCb(std::vector<QString>& names);
 
 public slots:
 	void armSliderChanged(int value);
 	void armLineEditChanged();
 	void onPlayClicked();
+	void onMbActionClicked(QAction* action);
+	void onLoadTextureClicked();
+	void onMeshesCbChanged(const QString& name);
+
 
 private:
 	Ui::TopWindowClass ui;
-	GraphicsPanel* m_gPanel = nullptr;
+	std::unique_ptr<GraphicsPanel> m_gPanel;
 };

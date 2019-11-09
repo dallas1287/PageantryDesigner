@@ -26,26 +26,32 @@ GraphicsPanel::GraphicsPanel(QWidget* parent, Qt::WindowFlags flags) : QOpenGLWi
 
 GraphicsPanel::~GraphicsPanel()
 {
-	makeCurrent();
-
-	delete m_floorRenderer;
-	delete m_dotsRenderer;
-	delete m_figureRenderer;
-
-	doneCurrent();
 };
+
+void GraphicsPanel::importModel(const QString& importPath)
+{
+	m_figureRenderer.reset(new FigureRenderer(this, importPath));
+}
 
 void GraphicsPanel::initializeGL()
 {
 	initializeOpenGLFunctions();
 	setBackground(background);
-	m_floorRenderer = new FloorRenderer(this);
-	m_dotsRenderer = new DotsRenderer(this);
-	m_figureRenderer = new FigureRenderer(this, "../N&I_rig_baked.fbx");
-	//m_figureRenderer = new FigureRenderer(this, "../modelLoadingTest.fbx");
+	m_floorRenderer.reset(new FloorRenderer(this));
+	m_dotsRenderer.reset(new DotsRenderer(this));
+	m_figureRenderer.reset(new FigureRenderer(this, "../N&I_rig_baked.fbx"));
 	//m_figureRenderer = new FigureRenderer(this, "../modeltest7_multi.fbx");
-	//m_figureRenderer = new FigureRenderer(this, "../cylinderTest2.fbx");
+	//m_figureRenderer.reset(new FigureRenderer(this, "../cylinderTest2.fbx"));
+	//m_figureRenderer.reset(new FigureRenderer(this, "../kitty_new6.fbx"));
+	//m_figureRenderer.reset(new FigureRenderer(this, "../cube_texture_scene.fbx"));
+	//m_figureRenderer.reset(new FigureRenderer(this, "../cube_color.fbx"));
+	//m_figureRenderer.reset(new FigureRenderer(this, "../color_sphere_uv.fbx"));
+	//m_figureRenderer.reset(new FigureRenderer(this, "../sphere_texture.fbx"));
+	//m_figureRenderer->initTextures("../cube_paint.png");
+	//m_figureRenderer->initTextures("../paint_sphere.png");
+
 	populateAnimCb();
+	populateMeshesCb();
 
 	const qreal retinaScale = devicePixelRatio();
 	glViewport(0, 0, width() * retinaScale, height() * retinaScale);
@@ -72,11 +78,10 @@ void GraphicsPanel::myPaint()
 
 	m_figureRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 
-	if (m_frame % 5 == 0)
+	if (m_frame % 1 == 0)
 	{
-		m_figureRenderer->getMeshManager().animate();
-		m_figureRenderer->getMeshManager().getCurrentMesh()->initializeBuffers();
-		updateFrameCt(m_figureRenderer->getMeshManager().getFrameCt());
+		m_figureRenderer->getMeshManager()->animate();
+		updateFrameCt(m_figureRenderer->getMeshManager()->getFrameCt());
 	}
 	m_figureRenderer->Draw();
 
@@ -198,10 +203,10 @@ void GraphicsPanel::keyPressEvent(QKeyEvent* event)
 		m_camera.moveCamPlane(Direction::Plane::Back);
 		break;
 	case Qt::Key_Equal:
-		m_figureRenderer->getMeshManager().incrementFrame();
+		m_figureRenderer->getMeshManager()->incrementFrame();
 		break;
 	case Qt::Key_Minus:
-		m_figureRenderer->getMeshManager().decrementFrame();
+		m_figureRenderer->getMeshManager()->decrementFrame();
 		break;
 	default:
 		return;
@@ -233,15 +238,29 @@ void GraphicsPanel::updateFrameCt(int value)
 
 void GraphicsPanel::onAnimCbChanged(int index)
 {
-	m_figureRenderer->getMeshManager().setCurrentAnimation(index);
+	m_figureRenderer->getMeshManager()->setCurrentAnimation(index);
 }
 
 void GraphicsPanel::populateAnimCb()
 {
+	if (!m_figureRenderer.get())
+		return;
+
 	std::vector<QString> names;
-	for (auto anim : m_figureRenderer->getMeshManager().getAnimations())
+	for (auto anim : m_figureRenderer->getMeshManager()->getAnimations())
 		names.push_back(anim->getName());
 	((TopWindow*)m_parent)->populateAnimCb(names);
+}
+
+void GraphicsPanel::populateMeshesCb()
+{
+	if (!m_figureRenderer.get())
+		return;
+
+	std::vector<QString> names;
+	for (auto mesh : m_figureRenderer->getMeshManager()->getMeshes())
+		names.push_back(mesh->getName());
+	((TopWindow*)m_parent)->populateMeshesCb(names);
 }
 
 void GraphicsPanel::setAnimationFrame(int value)
@@ -249,8 +268,8 @@ void GraphicsPanel::setAnimationFrame(int value)
 	if (value > 100 || value < 0)
 		return;
 
-	float frame = value * m_figureRenderer->getMeshManager().getCurrentAnimation()->getDuration() / 100;
+	float frame = value * m_figureRenderer->getMeshManager()->getCurrentAnimation()->getDuration() / 100;
 
 	int final = qRound(frame);
-	m_figureRenderer->getMeshManager().setFrameCt(final);
+	m_figureRenderer->getMeshManager()->setFrameCt(final);
 }

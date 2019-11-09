@@ -14,13 +14,15 @@ const QVector4D W4(0.0f, 0.0f, 0.0f, 1.0f);
 
 struct VertexData
 {
-	VertexData(QVector3D position = QVector3D(), QVector2D texCoord = QVector2D(), QVector3D norm = QVector3D(), QMatrix4x4 trans = QMatrix4x4()) : 
-		position(position), texCoord(texCoord), normal(norm), transform(trans) {};
+	VertexData(QVector3D position = QVector3D(), QVector3D texCoord = QVector3D(), QVector3D norm = QVector3D(), 
+		QVector4D col = QVector4D(), QMatrix4x4 trans = QMatrix4x4()) : 
+		position(position), texCoord(texCoord), normal(norm), color(col), transform(trans) {};
 	~VertexData() {};
 
 	QVector3D position;
-	QVector2D texCoord;
+	QVector3D texCoord;
 	QVector3D normal;
+	QVector4D color;
 	QMatrix4x4 transform;
 };
 

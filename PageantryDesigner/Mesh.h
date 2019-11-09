@@ -11,6 +11,7 @@
 #include "ItemRenderer.h"
 #include "SceneNode.h"
 #include <QOpenGLExtraFunctions>
+#include "utils.h"
 
 class MeshObject : public GraphicsObject, protected QOpenGLExtraFunctions
 {
@@ -19,10 +20,18 @@ public:
 	~MeshObject();
 	void initialize();
 	void initializeBuffers();
+	const QString& getName() { return m_name; }
 	aiMesh* getMeshRef() { return m_meshRef; }
 	std::vector<VertexData>& getVertexData() { return m_meshData; }
 	std::vector<GLushort>& getIndices() { return m_indices; }
 	std::vector<Bone*>& DeformBones() { return m_deformBones; }
+	unsigned int getMaterialIndex() { return m_materialIndex; }
+	void setMaterialIndex(int index) { m_materialIndex = index; }
+	void setMeshColor(aiColor3D& color) { m_meshColor = gammaCorrected(QVector4D(color.r, color.g, color.b, 1.0)); }
+	void setMeshColor(QVector4D& color) { m_meshColor = gammaCorrected(color); }
+	QVector4D& getMeshColor() { return m_meshColor; }
+	bool isRigged() { return m_isRigged; }
+	void setIsRigged(bool rigged) { m_isRigged = rigged; }
 	
 	Bone* findDeformBone(const QString& name);
 	std::vector<BoneData>& getBoneData() { return m_boneData; }
@@ -37,7 +46,10 @@ private:
 	std::vector<GLushort> m_indices;
 	std::vector<Bone*> m_deformBones;
 	std::vector<BoneData> m_boneData;
-	int numIndices = 0;
+	unsigned int numIndices = 0;
+	bool m_isRigged = false;
+	unsigned int m_materialIndex = -1;
+	QVector4D m_meshColor;
 	aiMesh* m_meshRef = nullptr;
 };
 
@@ -48,14 +60,16 @@ typedef std::map<QString, SceneNode*> NodeMap;
 class MeshManager
 {
 public:
-	MeshManager(ItemRenderer* parent): m_parent(parent), m_boneRig(BoneRig(this)) {};
+	MeshManager(ItemRenderer* parent): m_parent(parent) {};
 	~MeshManager();
 
 	bool import(const QString& path);
-	BoneRig& getBoneRig() { return m_boneRig; }
+	void resetData();
+	BoneRig* getBoneRig() { return m_boneRig.get(); }
 	MeshObjectPool& getMeshes() { return m_meshPool; }
 	MeshObject* getCurrentMesh() { return m_currentMesh; }
 	void setCurrentMesh(MeshObject* meshObj) { m_currentMesh = meshObj; }
+	MeshObject* findMesh(const QString& name);
 	QMatrix4x4& GlobalTransform() { return m_globalTransform; }
 	QMatrix4x4 GlobalInverseTransform() { return m_globalTransform.inverted(); }
 	AnimationPool& getAnimations() { return m_animations; }
@@ -69,10 +83,11 @@ public:
 	int getFrameCt() { return m_frameCt; }
 	void setFrameCt(int frame) { m_frameCt = frame; }
 	SceneNode* findSceneNode(const QString& name);
+	SceneNode* findArmatureNode(const aiScene* scene);
 
 private:
 	void createMeshes(const aiScene* scene);
-	void createSkeleton(aiNode* root);
+	void createSkeleton(const aiScene* scene);
 	void createSceneNodes(aiNode* root);
 	void createSceneNodesRecursively(aiNode* node);
 	void createSceneTreeRecursively(aiNode* node);
@@ -81,7 +96,7 @@ private:
 	ItemRenderer* m_parent;
 	Assimp::Importer m_importer;
 	QMatrix4x4 m_globalTransform;
-	BoneRig m_boneRig;
+	std::unique_ptr<BoneRig> m_boneRig;
 	NodeMap m_nodeMap;
 	MeshObjectPool m_meshPool;
 	MeshObject* m_currentMesh = nullptr;

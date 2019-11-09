@@ -19,11 +19,16 @@ class GraphicsPanel : public QOpenGLWidget, protected QOpenGLFunctions
 public:
 	GraphicsPanel(QWidget* parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
 	virtual ~GraphicsPanel();
+	QWidget* getParent() { return m_parent; }
 	SceneCamera& getCamera() { return m_camera; }
 	void updateFrameCt(int value);
 	void setAnimationFrame(int value);
 	bool isPaused() { return m_paused; }
 	void onPlayClicked();
+	FigureRenderer* getFigureRenderer() { return m_figureRenderer.get(); }
+	void populateAnimCb();
+	void populateMeshesCb();
+	void importModel(const QString& importPath);
 
 public slots:
 	void onAnimCbChanged(int index);
@@ -42,7 +47,6 @@ protected:
 private:
 	void setBackground(QVector4D background);
 	void myPaint();
-	void populateAnimCb();
 
 	QWidget* m_parent = nullptr;
 	unsigned int m_frame = 0;
@@ -50,8 +54,8 @@ private:
 	QPoint m_lastPos;
 	bool m_middlePressed = false;
 	SceneCamera m_camera;
-	FloorRenderer* m_floorRenderer = nullptr;
-	DotsRenderer* m_dotsRenderer = nullptr;
-	FigureRenderer* m_figureRenderer = nullptr;
+	std::unique_ptr<FloorRenderer> m_floorRenderer;
+	std::unique_ptr<DotsRenderer> m_dotsRenderer;
+	std::unique_ptr<FigureRenderer> m_figureRenderer;
 };
 

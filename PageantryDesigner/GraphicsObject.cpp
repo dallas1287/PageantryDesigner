@@ -103,10 +103,10 @@ void GraphicsObject::releaseAll()
 	m_program->release();
 }
 
-void GraphicsObject::bindToDraw(bool useTexture)
+void GraphicsObject::bindToDraw()
 {
 	m_program->bind();
-	if(useTexture)
+	if(m_texture)
 		m_texture->bind();
 	m_vao.bind();
 }

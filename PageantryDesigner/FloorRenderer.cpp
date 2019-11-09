@@ -14,7 +14,7 @@ void FloorRenderer::initialize()
 {
 	ItemRenderer::initialize();
 	initShaders();
-	initTextures("../tattoo_comic.jpg");
+	initTextures("../eyes_base.png");
 	m_gridLineCt = generateGridLines(4);
 	generateFloor();
 }
@@ -62,10 +62,11 @@ void FloorRenderer::generateFloor()
 	Floor.ShaderProgram()->setAttributeBuffer(Floor.PosAttr(), GL_FLOAT, 0, 3, sizeof(VertexData));
 
 	Floor.ShaderProgram()->enableAttributeArray(Floor.TextureAttr());
-	Floor.ShaderProgram()->setAttributeBuffer(Floor.TextureAttr(), GL_FLOAT, sizeof(decltype(vData[0].position)), 2, sizeof(VertexData));
+	Floor.ShaderProgram()->setAttributeBuffer(Floor.TextureAttr(), GL_FLOAT, sizeof(decltype(vData[0].position)), 3, sizeof(VertexData));
 
 	Floor.ShaderProgram()->enableAttributeArray(Floor.ColorAttr());
-	Floor.ShaderProgram()->setAttributeBuffer(Floor.ColorAttr(), GL_FLOAT, sizeof(decltype(vData[0].position)) + sizeof(decltype(vData[0].texCoord)), 3, sizeof(VertexData));
+	Floor.ShaderProgram()->setAttributeBuffer(Floor.ColorAttr(), GL_FLOAT, 
+		sizeof(decltype(vData[0].position)) + sizeof(decltype(vData[0].texCoord)) + sizeof(decltype(vData[0].normal)), 4, sizeof(VertexData));
 
 	Floor.Ebo().allocate(&iData[0], iData.size() * sizeof(GLushort));
 	Floor.releaseAll();
@@ -91,7 +92,7 @@ int FloorRenderer::generateGridLines(int lineCount)
 
 void FloorRenderer::drawGridLines()
 {
-	Grid.bindToDraw(false);
+	Grid.bindToDraw();
 	glLineWidth(5.0);
 	glDrawElements(GL_LINES, 8, GL_UNSIGNED_SHORT, 0);
 	glLineWidth(2.0);

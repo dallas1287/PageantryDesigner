@@ -46,7 +46,7 @@ public:
 	void setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection);
 	void bindAll();
 	void releaseAll();
-	void bindToDraw(bool useTexture = true);
+	void bindToDraw();
 	void releaseFromDraw();
 
 private:

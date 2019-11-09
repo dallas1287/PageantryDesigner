@@ -5,12 +5,13 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
 
-class GraphicsPanel;
 struct VertexData;
+class GraphicsPanel;
 
 class ItemRenderer : protected QOpenGLFunctions
 {
 public:
+	ItemRenderer();
 	ItemRenderer(GraphicsPanel* parent);
 	virtual ~ItemRenderer();
 	virtual void setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection) = 0;

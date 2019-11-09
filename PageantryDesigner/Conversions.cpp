@@ -99,12 +99,7 @@ std::string LogCamera(SceneCamera& cam)
 		"View:\n"  + matrixToStdString(cam.View());
 }
 
-std::string LogVertex(MeshObject* meshObj, int index)
+QVector4D gammaCorrected(const QVector4D& linear)
 {
-	return "Position: " + vectorToStdString(meshObj->getVertexData()[index].position) + "\n";
-}
-
-std::string LogTransform(MeshManager& mm, int index)
-{
-	return "Transform:\n" + matrixToStdString(*(mm.getMeshes()[0]->getBoneData()[index].FinalTransform));
+	return QVector4D(qPow(linear.x(), (1 / 2.2)), qPow(linear.y(), (1 / 2.2)), qPow(linear.z(), (1 / 2.2)), 1.0);
 }

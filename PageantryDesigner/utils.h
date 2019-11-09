@@ -2,7 +2,6 @@
 #include "Includes/assimp/scene.h"
 #include <QMatrix4x4>
 #include "SceneCamera.h"
-#include "Mesh.h"
 
 QMatrix4x4 convertTransformMatrix(aiMatrix4x4& in);
 
@@ -24,5 +23,5 @@ QString quaternionToString(const QQuaternion& quat, int precision = 2);
 std::string quaternionToStdString(const QQuaternion& quat, int precision = 2);
 
 std::string LogCamera(SceneCamera& cam);
-std::string LogVertex(MeshObject* meshObj, int index);
-std::string LogTransform(MeshManager& mm, int index);
+
+QVector4D gammaCorrected(const QVector4D& linear);
