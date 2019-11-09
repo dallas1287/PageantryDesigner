@@ -90,7 +90,7 @@ SceneNode* MeshManager::findArmatureNode(const aiScene* scene)
 	{
 		bool foundName = false;
 		QString name(scene->mRootNode->mChildren[i]->mName.data);
-		//not a mesh
+
 		if (findMesh(name))
 			foundName = true;
 
@@ -130,25 +130,56 @@ SceneNode* MeshManager::findArmatureNode(const aiScene* scene)
 	if (names.size() == 1)
 		return findSceneNode(names.front());
 
-	auto iter = names.begin();
-	while(iter != names.end())
+	auto nameIter = names.begin();
+	while(nameIter != names.end())
 	{
 		bool foundBone = false;
 		for (auto mesh : getMeshes())
 		{
-			if (mesh->findDeformBone(*iter))
-			{
-				foundBone = true;
+			if (!mesh->isRigged())
 				continue;
-			}
+			foundBone = sceneNodeContainsBone(*nameIter, mesh);
 		}
 		if (!foundBone)
-			iter = names.erase(iter);
+			nameIter = names.erase(nameIter);
 		else
-			++iter;
+			++nameIter;
+	}
+	if(!names.empty())
+		return findSceneNode(names.front());
+	return nullptr;
+}
+
+bool MeshManager::sceneNodeContainsBone(const QString& name, MeshObject* mesh)
+{
+	SceneNode* node = findSceneNode(name);
+	if (!node || !mesh)
+		return false;
+
+	if (!mesh->isRigged())
+		return false;
+
+	if (hasDeformBoneInHierarchy(node, mesh))
+		return true;
+	return false;
+}
+
+bool MeshManager::hasDeformBoneInHierarchy(SceneNode* node, MeshObject* mesh)
+{
+	if (!node || !mesh)
+		return false;
+
+	for (auto child : node->Children())
+	{
+		//this node is a deform bone
+		if (mesh->findDeformBone(child->getName()))
+			return true;
+		//runs through all the children of this node 
+		if (hasDeformBoneInHierarchy(child, mesh))
+			return true;
 	}
 
-	return findSceneNode(names.front());
+	return false;
 }
 
 void MeshManager::createMeshes(const aiScene* scene)
@@ -258,15 +289,19 @@ void MeshManager::createSkeleton(const aiScene* scene)
 {
 	if (!scene)
 		return;
-	if (!m_boneRig)
-		m_boneRig.reset(new BoneRig(this));
 
 	SceneNode* sn = findArmatureNode(scene);
+	if (!sn)
+		return;
+
+	if (!m_boneRig)
+		m_boneRig.reset(new BoneRig(this));
 
 	aiNode* rig = scene->mRootNode->FindNode(sn->getName().toLocal8Bit().constData());
 	if (rig)
 	{
-		m_boneRig->setRootNode(scene->mRootNode);
+		m_boneRig->setSceneRoot(scene->mRootNode);
+		m_boneRig->setRigRoot(sn);
 		m_boneRig->buildSkeleton(rig);
 	}
 }

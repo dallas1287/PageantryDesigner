@@ -52,6 +52,8 @@ private:
 	void createSceneNodesRecursively(aiNode* node);
 	void createSceneTreeRecursively(aiNode* node);
 	void animateRecursively(aiNode* node, const QMatrix4x4& parentTransform);
+	bool sceneNodeContainsBone(const QString& name, MeshObject* mesh);
+	bool MeshManager::hasDeformBoneInHierarchy(SceneNode* node, MeshObject* mesh);
 
 	ItemRenderer* m_parent;
 	Assimp::Importer m_importer;

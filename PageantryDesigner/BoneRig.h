@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 #include "Bone.h"
+#include "SceneNode.h"
 
 typedef std::map<QString, aiNode*> SkeletonMap;
 
@@ -18,14 +19,17 @@ public:
 	~BoneRig() {}
 	SkeletonMap& getSkeletonMap() { return m_skeletonMap; }
 	bool buildSkeleton(aiNode* rootNode);
-	void setRootNode(aiNode* root) { m_rootNode = root; }
-	aiNode* getRootNode() { return m_rootNode; }
+	void setSceneRoot(aiNode* root) { m_sceneRoot = root; }
+	aiNode* getRootNode() { return m_sceneRoot; }
+	void setRigRoot(SceneNode* rigRoot) { m_rigRoot = rigRoot; }
+	SceneNode* getRigRoot() { return m_rigRoot; }
 	aiNode* findBoneInSkeleton(const QString& bone);
 
 private:
 	void buildSkeletonRecursively(aiNode* bone);
 
 	MeshManager* m_parent = nullptr;
-	aiNode* m_rootNode = nullptr;
+	aiNode* m_sceneRoot = nullptr;
+	SceneNode* m_rigRoot = nullptr;
 	SkeletonMap m_skeletonMap;
 };

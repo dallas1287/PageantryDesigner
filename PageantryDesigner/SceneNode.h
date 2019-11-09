@@ -30,6 +30,7 @@ private:
 	std::vector<SceneNode*> m_children;
 	QMatrix4x4 m_transformMatrix;
 	std::vector<unsigned int> m_meshes;
+	bool m_isDeformBone = false;
 
 };
 
