@@ -1,6 +1,7 @@
 #pragma once
 #include "ItemRenderer.h"
-#include "Mesh.h"
+#include "MeshManager.h"
+
 class FigureRenderer : public ItemRenderer
 {
 public:

@@ -1,8 +1,6 @@
 #include "BoneRig.h"
 #include <QDebug>
 #include "utils.h"
-#include "Mesh.h"
-#include <fstream>
 
 bool BoneRig::buildSkeleton(aiNode* rootNode)
 {

@@ -105,7 +105,8 @@
     <ClCompile Include="GraphicsPanel.cpp" />
     <ClCompile Include="ItemRenderer.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="MeshManager.cpp" />
+    <ClCompile Include="MeshObject.cpp" />
     <ClCompile Include="SceneCamera.cpp" />
     <ClCompile Include="SceneNode.cpp" />
     <ClCompile Include="TopWindow.cpp" />
@@ -122,6 +123,8 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="common.h" />
+    <ClInclude Include="MeshManager.h" />
+    <ClInclude Include="MeshObject.h" />
     <ClInclude Include="SceneNode.h" />
     <ClInclude Include="utils.h" />
     <QtMoc Include="GraphicsPanel.h" />
@@ -132,7 +135,6 @@
     <ClInclude Include="FloorRenderer.h" />
     <ClInclude Include="GraphicsObject.h" />
     <ClInclude Include="ItemRenderer.h" />
-    <ClInclude Include="Mesh.h" />
     <ClInclude Include="SceneCamera.h" />
     <ClInclude Include="ShapeCreator.h" />
   </ItemGroup>

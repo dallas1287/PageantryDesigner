@@ -8,8 +8,6 @@
 
 typedef std::map<QString, aiNode*> SkeletonMap;
 
-//forward declaration - weird as hell that i have to foward declare here
-//and include Mesh.h in the cpp file and can't include it here without errors
 class MeshManager;
 class MeshObject;
 

@@ -9,7 +9,6 @@
 #include "DotsRenderer.h"
 #include "FigureRenderer.h"
 #include "SceneCamera.h"
-#include "Mesh.h"
 
 #define USE_COLLADA 0
 

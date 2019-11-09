@@ -49,9 +49,6 @@
     <ClCompile Include="SceneCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FigureRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -71,6 +68,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TopWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -111,9 +114,6 @@
     <ClInclude Include="SceneCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FigureRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -133,6 +133,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SceneNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

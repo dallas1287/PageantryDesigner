@@ -65,3 +65,5 @@ PageantryDesigner/x64/Release/qtvars_jw20uwwg.o1s.designtime.props
 PageantryDesigner/x64/Release/rcc/qrc_TopWindow.cpp
 PageantryDesigner/x64/Release/uic/ui_TopWindow.h
 x64/Release/PageantryDesigner.exe
+PageantryDesigner/x64/Debug/qmake/qtvars_mktedor5.gwm.designtime.props
+*.props
