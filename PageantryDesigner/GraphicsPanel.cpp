@@ -42,11 +42,11 @@ void GraphicsPanel::initializeGL()
 	//m_MeshRenderer.reset(new MeshRenderer(this, "../cylinderTest2.fbx"));
 	//m_MeshRenderer.reset(new MeshRenderer(this, "../kitty_new6.fbx"));
 	//m_MeshRenderer.reset(new MeshRenderer(this, "../cube_texture_scene.fbx"));
-	m_MeshRenderer.reset(new MeshRenderer(this, "../cube_color.fbx"));
+	//m_MeshRenderer.reset(new MeshRenderer(this, "../cube_color.fbx"));
 	//m_MeshRenderer.reset(new MeshRenderer(this, "../color_sphere_uv.fbx"));
-	//m_MeshRenderer.reset(new MeshRenderer(this, "../sphere_texture.fbx"));
+	m_MeshRenderer.reset(new MeshRenderer(this, "../sphere_texture.fbx"));
 	//m_MeshRenderer->initTextures("../cube_paint.png");
-	//m_MeshRenderer->initTextures("../paint_sphere.png");
+	m_MeshRenderer->initTextures("../paint_sphere.png");
 
 	populateAnimCb();
 	populateMeshesCb();
@@ -71,8 +71,8 @@ void GraphicsPanel::myPaint()
 
 	QMatrix4x4 model;
 
-	m_floorRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
-	m_floorRenderer->Draw();
+	//m_floorRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
+	//m_floorRenderer->Draw();
 
 	m_MeshRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 
@@ -85,6 +85,7 @@ void GraphicsPanel::myPaint()
 
 	++m_frame;	
 	painter.end();
+	updateCameraStats();
 	update();
 }
 
@@ -232,6 +233,11 @@ void GraphicsPanel::keyReleaseEvent(QKeyEvent* event)
 void GraphicsPanel::updateFrameCt(int value)
 {
 	((TopWindow*)m_parent)->updateFrameCt(value);
+}
+
+void GraphicsPanel::updateCameraStats()
+{
+	((TopWindow*)m_parent)->updateCameraStats();
 }
 
 void GraphicsPanel::onAnimCbChanged(int index)

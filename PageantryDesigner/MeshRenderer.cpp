@@ -76,7 +76,6 @@ void MeshRenderer::Draw()
 {
 	for (auto mesh : m_meshManager->getMeshes())
 	{
-		//MeshObject* mesh = m_meshManager->getMeshes()[0];
 		mesh->bindToDraw();
 		glDrawElements(GL_TRIANGLES, mesh->getIndices().size(), GL_UNSIGNED_SHORT, 0);
 		mesh->releaseFromDraw();

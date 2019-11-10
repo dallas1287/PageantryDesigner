@@ -105,6 +105,8 @@ void GraphicsObject::releaseAll()
 
 void GraphicsObject::bindToDraw()
 {
+	if (!m_program)
+		return;
 	m_program->bind();
 	if(m_texture)
 		m_texture->bind();
@@ -116,7 +118,8 @@ void GraphicsObject::releaseFromDraw()
 	m_vao.release();
 	if(m_texture && m_texture->isBound())
 		m_texture->release();
-	m_program->release();
+	if(m_program)
+		m_program->release();
 }
 
 void GraphicsObject::initBuffers(VertexDataPool& data, IndexPool& indices)

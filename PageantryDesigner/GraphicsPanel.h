@@ -19,6 +19,7 @@ public:
 	virtual ~GraphicsPanel();
 	QWidget* getParent() { return m_parent; }
 	SceneCamera& getCamera() { return m_camera; }
+	void updateCameraStats();
 	void updateFrameCt(int value);
 	void setAnimationFrame(int value);
 	bool isPaused() { return m_paused; }

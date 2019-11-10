@@ -1,6 +1,7 @@
 #pragma once
 #include "RendererBase.h"
 #include "MeshManager.h"
+#include "PrimitiveObject.h"
 
 class MeshRenderer : public RendererBase
 {
@@ -24,6 +25,6 @@ private:
 	void initShaders(const QString& vertexPath, const QString& fragmentPath);
 
 	std::unique_ptr<MeshManager> m_meshManager;
-
+	std::unique_ptr<PrimitiveObject> m_primObj;
 };
 

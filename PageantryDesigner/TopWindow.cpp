@@ -1,6 +1,7 @@
 #include "TopWindow.h"
 #include <QFileDialog>
 #include <QStandardPaths>
+#include "utils.h"
 
 TopWindow::TopWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -22,6 +23,17 @@ TopWindow::TopWindow(QWidget *parent)
 void TopWindow::updateFrameCt(int value)
 {
 	ui.label_FrameCt->setText(QString::number(value));
+}
+
+void TopWindow::updateCameraStats()
+{
+	ui.labelCamPos->setText("Position: " + vectorToString(m_gPanel->getCamera().Position()));
+	ui.labelCamLookAt->setText("LookAt: " + vectorToString(m_gPanel->getCamera().Target()));
+	ui.labelCamFront->setText("Front: " + vectorToString(m_gPanel->getCamera().Front()));
+	ui.labelCameraUp->setText("Up: " + vectorToString(m_gPanel->getCamera().Up()));
+	ui.labelYPW->setText("Yaw: " + QString::number(m_gPanel->getCamera().Yaw(), 'f', 1) + 
+		" Pitch: " + QString::number(m_gPanel->getCamera().Pitch(), 'f', 1) + 
+		" Roll: " + QString::number(m_gPanel->getCamera().Roll(), 'f', 1));
 }
 
 void TopWindow::populateAnimCb(std::vector<QString>& names)

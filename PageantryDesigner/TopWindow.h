@@ -12,6 +12,7 @@ public:
 	void updateFrameCt(int value);
 	void populateAnimCb(std::vector<QString>& name);
 	void populateMeshesCb(std::vector<QString>& names);
+	void updateCameraStats();
 
 public slots:
 	void armSliderChanged(int value);
