@@ -87,7 +87,7 @@ void TopWindow::onLoadTextureClicked()
 
 	QString fileName = fdialog.getOpenFileName(this, "Choose Texture to Import", QStandardPaths::writableLocation(QStandardPaths::StandardLocation::HomeLocation));
 	
-	m_gPanel->getFigureRenderer()->loadTexture(fileName, ui.cbMeshes->currentText());
+	m_gPanel->getMeshRenderer()->loadTexture(fileName, ui.cbMeshes->currentText());
 
 	ui.leTexturePath->setText(fileName);
 }

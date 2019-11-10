@@ -6,8 +6,7 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
 #include "FloorRenderer.h"
-#include "DotsRenderer.h"
-#include "FigureRenderer.h"
+#include "MeshRenderer.h"
 #include "SceneCamera.h"
 
 #define USE_COLLADA 0
@@ -24,7 +23,7 @@ public:
 	void setAnimationFrame(int value);
 	bool isPaused() { return m_paused; }
 	void onPlayClicked();
-	FigureRenderer* getFigureRenderer() { return m_figureRenderer.get(); }
+	MeshRenderer* getMeshRenderer() { return m_MeshRenderer.get(); }
 	void populateAnimCb();
 	void populateMeshesCb();
 	void importModel(const QString& importPath);
@@ -54,7 +53,6 @@ private:
 	bool m_middlePressed = false;
 	SceneCamera m_camera;
 	std::unique_ptr<FloorRenderer> m_floorRenderer;
-	std::unique_ptr<DotsRenderer> m_dotsRenderer;
-	std::unique_ptr<FigureRenderer> m_figureRenderer;
+	std::unique_ptr<MeshRenderer> m_MeshRenderer;
 };
 

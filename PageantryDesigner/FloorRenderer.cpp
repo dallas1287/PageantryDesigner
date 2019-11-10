@@ -1,7 +1,7 @@
 #include "FloorRenderer.h"
 #include "utils.h"
 
-FloorRenderer::FloorRenderer(GraphicsPanel* parent) : ItemRenderer(parent)
+FloorRenderer::FloorRenderer(GraphicsPanel* parent) : RendererBase(parent)
 {
 	initialize();
 }
@@ -12,7 +12,7 @@ FloorRenderer::~FloorRenderer()
 
 void FloorRenderer::initialize()
 {
-	ItemRenderer::initialize();
+	RendererBase::initialize();
 	initShaders();
 	initTextures("../tattoo_comic.jpg");
 	m_gridLineCt = generateGridLines(4);

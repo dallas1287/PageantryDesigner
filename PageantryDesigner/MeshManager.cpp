@@ -338,7 +338,7 @@ void MeshManager::animate()
 		meshObj->initBuffers(meshObj->getVertexData(), meshObj->getIndices());
 	}
 
-	if (!((FigureRenderer*)m_parent)->getParent()->isPaused())
+	if (!((MeshRenderer*)m_parent)->getParent()->isPaused())
 	{
 		m_frameCt++;
 #if USE_COLLADA

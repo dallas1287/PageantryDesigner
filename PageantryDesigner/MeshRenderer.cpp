@@ -1,38 +1,40 @@
-#include "FigureRenderer.h"
+#include "MeshRenderer.h"
+
+#include "MeshRenderer.h"
 #include <QMessageBox>
 #include "GraphicsPanel.h"
 
-FigureRenderer::FigureRenderer(GraphicsPanel* parent) : ItemRenderer(parent)
+MeshRenderer::MeshRenderer(GraphicsPanel* parent) : RendererBase(parent)
 {
 	m_meshManager.reset(new MeshManager(this));
 }
 
-FigureRenderer::FigureRenderer(GraphicsPanel* parent, const QString& importPath) : ItemRenderer(parent)
+MeshRenderer::MeshRenderer(GraphicsPanel* parent, const QString& importPath) : RendererBase(parent)
 {
 	m_meshManager.reset(new MeshManager(this));
 	importModel(importPath);
 }
 
-FigureRenderer::~FigureRenderer()
+MeshRenderer::~MeshRenderer()
 {
 }
 
-void FigureRenderer::importModel(const QString& importPath, bool reset)
+void MeshRenderer::importModel(const QString& importPath, bool reset)
 {
-	if(reset)
+	if (reset)
 		m_meshManager->resetData();
 
 	if (importPath.isEmpty() || !m_meshManager->import(importPath))
 	{
 		QMessageBox msgBox;
-		QMessageBox::warning(m_parent->getParent(), "Loading Error",  importPath.isEmpty() ? "No file path given." : "Unable to load file");
+		QMessageBox::warning(m_parent->getParent(), "Loading Error", importPath.isEmpty() ? "No file path given." : "Unable to load file");
 		return;
 	}
 	for (auto mesh : m_meshManager->getMeshes())
 		mesh->initialize();
 }
 
-void FigureRenderer::loadTexture(const QString& texturePath, const QString& meshName)
+void MeshRenderer::loadTexture(const QString& texturePath, const QString& meshName)
 {
 	MeshObject* meshObj = m_meshManager->findMesh(meshName);
 
@@ -43,19 +45,19 @@ void FigureRenderer::loadTexture(const QString& texturePath, const QString& mesh
 	}
 }
 
-void FigureRenderer::initialize()
+void MeshRenderer::initialize()
 {
-	ItemRenderer::initialize();
+	RendererBase::initialize();
 }
 
 //generic shader initialization. this most likely will get re-initialized per mesh 
-void FigureRenderer::initShaders(const QString& vertexPath, const QString& fragmentPath)
+void MeshRenderer::initShaders(const QString& vertexPath, const QString& fragmentPath)
 {
-	for(auto mesh : m_meshManager->getMeshes())
+	for (auto mesh : m_meshManager->getMeshes())
 		mesh->initShaders("mesh_vertex.glsl", "mesh_fragment.glsl");
 }
 
-void FigureRenderer::initTextures(const QString& path)
+void MeshRenderer::initTextures(const QString& path)
 {
 	if (path.isEmpty())
 		return;
@@ -64,13 +66,13 @@ void FigureRenderer::initTextures(const QString& path)
 		mesh->initTexture(path);
 }
 
-void FigureRenderer::setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection)
+void MeshRenderer::setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection)
 {
 	for (auto mesh : m_meshManager->getMeshes())
 		mesh->setMVP(model, view, projection);
 }
 
-void FigureRenderer::Draw()
+void MeshRenderer::Draw()
 {
 	for (auto mesh : m_meshManager->getMeshes())
 	{

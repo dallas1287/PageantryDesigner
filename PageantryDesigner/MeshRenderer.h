@@ -2,12 +2,12 @@
 #include "RendererBase.h"
 #include "MeshManager.h"
 
-class FigureRenderer : public RendererBase
+class MeshRenderer : public RendererBase
 {
 public:
-	FigureRenderer(GraphicsPanel* parent);
-	FigureRenderer(GraphicsPanel* parent, const QString& importPath);
-	~FigureRenderer();
+	MeshRenderer(GraphicsPanel* parent);
+	MeshRenderer(GraphicsPanel* parent, const QString& importPath);
+	~MeshRenderer();
 
 	void importModel(const QString& importPath, bool reset = false);
 	void loadTexture(const QString& texturePath, const QString& meshName);

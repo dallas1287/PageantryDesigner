@@ -29,7 +29,7 @@ GraphicsPanel::~GraphicsPanel()
 
 void GraphicsPanel::importModel(const QString& importPath)
 {
-	m_figureRenderer.reset(new FigureRenderer(this, importPath));
+	m_MeshRenderer.reset(new MeshRenderer(this, importPath));
 }
 
 void GraphicsPanel::initializeGL()
@@ -37,17 +37,16 @@ void GraphicsPanel::initializeGL()
 	initializeOpenGLFunctions();
 	setBackground(background);
 	m_floorRenderer.reset(new FloorRenderer(this));
-	m_dotsRenderer.reset(new DotsRenderer(this));
-	//m_figureRenderer.reset(new FigureRenderer(this, "../N&I_rig_baked.fbx"));
-	//m_figureRenderer = new FigureRenderer(this, "../modeltest7_multi.fbx");
-	//m_figureRenderer.reset(new FigureRenderer(this, "../cylinderTest2.fbx"));
-	//m_figureRenderer.reset(new FigureRenderer(this, "../kitty_new6.fbx"));
-	//m_figureRenderer.reset(new FigureRenderer(this, "../cube_texture_scene.fbx"));
-	m_figureRenderer.reset(new FigureRenderer(this, "../cube_color.fbx"));
-	//m_figureRenderer.reset(new FigureRenderer(this, "../color_sphere_uv.fbx"));
-	//m_figureRenderer.reset(new FigureRenderer(this, "../sphere_texture.fbx"));
-	//m_figureRenderer->initTextures("../cube_paint.png");
-	//m_figureRenderer->initTextures("../paint_sphere.png");
+	//m_MeshRenderer.reset(new MeshRenderer(this, "../N&I_rig_baked.fbx"));
+	//m_MeshRenderer = new MeshRenderer(this, "../modeltest7_multi.fbx");
+	//m_MeshRenderer.reset(new MeshRenderer(this, "../cylinderTest2.fbx"));
+	//m_MeshRenderer.reset(new MeshRenderer(this, "../kitty_new6.fbx"));
+	//m_MeshRenderer.reset(new MeshRenderer(this, "../cube_texture_scene.fbx"));
+	m_MeshRenderer.reset(new MeshRenderer(this, "../cube_color.fbx"));
+	//m_MeshRenderer.reset(new MeshRenderer(this, "../color_sphere_uv.fbx"));
+	//m_MeshRenderer.reset(new MeshRenderer(this, "../sphere_texture.fbx"));
+	//m_MeshRenderer->initTextures("../cube_paint.png");
+	//m_MeshRenderer->initTextures("../paint_sphere.png");
 
 	populateAnimCb();
 	populateMeshesCb();
@@ -75,14 +74,14 @@ void GraphicsPanel::myPaint()
 	m_floorRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 	m_floorRenderer->Draw();
 
-	m_figureRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
+	m_MeshRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 
 	if (m_frame % 1 == 0)
 	{
-		m_figureRenderer->getMeshManager()->animate();
-		updateFrameCt(m_figureRenderer->getMeshManager()->getFrameCt());
+		m_MeshRenderer->getMeshManager()->animate();
+		updateFrameCt(m_MeshRenderer->getMeshManager()->getFrameCt());
 	}
-	m_figureRenderer->Draw();
+	m_MeshRenderer->Draw();
 
 	++m_frame;	
 	painter.end();
@@ -202,10 +201,10 @@ void GraphicsPanel::keyPressEvent(QKeyEvent* event)
 		m_camera.moveCamPlane(Direction::Plane::Back);
 		break;
 	case Qt::Key_Equal:
-		m_figureRenderer->getMeshManager()->incrementFrame();
+		m_MeshRenderer->getMeshManager()->incrementFrame();
 		break;
 	case Qt::Key_Minus:
-		m_figureRenderer->getMeshManager()->decrementFrame();
+		m_MeshRenderer->getMeshManager()->decrementFrame();
 		break;
 	default:
 		return;
@@ -237,27 +236,27 @@ void GraphicsPanel::updateFrameCt(int value)
 
 void GraphicsPanel::onAnimCbChanged(int index)
 {
-	m_figureRenderer->getMeshManager()->setCurrentAnimation(index);
+	m_MeshRenderer->getMeshManager()->setCurrentAnimation(index);
 }
 
 void GraphicsPanel::populateAnimCb()
 {
-	if (!m_figureRenderer.get())
+	if (!m_MeshRenderer.get())
 		return;
 
 	std::vector<QString> names;
-	for (auto anim : m_figureRenderer->getMeshManager()->getAnimations())
+	for (auto anim : m_MeshRenderer->getMeshManager()->getAnimations())
 		names.push_back(anim->getName());
 	((TopWindow*)m_parent)->populateAnimCb(names);
 }
 
 void GraphicsPanel::populateMeshesCb()
 {
-	if (!m_figureRenderer.get())
+	if (!m_MeshRenderer.get())
 		return;
 
 	std::vector<QString> names;
-	for (auto mesh : m_figureRenderer->getMeshManager()->getMeshes())
+	for (auto mesh : m_MeshRenderer->getMeshManager()->getMeshes())
 		names.push_back(mesh->getName());
 	((TopWindow*)m_parent)->populateMeshesCb(names);
 }
@@ -267,8 +266,8 @@ void GraphicsPanel::setAnimationFrame(int value)
 	if (value > 100 || value < 0)
 		return;
 
-	float frame = value * m_figureRenderer->getMeshManager()->getCurrentAnimation()->getDuration() / 100;
+	float frame = value * m_MeshRenderer->getMeshManager()->getCurrentAnimation()->getDuration() / 100;
 
 	int final = qRound(frame);
-	m_figureRenderer->getMeshManager()->setFrameCt(final);
+	m_MeshRenderer->getMeshManager()->setFrameCt(final);
 }
