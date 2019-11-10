@@ -1,6 +1,6 @@
 #include "DotsRenderer.h"
 #include <QPainter>
-#include "ShapeCreator.h"
+#include "utils.h"
 
 DotsRenderer::DotsRenderer(GraphicsPanel* parent) : ItemRenderer(parent)
 {
@@ -45,7 +45,7 @@ void DotsRenderer::generateDots()
 {
 	std::vector<VertexData> vData;
 	std::vector<GLushort> iData;
-	GridMaker::Quad::createQuad(vData, iData);
+	ShapeMaker::Quad::createQuad(vData, iData);
 
 	Dots.bindAll();
 	Dots.Vbo().allocate(&vData[0], vData.size() * sizeof(VertexData));

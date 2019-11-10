@@ -1,5 +1,5 @@
 #include "FloorRenderer.h"
-#include "ShapeCreator.h"
+#include "utils.h"
 
 FloorRenderer::FloorRenderer(GraphicsPanel* parent) : ItemRenderer(parent)
 {
@@ -53,7 +53,7 @@ void FloorRenderer::generateFloor()
 {
 	std::vector<VertexData> vData;
 	std::vector<GLushort> iData;
-	GridMaker::Quad::createQuad(vData, iData);
+	ShapeMaker::Quad::createQuad(vData, iData);
 
 	Floor.bindAll();
 	Floor.Vbo().allocate(&vData[0], vData.size() * sizeof(VertexData));
@@ -76,7 +76,7 @@ int FloorRenderer::generateGridLines(int lineCount)
 {
 	std::vector<VertexData> vData;
 	std::vector<GLushort> iData;
-	GridMaker::Lines::makeGridLines(4, vData, iData);
+	ShapeMaker::Grid::makeGridLines(4, vData, iData);
 
 	Grid.bindAll();
 	Grid.Vbo().allocate(&vData[0], vData.size() * sizeof(VertexData));

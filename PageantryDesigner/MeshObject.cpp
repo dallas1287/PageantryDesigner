@@ -17,7 +17,7 @@ void MeshObject::initialize()
 {
 	initializeOpenGLFunctions();
 	initShaders("mesh_vertex.glsl", "texture_frag.glsl");
-	initBuffers(m_meshData, m_indices);
+	initBuffers(m_vertexData, m_indices);
 }
 
 void MeshObject::createBones()
@@ -45,7 +45,7 @@ void MeshObject::createBoneData()
 	if (DeformBones().empty())
 		return;
 
-	for (int id = 0; id < m_meshData.size(); ++id)
+	for (int id = 0; id < m_vertexData.size(); ++id)
 	{
 		BoneData bd;
 		bd.ID = id;

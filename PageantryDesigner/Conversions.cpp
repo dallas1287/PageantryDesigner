@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <QtMath>
 
 QMatrix4x4 convertTransformMatrix(aiMatrix4x4& in)
 {

@@ -105,9 +105,6 @@
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ShapeCreator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FloorRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>

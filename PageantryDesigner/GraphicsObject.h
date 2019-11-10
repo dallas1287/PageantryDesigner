@@ -53,11 +53,11 @@ public:
 	void releaseAll();
 	void bindToDraw();
 	void releaseFromDraw();
-	std::vector<VertexData>& getVertexData() { return m_meshData; }
+	std::vector<VertexData>& getVertexData() { return m_vertexData; }
 	std::vector<GLushort>& getIndices() { return m_indices; }
 
 protected:
-	std::vector<VertexData> m_meshData;
+	std::vector<VertexData> m_vertexData;
 	std::vector<GLushort> m_indices;
 
 private:

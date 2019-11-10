@@ -6,8 +6,8 @@ class PrimitiveObject : public GraphicsObject
 public:
 	PrimitiveObject();
 	~PrimitiveObject();
-
-private:
+	void generateQuad();
+	void generateCube();
 
 };
 

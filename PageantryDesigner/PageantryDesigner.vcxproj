@@ -142,7 +142,6 @@
     <ClInclude Include="GraphicsObject.h" />
     <ClInclude Include="ItemRenderer.h" />
     <ClInclude Include="SceneCamera.h" />
-    <ClInclude Include="ShapeCreator.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="color_frag.glsl" />

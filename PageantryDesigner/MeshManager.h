@@ -3,6 +3,7 @@
 #include "Includes/assimp/scene.h"
 #include "Includes/assimp/postprocess.h"
 #include "ItemRenderer.h"
+#include "SceneCamera.h"
 #include "MeshObject.h"
 #include "Animation.h"
 #include "SceneNode.h"

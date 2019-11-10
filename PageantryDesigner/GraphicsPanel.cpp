@@ -4,7 +4,6 @@
 #include <QVector3D>
 #include <QPainter>
 #include <QWheelEvent>
-#include "ShapeCreator.h"
 #include <QtMath>
 #include "utils.h"
 #include <fstream>
