@@ -14,7 +14,7 @@ void FloorRenderer::initialize()
 {
 	ItemRenderer::initialize();
 	initShaders();
-	initTextures("../eyes_base.png");
+	initTextures("../tattoo_comic.jpg");
 	m_gridLineCt = generateGridLines(4);
 	generateFloor();
 }

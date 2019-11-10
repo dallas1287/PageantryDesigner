@@ -16,7 +16,7 @@ MeshObject::~MeshObject()
 void MeshObject::initialize()
 {
 	initializeOpenGLFunctions();
-	initShaders("mesh_vertex.glsl", "color_frag.glsl");
+	initShaders("mesh_vertex.glsl", "texture_frag.glsl");
 	initializeBuffers();
 }
 
@@ -91,6 +91,9 @@ Bone* MeshObject::findDeformBone(const QString& name)
 
 void MeshObject::createBoneData()
 {
+	if (DeformBones().empty())
+		return;
+
 	for (int id = 0; id < m_meshData.size(); ++id)
 	{
 		BoneData bd;
@@ -108,6 +111,9 @@ void MeshObject::createBoneData()
 
 void MeshObject::buildVertexTransforms()
 {
+	if (m_boneData.empty())
+		return;
+
 	if (getVertexData().size() != m_boneData.size())
 	{
 		qDebug() << "MISMATCHED data containers!!!";

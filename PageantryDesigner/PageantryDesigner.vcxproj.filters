@@ -185,5 +185,6 @@
     <None Include="color_frag.glsl">
       <Filter>shaders</Filter>
     </None>
+    <None Include="light_frag.glsl" />
   </ItemGroup>
 </Project>

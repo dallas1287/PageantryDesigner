@@ -5,6 +5,8 @@ in vec2 texCoord;
 in vec4 color;
 uniform sampler2D tex;
 
+uniform uint mask;
+
 void main()
 {
 	vec3 lightDir = normalize(vec3(0.0, -1.0, 0.0));

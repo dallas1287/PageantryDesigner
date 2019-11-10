@@ -6,6 +6,34 @@
 #include "Bone.h"
 #include "common.h"
 
+struct BoneData
+{
+	std::unordered_map<Bone*, float> boneWeights;
+	QMatrix4x4* FinalTransform;
+	unsigned int ID;
+
+	BoneData() : ID(-1) {}
+	~BoneData() {}
+
+	void resetFinalTransform() { (*FinalTransform).setToIdentity(); }
+	bool transformFromBones()
+	{
+		bool ismodified = false;
+		(*FinalTransform).fill(0.0);
+		for (auto bone : boneWeights)
+		{
+			if (bone.first->isModified())
+			{
+				(*FinalTransform) += (bone.first->findVertexWeight(ID) * bone.first->getTransform());
+				ismodified = true;
+			}
+		}
+		if (!ismodified)
+			resetFinalTransform();
+		return ismodified;
+	}
+};
+
 class MeshObject : public GraphicsObject, protected QOpenGLExtraFunctions
 {
 public:

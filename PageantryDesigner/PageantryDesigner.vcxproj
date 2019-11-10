@@ -150,6 +150,7 @@
     <None Include="floor_vertex.glsl" />
     <None Include="grid_fragment.glsl" />
     <None Include="grid_vertex.glsl" />
+    <None Include="light_frag.glsl" />
     <None Include="mesh_fragment.glsl" />
     <None Include="mesh_vertex.glsl" />
     <None Include="texture_frag.glsl" />

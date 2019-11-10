@@ -5,10 +5,10 @@
 
 const std::vector<VertexData> QuadTemplate =
 {
-	{ QVector3D(X + Y), QVector2D(1.0f, 1.0f) }, // top right
-	{ QVector3D(X - Y), QVector2D(1.0f, 0.0f) }, // bottom right
-	{ QVector3D(-X - Y), QVector2D(0.0f, 0.0f) }, // bottom left
-	{ QVector3D(-X + Y), QVector2D(0.0f, 1.0f) }  // top left 
+	{ QVector3D(X + Y), QVector3D(1.0, 1.0, 0.0) }, // top right
+	{ QVector3D(X - Y), QVector3D(1.0, 0.0, 0.0) }, // bottom right
+	{ QVector3D(-X - Y), QVector3D(0.0, 0.0, 0.0) }, // bottom left
+	{ QVector3D(-X + Y), QVector3D(0.0, 1.0, 0.0) }  // top left 
 };
 
 const std::vector<GLushort> QuadIndices =
@@ -23,6 +23,58 @@ const std::vector<GLushort> QuadOutlineIndices =
 	1, 2,
 	2, 3,
 	3, 0
+};
+
+const std::vector<VertexData> CubeTemplate =
+{
+	//face 1 Z+
+	{ QVector3D(X + Y + Z), QVector3D(1.0, 1.0, 0.0) }, // top right
+	{ QVector3D(-X + Y + Z), QVector3D(1.0, 0.0, 0.0) }, // bottom right
+	{ QVector3D(-X - Y + Z), QVector3D(0.0, 0.0, 0.0) }, // bottom left
+	{ QVector3D(X - Y + Z), QVector3D(0.0, 1.0, 0.0) },  // top left 
+	//face 2 Y-
+	{ QVector3D(X - Y - Z), QVector3D(1.0, 1.0, 0.0) }, // top right
+	{ QVector3D(X - Y + Z), QVector3D(1.0, 0.0, 0.0) }, // bottom right
+	{ QVector3D(-X - Y + Z), QVector3D(0.0, 0.0, 0.0) }, // bottom left
+	{ QVector3D(-X - Y - Z), QVector3D(0.0, 1.0, 0.0) },  // top left 
+	//face 3 X-
+	{ QVector3D(-X - Y - Z), QVector3D(1.0, 1.0, 0.0) }, // top right
+	{ QVector3D(-X - Y + Z), QVector3D(1.0, 0.0, 0.0) }, // bottom right
+	{ QVector3D(-X + Y + Z), QVector3D(0.0, 0.0, 0.0) }, // bottom left
+	{ QVector3D(-X + Y - Z), QVector3D(0.0, 1.0, 0.0) },  // top left 
+	//face 4 Z-
+	{ QVector3D(-X + Y - Z), QVector3D(1.0, 1.0, 0.0) }, // top right
+	{ QVector3D(X + Y - Z), QVector3D(1.0, 0.0, 0.0) }, // bottom right
+	{ QVector3D(X - Y - Z), QVector3D(0.0, 0.0, 0.0) }, // bottom left
+	{ QVector3D(-X - Y - Z), QVector3D(0.0, 1.0, 0.0) },  // top left 
+	//face 5 X+
+	{ QVector3D(X + Y - Z), QVector3D(1.0, 1.0, 0.0) }, // top right
+	{ QVector3D(X + Y + Z), QVector3D(1.0, 0.0, 0.0) }, // bottom right
+	{ QVector3D(X - Y + Z), QVector3D(0.0, 0.0, 0.0) }, // bottom left
+	{ QVector3D(X - Y - Z), QVector3D(0.0, 1.0, 0.0) },  // top left 
+	//face 6 Y+
+	{ QVector3D(-X + Y - Z), QVector3D(1.0, 1.0, 0.0) }, // top right
+	{ QVector3D(-X + Y + Z), QVector3D(1.0, 0.0, 0.0) }, // bottom right
+	{ QVector3D(X + Y + Z), QVector3D(0.0, 0.0, 0.0) }, // bottom left
+	{ QVector3D(X + Y - Z), QVector3D(0.0, 1.0, 0.0) },  // top left 
+
+
+};
+
+const std::vector<GLushort> CubeIndices =
+{
+	0,1,2,
+	0,2,3,
+	4,5,6,
+	4,6,7,
+	8,9,10,
+	8,10,11,
+	12,13,14,
+	12,14,15,
+	16,17,18,
+	16,18,19,
+	20,21,22,
+	20,22,23
 };
 
 namespace GridMaker
@@ -79,6 +131,15 @@ namespace GridMaker
 		{
 			vertices.insert(vertices.end(), QuadTemplate.begin(), QuadTemplate.end());
 			indices.insert(indices.end(), QuadIndices.begin(), QuadIndices.end());
+		}
+	}
+
+	namespace Cube
+	{
+		static void createCube(std::vector<VertexData>& vertices, std::vector<GLushort>& indices)
+		{
+			vertices.insert(vertices.end(), CubeTemplate.begin(), CubeTemplate.end());
+			indices.insert(indices.end(), CubeIndices.begin(), CubeIndices.end());
 		}
 	}
 };

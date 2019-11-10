@@ -39,12 +39,12 @@ void GraphicsPanel::initializeGL()
 	setBackground(background);
 	m_floorRenderer.reset(new FloorRenderer(this));
 	m_dotsRenderer.reset(new DotsRenderer(this));
-	m_figureRenderer.reset(new FigureRenderer(this, "../N&I_rig_baked.fbx"));
+	//m_figureRenderer.reset(new FigureRenderer(this, "../N&I_rig_baked.fbx"));
 	//m_figureRenderer = new FigureRenderer(this, "../modeltest7_multi.fbx");
 	//m_figureRenderer.reset(new FigureRenderer(this, "../cylinderTest2.fbx"));
 	//m_figureRenderer.reset(new FigureRenderer(this, "../kitty_new6.fbx"));
 	//m_figureRenderer.reset(new FigureRenderer(this, "../cube_texture_scene.fbx"));
-	//m_figureRenderer.reset(new FigureRenderer(this, "../cube_color.fbx"));
+	m_figureRenderer.reset(new FigureRenderer(this, "../cube_color.fbx"));
 	//m_figureRenderer.reset(new FigureRenderer(this, "../color_sphere_uv.fbx"));
 	//m_figureRenderer.reset(new FigureRenderer(this, "../sphere_texture.fbx"));
 	//m_figureRenderer->initTextures("../cube_paint.png");
@@ -73,8 +73,8 @@ void GraphicsPanel::myPaint()
 
 	QMatrix4x4 model;
 
-	//m_floorRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
-	//m_floorRenderer->Draw();
+	m_floorRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
+	m_floorRenderer->Draw();
 
 	m_figureRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 
