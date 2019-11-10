@@ -40,9 +40,6 @@
     <ClCompile Include="DotsRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ItemRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GraphicsObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -85,6 +82,9 @@
     <ClCompile Include="PrimitiveObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RendererBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="TopWindow.h">
@@ -109,9 +109,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DotsRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ItemRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsObject.h">
@@ -154,6 +151,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PrimitiveObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

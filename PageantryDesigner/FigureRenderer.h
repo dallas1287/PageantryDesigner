@@ -1,8 +1,8 @@
 #pragma once
-#include "ItemRenderer.h"
+#include "RendererBase.h"
 #include "MeshManager.h"
 
-class FigureRenderer : public ItemRenderer
+class FigureRenderer : public RendererBase
 {
 public:
 	FigureRenderer(GraphicsPanel* parent);

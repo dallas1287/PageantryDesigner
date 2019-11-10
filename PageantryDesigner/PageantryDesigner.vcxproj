@@ -103,11 +103,11 @@
     <ClCompile Include="FloorRenderer.cpp" />
     <ClCompile Include="GraphicsObject.cpp" />
     <ClCompile Include="GraphicsPanel.cpp" />
-    <ClCompile Include="ItemRenderer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MeshManager.cpp" />
     <ClCompile Include="MeshObject.cpp" />
     <ClCompile Include="PrimitiveObject.cpp" />
+    <ClCompile Include="RendererBase.cpp" />
     <ClCompile Include="SceneCamera.cpp" />
     <ClCompile Include="SceneLight.cpp" />
     <ClCompile Include="SceneNode.cpp" />
@@ -129,6 +129,7 @@
     <ClInclude Include="MeshManager.h" />
     <ClInclude Include="MeshObject.h" />
     <ClInclude Include="PrimitiveObject.h" />
+    <ClInclude Include="RendererBase.h" />
     <ClInclude Include="SceneLight.h" />
     <ClInclude Include="SceneNode.h" />
     <ClInclude Include="SceneObject.h" />
@@ -140,7 +141,6 @@
     <ClInclude Include="FigureRenderer.h" />
     <ClInclude Include="FloorRenderer.h" />
     <ClInclude Include="GraphicsObject.h" />
-    <ClInclude Include="ItemRenderer.h" />
     <ClInclude Include="SceneCamera.h" />
   </ItemGroup>
   <ItemGroup>

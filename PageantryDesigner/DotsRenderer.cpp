@@ -2,7 +2,7 @@
 #include <QPainter>
 #include "utils.h"
 
-DotsRenderer::DotsRenderer(GraphicsPanel* parent) : ItemRenderer(parent)
+DotsRenderer::DotsRenderer(GraphicsPanel* parent) : RendererBase(parent)
 {
 	initialize();
 }
@@ -13,7 +13,7 @@ DotsRenderer::~DotsRenderer()
 
 void DotsRenderer::initialize()
 {
-	ItemRenderer::initialize();
+	RendererBase::initialize();
 	initShaders();
 	initTexture("../flag.png");
 	generateDots();

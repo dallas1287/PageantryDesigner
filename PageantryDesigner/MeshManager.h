@@ -2,7 +2,7 @@
 #include "Includes/assimp/Importer.hpp"
 #include "Includes/assimp/scene.h"
 #include "Includes/assimp/postprocess.h"
-#include "ItemRenderer.h"
+#include "RendererBase.h"
 #include "SceneCamera.h"
 #include "MeshObject.h"
 #include "Animation.h"
@@ -21,7 +21,7 @@ typedef std::map<QString, SceneNode*> NodeMap;
 class MeshManager
 {
 public:
-	MeshManager(ItemRenderer* parent): m_parent(parent) {};
+	MeshManager(RendererBase* parent): m_parent(parent) {};
 	~MeshManager();
 
 	bool import(const QString& path);
@@ -56,7 +56,7 @@ private:
 	bool sceneNodeContainsBone(const QString& name, MeshObject* mesh);
 	bool MeshManager::hasDeformBoneInHierarchy(SceneNode* node, MeshObject* mesh);
 
-	ItemRenderer* m_parent;
+	RendererBase* m_parent;
 	Assimp::Importer m_importer;
 	QMatrix4x4 m_globalTransform;
 	std::unique_ptr<BoneRig> m_boneRig;

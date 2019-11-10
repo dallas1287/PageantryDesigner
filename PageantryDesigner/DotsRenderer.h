@@ -1,8 +1,8 @@
 #pragma once
-#include "ItemRenderer.h"
+#include "RendererBase.h"
 #include "GraphicsObject.h"
 
-class DotsRenderer : public ItemRenderer
+class DotsRenderer : public RendererBase
 {
 public:
 	DotsRenderer(GraphicsPanel* parent);

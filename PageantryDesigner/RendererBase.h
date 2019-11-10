@@ -8,12 +8,12 @@
 struct VertexData;
 class GraphicsPanel;
 
-class ItemRenderer : protected QOpenGLFunctions
+class RendererBase : protected QOpenGLFunctions
 {
 public:
-	ItemRenderer();
-	ItemRenderer(GraphicsPanel* parent);
-	virtual ~ItemRenderer();
+	RendererBase();
+	RendererBase(GraphicsPanel* parent);
+	virtual ~RendererBase();
 	virtual void setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection) = 0;
 	virtual void Draw() = 0;
 	GraphicsPanel* getParent() { return m_parent; }
@@ -23,4 +23,5 @@ protected:
 
 	GraphicsPanel* m_parent;
 };
+
 

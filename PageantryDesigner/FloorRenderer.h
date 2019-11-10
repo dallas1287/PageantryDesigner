@@ -1,8 +1,8 @@
 #pragma once
-#include "ItemRenderer.h"
+#include "RendererBase.h"
 #include "GraphicsObject.h"
 
-class FloorRenderer : public ItemRenderer
+class FloorRenderer : public RendererBase
 {
 public:
 	FloorRenderer(GraphicsPanel* parent);
