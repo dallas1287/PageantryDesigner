@@ -41,8 +41,6 @@ public:
 	void initialize();
 	const QString& getName() { return m_name; }
 	aiMesh* getMeshRef() { return m_meshRef; }
-	std::vector<VertexData>& getVertexData() { return m_meshData; }
-	std::vector<GLushort>& getIndices() { return m_indices; }
 	std::vector<Bone*>& DeformBones() { return m_deformBones; }
 	unsigned int getMaterialIndex() { return m_materialIndex; }
 	void setMaterialIndex(int index) { m_materialIndex = index; }
@@ -61,8 +59,6 @@ private:
 	void createBones();
 
 	QString m_name;
-	std::vector<VertexData> m_meshData;
-	std::vector<GLushort> m_indices;
 	std::vector<Bone*> m_deformBones;
 	std::vector<BoneData> m_boneData;
 	unsigned int numIndices = 0;

@@ -27,7 +27,7 @@ class GraphicsObject : protected QOpenGLExtraFunctions
 {
 public:
 	GraphicsObject();
-	~GraphicsObject();
+	virtual ~GraphicsObject();
 	QOpenGLShaderProgram* ShaderProgram() const { return m_program.get(); }
 	QOpenGLTexture* Texture() const { return m_texture.get(); }
 	QOpenGLVertexArrayObject& Vao();
@@ -53,6 +53,12 @@ public:
 	void releaseAll();
 	void bindToDraw();
 	void releaseFromDraw();
+	std::vector<VertexData>& getVertexData() { return m_meshData; }
+	std::vector<GLushort>& getIndices() { return m_indices; }
+
+protected:
+	std::vector<VertexData> m_meshData;
+	std::vector<GLushort> m_indices;
 
 private:
 	std::unique_ptr<QOpenGLShaderProgram> m_program;

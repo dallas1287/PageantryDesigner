@@ -17,7 +17,7 @@ void MeshObject::initialize()
 {
 	initializeOpenGLFunctions();
 	initShaders("mesh_vertex.glsl", "texture_frag.glsl");
-	initBuffers();
+	initBuffers(m_meshData, m_indices);
 }
 
 void MeshObject::createBones()
