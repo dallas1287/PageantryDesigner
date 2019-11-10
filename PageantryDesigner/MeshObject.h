@@ -1,7 +1,6 @@
 #pragma once
 #include "Includes/assimp/scene.h"
 #include "GraphicsObject.h"
-#include <QOpenGLExtraFunctions>
 #include "utils.h"
 #include "Bone.h"
 #include "common.h"
@@ -34,13 +33,12 @@ struct BoneData
 	}
 };
 
-class MeshObject : public GraphicsObject, protected QOpenGLExtraFunctions
+class MeshObject : public GraphicsObject
 {
 public:
 	MeshObject(aiMesh* ref);
 	~MeshObject();
 	void initialize();
-	void initializeBuffers();
 	const QString& getName() { return m_name; }
 	aiMesh* getMeshRef() { return m_meshRef; }
 	std::vector<VertexData>& getVertexData() { return m_meshData; }

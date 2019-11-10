@@ -17,56 +17,7 @@ void MeshObject::initialize()
 {
 	initializeOpenGLFunctions();
 	initShaders("mesh_vertex.glsl", "texture_frag.glsl");
-	initializeBuffers();
-}
-
-void MeshObject::initializeBuffers()
-{
-	bindAll();
-	Vbo().allocate(&m_meshData[0], m_meshData.size() * sizeof(VertexData));
-
-	int offset = 0;
-
-	ShaderProgram()->enableAttributeArray(PosAttr());
-	ShaderProgram()->setAttributeBuffer(PosAttr(), GL_FLOAT, offset, 3, sizeof(VertexData));
-
-	offset += sizeof(decltype(m_meshData[0].position));
-
-	ShaderProgram()->enableAttributeArray(TextureAttr());
-	ShaderProgram()->setAttributeBuffer(TextureAttr(), GL_FLOAT, offset, 3, sizeof(VertexData));
-
-	offset += sizeof(decltype(m_meshData[0].texCoord));
-
-	ShaderProgram()->enableAttributeArray(NormAttr());
-	ShaderProgram()->setAttributeBuffer(NormAttr(), GL_FLOAT, offset, 3, sizeof(VertexData));
-
-	offset += sizeof(decltype(m_meshData[0].normal));
-
-	ShaderProgram()->enableAttributeArray(ColorAttr());
-	ShaderProgram()->setAttributeBuffer(ColorAttr(), GL_FLOAT, offset, 4, sizeof(VertexData));
-
-	offset += sizeof(decltype(m_meshData[0].color));
-
-	ShaderProgram()->enableAttributeArray(BoneAttr0());
-	ShaderProgram()->setAttributeBuffer(BoneAttr0(), GL_FLOAT, offset, 4, sizeof(VertexData));
-
-	offset += sizeof(QVector4D);
-
-	ShaderProgram()->enableAttributeArray(BoneAttr1());
-	ShaderProgram()->setAttributeBuffer(BoneAttr1(), GL_FLOAT, offset, 4, sizeof(VertexData));
-
-	offset += sizeof(QVector4D);
-
-	ShaderProgram()->enableAttributeArray(BoneAttr2());
-	ShaderProgram()->setAttributeBuffer(BoneAttr2(), GL_FLOAT, offset, 4, sizeof(VertexData));
-
-	offset += sizeof(QVector4D);
-
-	ShaderProgram()->enableAttributeArray(BoneAttr3());
-	ShaderProgram()->setAttributeBuffer(BoneAttr3(), GL_FLOAT, offset, 4, sizeof(VertexData));
-
-	Ebo().allocate(&m_indices[0], m_indices.size() * sizeof(GLushort));
-	releaseAll();
+	initBuffers();
 }
 
 void MeshObject::createBones()

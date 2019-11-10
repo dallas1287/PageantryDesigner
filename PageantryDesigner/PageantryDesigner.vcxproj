@@ -111,6 +111,7 @@
     <ClCompile Include="SceneLight.cpp" />
     <ClCompile Include="SceneNode.cpp" />
     <ClCompile Include="SceneObject.cpp" />
+    <ClCompile Include="ShapeRenderer.cpp" />
     <ClCompile Include="TopWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -130,6 +131,7 @@
     <ClInclude Include="SceneLight.h" />
     <ClInclude Include="SceneNode.h" />
     <ClInclude Include="SceneObject.h" />
+    <ClInclude Include="ShapeRenderer.h" />
     <ClInclude Include="utils.h" />
     <QtMoc Include="GraphicsPanel.h" />
     <ClInclude Include="Bone.h" />

@@ -1,8 +1,12 @@
 #pragma once
+#include "common.h"
 #include <QOpenGLTexture>
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLExtraFunctions>
+
+typedef std::vector<GLushort> IndexPool;
 
 struct ShaderAttributes
 {
@@ -19,7 +23,7 @@ struct ShaderAttributes
 	GLuint m_projectionUniform = -1;
 };
 
-class GraphicsObject
+class GraphicsObject : protected QOpenGLExtraFunctions
 {
 public:
 	GraphicsObject();
@@ -40,6 +44,7 @@ public:
 	GLuint BoneAttr1() { return m_shaderAttributes.m_boneTransform1; }
 	GLuint BoneAttr2() { return m_shaderAttributes.m_boneTransform2; }
 	GLuint BoneAttr3() { return m_shaderAttributes.m_boneTransform3; }
+	void initBuffers(VertexDataPool& data, IndexPool& indices);
 	void initShaders(const QString& vertexPath, const QString& fragmentPath);
 	void initTexture(const QString& path);
 	void setupAttributes();

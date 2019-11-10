@@ -25,3 +25,5 @@ struct VertexData
 	QVector4D color;
 	QMatrix4x4 transform;
 };
+
+typedef std::vector<VertexData> VertexDataPool;

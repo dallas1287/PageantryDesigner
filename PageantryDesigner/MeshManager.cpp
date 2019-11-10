@@ -335,7 +335,7 @@ void MeshManager::animate()
 		animateRecursively(getBoneRig()->getRootNode(), QMatrix4x4());
 		for (auto bd : meshObj->getBoneData())
 			bd.transformFromBones();
-		meshObj->initializeBuffers();
+		meshObj->initBuffers(meshObj->getVertexData(), meshObj->getIndices());
 	}
 
 	if (!((FigureRenderer*)m_parent)->getParent()->isPaused())
