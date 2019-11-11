@@ -38,6 +38,8 @@ void SceneCamera::resetView()
 	m_lookTarget = DefaultTarget;
 	m_camFront = DefaultCamFront;
 	m_camUp = DefaultCamUp;
+	m_baseCamFront = DefaultCamFront;
+	m_baseCamUp = DefaultCamUp;
 	m_perspective.setToIdentity();
 	m_perspective.perspective(DefaultFov, DefaultAspectRatio, DefaultNearPlane, DefaultFarPlane);
 	
@@ -131,10 +133,10 @@ void SceneCamera::rotateCam(Direction::Movement dir)
 	switch (dir)
 	{
 	case Direction::Left:
-		setYaw(Yaw() - 1.0);
+		setYaw(Yaw() + 1.0);
 		break;
 	case Direction::Right:
-		setYaw(Yaw() + 1.0);
+		setYaw(Yaw() - 1.0);
 		break;
 	case Direction::Up:
 		setPitch(Pitch() + 1.0);
@@ -216,7 +218,6 @@ void SceneCamera::setYaw(const float& val)
 		m_yaw = 0;
 	if (m_yaw <= -360)
 		m_yaw = 0;
-	updateView();
 }
 
 void SceneCamera::setPitch(const float& val)
@@ -226,7 +227,6 @@ void SceneCamera::setPitch(const float& val)
 		m_pitch = 0;
 	if (m_pitch <= -360)
 		m_pitch = 0;
-	updateView();
 }
 
 void SceneCamera::setRoll(const float& val)
@@ -236,7 +236,6 @@ void SceneCamera::setRoll(const float& val)
 		m_roll = 0;
 	if (m_roll <= -360)
 		m_roll = 0;
-	updateView();
 }
 
 void SceneCamera::zoomIn()

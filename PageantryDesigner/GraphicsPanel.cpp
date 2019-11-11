@@ -119,9 +119,9 @@ void GraphicsPanel::mouseMoveEvent(QMouseEvent* event)
 	if (m_middlePressed)
 	{
 		if(abs(event->pos().x() - m_lastPos.x()) > abs(event->pos().y() - m_lastPos.y()))
-			m_camera.setYaw(m_camera.Yaw() + (event->pos().x() > m_lastPos.x() ? 1.0 : -1.0));
+			m_camera.rotateCam(event->pos().x() > m_lastPos.x() ? Direction::Left : Direction::Right);
 		else
-			m_camera.setPitch(m_camera.Pitch() + (event->pos().y() > m_lastPos.y() ? 1.0 : -1.0));
+			m_camera.rotateCam(event->pos().y() > m_lastPos.y() ? Direction::Up : Direction::Down);
 	}
 }
 
