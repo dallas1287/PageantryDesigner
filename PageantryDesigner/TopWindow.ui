@@ -28,7 +28,7 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="0" colspan="7">
+    <item row="0" column="0" colspan="8">
      <layout class="QHBoxLayout" name="graphicsTabsLayout">
       <property name="sizeConstraint">
        <enum>QLayout::SetDefaultConstraint</enum>
@@ -92,7 +92,7 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="6">
+    <item row="3" column="7">
      <widget class="QLineEdit" name="armLineEdit">
       <property name="text">
        <string>0</string>
@@ -131,7 +131,7 @@
       </property>
      </spacer>
     </item>
-    <item row="2" column="6">
+    <item row="2" column="7">
      <widget class="QPushButton" name="btnPlay">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -160,7 +160,7 @@
       </property>
      </widget>
     </item>
-    <item row="4" column="3" colspan="4">
+    <item row="4" column="3" colspan="5">
      <widget class="QComboBox" name="cbAnimations">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -184,7 +184,7 @@
      </widget>
     </item>
     <item row="2" column="4">
-     <widget class="QLabel" name="labelCameraUp">
+     <widget class="QLabel" name="labelCamUp">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
         <horstretch>0</horstretch>
@@ -209,7 +209,7 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="5">
+    <item row="2" column="6">
      <widget class="QLabel" name="labelYPW">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -219,6 +219,19 @@
       </property>
       <property name="text">
        <string>Yaw, Pitch, Roll</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="5">
+     <widget class="QLabel" name="labelCamRight">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Camera Right</string>
       </property>
      </widget>
     </item>

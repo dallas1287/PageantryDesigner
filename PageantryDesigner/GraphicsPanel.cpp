@@ -41,12 +41,12 @@ void GraphicsPanel::initializeGL()
 	//m_MeshRenderer = new MeshRenderer(this, "../modeltest7_multi.fbx");
 	//m_MeshRenderer.reset(new MeshRenderer(this, "../cylinderTest2.fbx"));
 	//m_MeshRenderer.reset(new MeshRenderer(this, "../kitty_new6.fbx"));
-	//m_MeshRenderer.reset(new MeshRenderer(this, "../cube_texture_scene.fbx"));
+	m_MeshRenderer.reset(new MeshRenderer(this, "../cube_texture_scene.fbx"));
 	//m_MeshRenderer.reset(new MeshRenderer(this, "../cube_color.fbx"));
 	//m_MeshRenderer.reset(new MeshRenderer(this, "../color_sphere_uv.fbx"));
-	m_MeshRenderer.reset(new MeshRenderer(this, "../sphere_texture.fbx"));
-	//m_MeshRenderer->initTextures("../cube_paint.png");
-	m_MeshRenderer->initTextures("../paint_sphere.png");
+	//m_MeshRenderer.reset(new MeshRenderer(this, "../sphere_texture.fbx"));
+	m_MeshRenderer->initTextures("../cube_paint.png");
+	//m_MeshRenderer->initTextures("../paint_sphere.png");
 
 	populateAnimCb();
 	populateMeshesCb();

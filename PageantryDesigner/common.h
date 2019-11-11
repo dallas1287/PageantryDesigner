@@ -3,9 +3,9 @@
 #include <unordered_map>
 #include "Bone.h"
 
-const QVector3D X(1.0f, 0.0f, 0.0f);
-const QVector3D Y(0.0f, 1.0f, 0.0f);
-const QVector3D Z(0.0f, 0.0f, 1.0f);
+const QVector3D X(1.0, 0.0, 0.0);
+const QVector3D Y(0.0, 1.0, 0.0);
+const QVector3D Z(0.0, 0.0, 1.0);
 
 const QVector4D X4(1.0f, 0.0f, 0.0f, 0.0f);
 const QVector4D Y4(0.0f, 1.0f, 0.0f, 0.0f);

@@ -1,6 +1,5 @@
 #include "MeshManager.h"
 #include "GraphicsPanel.h"
-#include <fstream>
 
 MeshManager::~MeshManager()
 {
@@ -276,16 +275,6 @@ void MeshManager::createMeshes(const aiScene* scene)
 			for (int index = 0; index < 3; ++index)
 				meshObj->getIndices().push_back(face.mIndices[index]);
 		}
-		std::ofstream outfile("../cubebuilder.txt");
-		for (auto vdata : meshObj->getVertexData())
-		{
-			outfile << vectorToStdString(vdata.position) << std::endl;
-		}
-		for (auto idata : meshObj->getIndices())
-		{
-			outfile << idata << std::endl;
-		}
-		outfile.close();
 		meshObj->createBoneData();
 		meshObj->buildVertexTransforms();
 	}

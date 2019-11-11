@@ -30,7 +30,8 @@ void TopWindow::updateCameraStats()
 	ui.labelCamPos->setText("Position: " + vectorToString(m_gPanel->getCamera().Position()));
 	ui.labelCamLookAt->setText("LookAt: " + vectorToString(m_gPanel->getCamera().Target()));
 	ui.labelCamFront->setText("Front: " + vectorToString(m_gPanel->getCamera().Front()));
-	ui.labelCameraUp->setText("Up: " + vectorToString(m_gPanel->getCamera().Up()));
+	ui.labelCamUp->setText("Up: " + vectorToString(m_gPanel->getCamera().Up()));
+	ui.labelCamRight->setText("Right: " + vectorToString(m_gPanel->getCamera().getRightVector()));
 	ui.labelYPW->setText("Yaw: " + QString::number(m_gPanel->getCamera().Yaw(), 'f', 1) + 
 		" Pitch: " + QString::number(m_gPanel->getCamera().Pitch(), 'f', 1) + 
 		" Roll: " + QString::number(m_gPanel->getCamera().Roll(), 'f', 1));
