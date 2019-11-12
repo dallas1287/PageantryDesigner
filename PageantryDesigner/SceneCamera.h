@@ -74,6 +74,7 @@ public:
 	void setUp(const QVector3D& vector) { m_camUp = roundVector(vector); }
 	void setBaseUp(const QVector3D& vector) { m_baseCamUp = vector; }
 	void updateCamUp();
+	void updateCamFrontAndUp();
 
 	QMatrix4x4& View() { return m_camView; }
 	void updateView();
@@ -81,7 +82,7 @@ public:
 
 	QVector3D getForwardVector();
 	QVector3D getRightVector();
-	QVector3D getDefaultRightVector();
+	QVector3D getBaseRightVector();
 
 	void moveCam(Direction::Movement dir);
 	void rollCam(Direction::Rotation rot);

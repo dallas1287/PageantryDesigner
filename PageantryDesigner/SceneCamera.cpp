@@ -58,30 +58,20 @@ void SceneCamera::resetYPW()
 
 void SceneCamera::updateView()
 {
-	updateCamFront();
-	updateCamUp();
+	updateCamFrontAndUp();
 	m_lookTarget = m_position + m_camFront;
 	m_camView.setToIdentity();
 	m_camView.lookAt(m_position, m_lookTarget, m_camUp);
 }
 
-void SceneCamera::updateCamFront()
+void SceneCamera::updateCamFrontAndUp()
 {
-	QQuaternion pitchRotation = QQuaternion::fromAxisAndAngle(getRightVector(), m_pitch);
-	QQuaternion yawRotation = QQuaternion::fromAxisAndAngle(m_camUp, m_yaw);
-	QQuaternion rollRotation = QQuaternion::fromAxisAndAngle(m_camFront, m_roll);
-	QQuaternion total = pitchRotation * yawRotation * rollRotation;
-	setFront(total.rotatedVector(m_baseCamFront));
+	QQuaternion pitchRotation = QQuaternion::fromAxisAndAngle(getBaseRightVector(), m_pitch);
+	QQuaternion yawRotation = QQuaternion::fromAxisAndAngle(m_baseCamUp, m_yaw);
+	QQuaternion rollRotation = QQuaternion::fromAxisAndAngle(m_baseCamFront, m_roll);
+	setFront(yawRotation.rotatedVector(pitchRotation.rotatedVector(rollRotation.rotatedVector(m_baseCamFront))));
+	setUp(yawRotation.rotatedVector(pitchRotation.rotatedVector(rollRotation.rotatedVector(m_baseCamUp))));
 	m_camFront.normalize();
-}
-
-void SceneCamera::updateCamUp()
-{
-	QQuaternion pitchRotation = QQuaternion::fromAxisAndAngle(getRightVector(), m_pitch);
-	QQuaternion yawRotation = QQuaternion::fromAxisAndAngle(m_camUp, m_yaw);
-	QQuaternion rollRotation = QQuaternion::fromAxisAndAngle(m_camFront, m_roll);
-	QQuaternion total = pitchRotation * yawRotation * rollRotation;
-	setUp(total.rotatedVector(m_baseCamUp));
 	m_camUp.normalize();
 }
 
@@ -95,9 +85,9 @@ QVector3D SceneCamera::getRightVector()
 	return QVector3D::crossProduct(m_camFront, m_camUp);
 }
 
-QVector3D SceneCamera::getDefaultRightVector()
+QVector3D SceneCamera::getBaseRightVector()
 {
-	return QVector3D::crossProduct(DefaultCamFront, DefaultCamUp);
+	return QVector3D::crossProduct(m_baseCamFront, m_baseCamUp);
 }
 
 void SceneCamera::moveCam(Direction::Movement dir)
@@ -211,27 +201,21 @@ void SceneCamera::moveCamPlane(Direction::Plane plane)
 void SceneCamera::setYaw(const float& val)
 {
 	m_yaw = val;
-	if (m_yaw >= 360)
-		m_yaw = 0;
-	if (m_yaw <= -360)
+	if (m_yaw >= 360 || m_yaw <= -360)
 		m_yaw = 0;
 }
 
 void SceneCamera::setPitch(const float& val)
 {
 	m_pitch = val;
-	if (m_pitch >= 360)
-		m_pitch = 0;
-	if (m_pitch <= -360)
+	if (m_pitch >= 360 || m_pitch <= -360)
 		m_pitch = 0;
 }
 
 void SceneCamera::setRoll(const float& val)
 {
 	m_roll = val;
-	if (m_roll >= 360)
-		m_roll = 0;
-	if (m_roll <= -360)
+	if (m_roll >= 360 || m_roll <= -360)
 		m_roll = 0;
 }
 
