@@ -179,20 +179,17 @@ void SceneCamera::moveCamPlane(Direction::Plane plane)
 		break;
 	case Direction::Back:
 		setPosition(QVector3D(0.0, 0.0, -3.0));
-		setYaw(180);
-		setBaseFront(DefaultCamFront);
+		setBaseFront(Z);
 		setBaseUp(DefaultCamUp);
 		break;
 	case Direction::West:
 		setPosition(QVector3D(3.0, 0.0, 0.0));
-		setYaw(90);
-		setBaseFront(DefaultCamFront);
+		setBaseFront(-1.0 * X);
 		setBaseUp(DefaultCamUp);
 		break;
 	case Direction::East:
 		setPosition(QVector3D(-3.0, 0.0, 0.0));
-		setYaw(-90);
-		setBaseFront(DefaultCamFront);
+		setBaseFront(X);
 		setBaseUp(DefaultCamUp);
 		break;
 	case Direction::Top:
