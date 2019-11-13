@@ -104,7 +104,7 @@ QVector3D convertAiToVector(const aiVector3D& vector)
 	return QVector3D(vector.x, vector.y, vector.z);
 }
 
-QVector4D gammaCorrected(const QVector4D& linear)
+QVector4D gammaCorrected(const QVector4D& input)
 {
-	return QVector4D(qPow(linear.x(), (1 / 2.2)), qPow(linear.y(), (1 / 2.2)), qPow(linear.z(), (1 / 2.2)), 1.0);
+	return QVector4D(qPow(input.x(), (1 / 2.2)), qPow(input.y(), (1 / 2.2)), qPow(input.z(), (1 / 2.2)), 1.0);
 }

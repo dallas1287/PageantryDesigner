@@ -17,6 +17,8 @@ MeshRenderer::MeshRenderer(GraphicsPanel* parent, const QString& importPath) : R
 
 MeshRenderer::~MeshRenderer()
 {
+	for (auto pObj : m_primitiveObjects)
+		delete pObj;
 }
 
 void MeshRenderer::importModel(const QString& importPath, bool reset)
@@ -75,9 +77,17 @@ void MeshRenderer::setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& proje
 void MeshRenderer::Draw()
 {
 	for (auto mesh : m_meshManager->getMeshes())
+		mesh->Draw();
+
+	for (auto pObj : m_primitiveObjects)
+		pObj->Draw();
+}
+
+void MeshRenderer::createPrimitive(int count)
+{
+	for (int i = 0; i < count; ++i)
 	{
-		mesh->bindToDraw();
-		glDrawElements(GL_TRIANGLES, mesh->getIndices().size(), GL_UNSIGNED_SHORT, 0);
-		mesh->releaseFromDraw();
+		m_primitiveObjects.emplace_back(new PrimitiveObject());
+		m_primitiveObjects.back()->generateCube();
 	}
 }

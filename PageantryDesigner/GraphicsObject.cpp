@@ -2,6 +2,7 @@
 
 GraphicsObject::GraphicsObject() : m_ebo(QOpenGLBuffer(QOpenGLBuffer::IndexBuffer))
 {
+	initializeOpenGLFunctions();
 	//initialize arrays and attributes
 	Vao();
 	Vbo();
@@ -169,4 +170,21 @@ void GraphicsObject::initBuffers(VertexDataPool& data, IndexPool& indices)
 
 	Ebo().allocate(&indices[0], indices.size() * sizeof(GLushort));
 	releaseAll();
+}
+
+void GraphicsObject::Draw()
+{
+	if (getIndices().empty())
+		return;
+	bindToDraw();
+	glDrawElements(GL_TRIANGLES, getIndices().size(), GL_UNSIGNED_SHORT, 0);
+	releaseFromDraw();
+}
+
+void GraphicsObject::applyMeshColor()
+{
+	for (int i = 0; i < m_vertexData.size(); ++i)
+		m_vertexData[i].color = m_meshColor;
+
+	initBuffers(m_vertexData, m_indices);
 }

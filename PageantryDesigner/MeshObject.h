@@ -45,8 +45,6 @@ public:
 	unsigned int getMaterialIndex() { return m_materialIndex; }
 	void setMaterialIndex(int index) { m_materialIndex = index; }
 	void setMeshColor(aiColor3D& color) { m_meshColor = gammaCorrected(QVector4D(color.r, color.g, color.b, 1.0)); }
-	void setMeshColor(QVector4D& color) { m_meshColor = gammaCorrected(color); }
-	QVector4D& getMeshColor() { return m_meshColor; }
 	bool isRigged() { return m_isRigged; }
 	void setIsRigged(bool rigged) { m_isRigged = rigged; }
 
@@ -64,6 +62,5 @@ private:
 	unsigned int numIndices = 0;
 	bool m_isRigged = false;
 	unsigned int m_materialIndex = -1;
-	QVector4D m_meshColor;
 	aiMesh* m_meshRef = nullptr;
 };

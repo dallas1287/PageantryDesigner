@@ -17,6 +17,9 @@ public:
 	MeshManager* getMeshManager() { return m_meshManager.get(); }
 	void initTextures(const QString& path);
 
+	std::vector<PrimitiveObject*>& PrimitiveObjects() { return m_primitiveObjects; }
+	void createPrimitive(int count);
+
 protected:
 	virtual void initialize() override;
 
@@ -25,6 +28,6 @@ private:
 	void initShaders(const QString& vertexPath, const QString& fragmentPath);
 
 	std::unique_ptr<MeshManager> m_meshManager;
-	std::unique_ptr<PrimitiveObject> m_primObj;
+	std::vector<PrimitiveObject*> m_primitiveObjects;
 };
 
