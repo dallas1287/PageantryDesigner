@@ -41,13 +41,25 @@ void GraphicsPanel::initializeGL()
 	//m_MeshRenderer = new MeshRenderer(this, "../modeltest7_multi.fbx");
 	//m_MeshRenderer.reset(new MeshRenderer(this, "../cylinderTest2.fbx"));
 	//m_MeshRenderer.reset(new MeshRenderer(this, "../kitty_new6.fbx"));
-	m_MeshRenderer.reset(new MeshRenderer(this, "../cube_texture_scene.fbx"));
+	//m_MeshRenderer.reset(new MeshRenderer(this, "../cube_texture_scene.fbx"));
 	//m_MeshRenderer.reset(new MeshRenderer(this, "../cube_color.fbx"));
 	//m_MeshRenderer.reset(new MeshRenderer(this, "../color_sphere_uv.fbx"));
 	//m_MeshRenderer.reset(new MeshRenderer(this, "../sphere_texture.fbx"));
-	m_MeshRenderer->initTextures("../cube_paint.png");
+	//m_MeshRenderer->initTextures("../cube_paint.png");
 	//m_MeshRenderer->initTextures("../paint_sphere.png");
+	//m_MeshRenderer->getMeshManager()->getMeshes()[0]->initTexture("../container2.png");
+	//m_MeshRenderer->getMeshManager()->getMeshes()[0]->initSpecularTexture("../container2_specular.png");
+	m_MeshRenderer.reset(new MeshRenderer(this));
 
+	m_MeshRenderer->createCube(3);
+	for (auto pObj : m_MeshRenderer->PrimitiveObjects())
+	{
+		pObj->setMeshColor(QVector4D(.992, .996, .435, 1.0));
+		pObj->applyMeshColor();
+		pObj->initTexture("../container2.png");
+		pObj->initSpecularTexture("../container2_specular.png");
+	}
+	m_MeshRenderer->createQuad();
 	populateAnimCb();
 	populateMeshesCb();
 
@@ -76,12 +88,111 @@ void GraphicsPanel::myPaint()
 
 	m_MeshRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 
-	if (m_frame % 1 == 0)
+	/*if (m_frame % 1 == 0)
 	{
 		m_MeshRenderer->getMeshManager()->animate();
 		updateFrameCt(m_MeshRenderer->getMeshManager()->getFrameCt());
 	}
+	m_MeshRenderer->Draw();*/
+	m_MeshRenderer->PrimitiveObjects()[0]->setMVP(model, m_camera.View(), m_camera.Perspective());
+	model.translate(QVector3D(3.0, 0.0, 0.0));
+	m_MeshRenderer->PrimitiveObjects()[1]->setMVP(model, m_camera.View(), m_camera.Perspective());
+	model.setToIdentity();
+	model.translate(QVector3D(-3.0, 0.0, 0.0));
+	m_MeshRenderer->PrimitiveObjects()[2]->setMVP(model, m_camera.View(), m_camera.Perspective());
+	/*for (auto mesh : m_MeshRenderer->PrimitiveObjects())
+	{
+		mesh->ShaderProgram()->bind();
+		mesh->ShaderProgram()->setUniformValue("viewPos", m_camera.Position());
+
+		mesh->ShaderProgram()->setUniformValue("light.position", m_camera.Position());
+		mesh->ShaderProgram()->setUniformValue("light.direction", m_camera.Front());
+		mesh->ShaderProgram()->setUniformValue("light.ambient", .2, .2, .2);
+		mesh->ShaderProgram()->setUniformValue("light.diffuse", .8, .8, .8);
+		mesh->ShaderProgram()->setUniformValue("light.specular", 1.0, 1.0, 1.0);
+		mesh->ShaderProgram()->setUniformValue("light.constant", 1.0f);
+		mesh->ShaderProgram()->setUniformValue("light.linear", 0.09f);
+		mesh->ShaderProgram()->setUniformValue("light.quadratic", 0.032f);
+		mesh->ShaderProgram()->setUniformValue("light.cutoff", (float)qCos(qDegreesToRadians(12.5)));
+		mesh->ShaderProgram()->setUniformValue("light.outerCutoff", (float)qCos(qDegreesToRadians(17.5)));
+
+		//mesh->ShaderProgram()->setUniformValue("material.ambient", 1.0, 0.5, 0.31);
+		//mesh->ShaderProgram()->setUniformValue("material.diffuse", 1.0, 0.5, 0.31);
+		//mesh->ShaderProgram()->setUniformValue("material.specular", 0.8, 0.8, 0.8);
+		mesh->ShaderProgram()->setUniformValue("material.shininess", 64.0f);
+		mesh->ShaderProgram()->release();
+	}*/
+
+	for (auto mesh : m_MeshRenderer->PrimitiveObjects())
+	{
+		mesh->ShaderProgram()->bind();
+		mesh->ShaderProgram()->setUniformValue("material.shininess", 64.0f);
+		mesh->ShaderProgram()->setUniformValue("viewPos", m_camera.Position());
+		mesh->ShaderProgram()->setUniformValue("dirLight.direction", 2.0, -2.0, 2.0);
+		mesh->ShaderProgram()->setUniformValue("dirLight.ambient", .1, .1, .8);
+		mesh->ShaderProgram()->setUniformValue("dirLight.diffuse", .1, .1, .8);
+		mesh->ShaderProgram()->setUniformValue("dirLight.specular", .5, .5, .5);
+
+		mesh->ShaderProgram()->setUniformValue("pointLights[0].position", 0.0, -3.0, 0.0);
+		mesh->ShaderProgram()->setUniformValue("pointLights[0].ambient", .05, .05, .05);
+		mesh->ShaderProgram()->setUniformValue("pointLights[0].diffuse", 1.0, .09, .5);
+		mesh->ShaderProgram()->setUniformValue("pointLights[0].specular", 1.0, 1.0, 1.0);
+		mesh->ShaderProgram()->setUniformValue("pointLights[0].constant", 1.0f);
+		mesh->ShaderProgram()->setUniformValue("pointLights[0].linear", 0.09f);
+		mesh->ShaderProgram()->setUniformValue("pointLights[0].quadratic", 0.032f);
+
+		mesh->ShaderProgram()->setUniformValue("pointLights[1].position", 0.0, -3.0, 0.0);
+		mesh->ShaderProgram()->setUniformValue("pointLights[1].ambient", .05, .05, .05);
+		mesh->ShaderProgram()->setUniformValue("pointLights[1].diffuse", 1.0, .09, .5);
+		mesh->ShaderProgram()->setUniformValue("pointLights[1].specular", 1.0, 1.0, 1.0);
+		mesh->ShaderProgram()->setUniformValue("pointLights[1].constant", 1.0f);
+		mesh->ShaderProgram()->setUniformValue("pointLights[1].linear", 0.09f);
+		mesh->ShaderProgram()->setUniformValue("pointLights[1].quadratic", 0.032f);
+
+		mesh->ShaderProgram()->setUniformValue("pointLights[2].position", 0.0, -3.0, 0.0);
+		mesh->ShaderProgram()->setUniformValue("pointLights[2].ambient", .05, .05, .05);
+		mesh->ShaderProgram()->setUniformValue("pointLights[2].diffuse", 1.0, .09, .5);
+		mesh->ShaderProgram()->setUniformValue("pointLights[2].specular", 1.0, 1.0, 1.0);
+		mesh->ShaderProgram()->setUniformValue("pointLights[2].constant", 1.0f);
+		mesh->ShaderProgram()->setUniformValue("pointLights[2].linear", 0.09f);
+		mesh->ShaderProgram()->setUniformValue("pointLights[2].quadratic", 0.032f);
+
+		mesh->ShaderProgram()->setUniformValue("pointLights[3].position", 0.0, -3.0, 0.0);
+		mesh->ShaderProgram()->setUniformValue("pointLights[3].ambient", .05, .05, .05);
+		mesh->ShaderProgram()->setUniformValue("pointLights[3].diffuse", 1.0, .09, .5);
+		mesh->ShaderProgram()->setUniformValue("pointLights[3].specular", 1.0, 1.0, 1.0);
+		mesh->ShaderProgram()->setUniformValue("pointLights[3].constant", 1.0f);
+		mesh->ShaderProgram()->setUniformValue("pointLights[3].linear", 0.09f);
+		mesh->ShaderProgram()->setUniformValue("pointLights[3].quadratic", 0.032f);
+
+		mesh->ShaderProgram()->setUniformValue("spotLight.position", m_camera.Position());
+		mesh->ShaderProgram()->setUniformValue("spotLight.direction", m_camera.Front());
+		mesh->ShaderProgram()->setUniformValue("spotLight.ambient", 0.0, 0.0, 0.0);
+		mesh->ShaderProgram()->setUniformValue("spotLight.diffuse", 0.0, 1.0, 0.0);
+		mesh->ShaderProgram()->setUniformValue("spotLight.specular", 1.0, 1.0, 1.0);
+		mesh->ShaderProgram()->setUniformValue("spotLight.constant", 1.0f);
+		mesh->ShaderProgram()->setUniformValue("spotLight.linear", 0.09f);
+		mesh->ShaderProgram()->setUniformValue("spotLight.quadratic", 0.032f);
+		mesh->ShaderProgram()->setUniformValue("spotLight.cutOff", (float)qCos(qDegreesToRadians(12.5)));
+		mesh->ShaderProgram()->setUniformValue("spotLight.outerCutOff", (float)qCos(qDegreesToRadians(15.0)));
+
+		mesh->ShaderProgram()->release();
+	}
+
 	m_MeshRenderer->Draw();
+
+	/*glActiveTexture(GL_TEXTURE3);
+	mesh->Texture()->bind(GL_TEXTURE3);
+
+	//glActiveTexture(GL_TEXTURE0);
+	//mesh->SpecularTexture()->bind();
+
+	mesh->ShaderProgram()->setUniformValue("material.diffuse", GL_TEXTURE3);
+	mesh->ShaderProgram()->setUniformValue("material.specular", GL_TEXTURE0);
+
+	mesh->bindToDraw();
+	glDrawElements(GL_TRIANGLES, mesh->getIndices().size(), GL_UNSIGNED_SHORT, 0);
+	mesh->releaseFromDraw();*/
 
 	++m_frame;	
 	painter.end();

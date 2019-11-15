@@ -94,9 +94,9 @@ std::string quaternionToStdString(const QQuaternion& quat, int precision)
 	return quatStr.toLocal8Bit().constData();
 }
 
-QVector4D convertAiToVector(const aiColor3D& color)
+QVector3D convertAiToVector(const aiColor3D& color)
 {
-	return QVector4D(color.r, color.g, color.b, 1.0);
+	return QVector3D(color.r, color.g, color.b);
 }
 
 QVector3D convertAiToVector(const aiVector3D& vector)

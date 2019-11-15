@@ -16,7 +16,7 @@ MeshObject::~MeshObject()
 void MeshObject::initialize()
 {
 	initializeOpenGLFunctions();
-	initShaders("mesh_vertex.glsl", "texture_frag.glsl");
+	initShaders("mesh_vertex.glsl", "lightTex_frag.glsl");
 	initBuffers(m_vertexData, m_indices);
 }
 

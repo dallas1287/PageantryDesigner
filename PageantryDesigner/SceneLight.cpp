@@ -12,13 +12,12 @@ void SceneLight::init()
 		return;
 
 	m_name = QString(m_refLight->mName.C_Str());
-	m_ambientColor = convertAiToVector(m_refLight->mColorAmbient);
-	m_diffuseColor = convertAiToVector(m_refLight->mColorDiffuse);
-	m_specularColor = convertAiToVector(m_refLight->mColorSpecular);
-	m_direction = convertAiToVector(m_refLight->mDirection);
-	m_position = convertAiToVector(m_refLight->mPosition);
-	m_attenuationConstant = m_refLight->mAttenuationConstant;
-	m_attenuationLinear = m_refLight->mAttenuationLinear;
-	m_attenuationQuadratic = m_refLight->mAttenuationQuadratic;
-
+	m_lightData.ambient = convertAiToVector(m_refLight->mColorAmbient);
+	m_lightData.diffuse = convertAiToVector(m_refLight->mColorDiffuse);
+	m_lightData.specular = convertAiToVector(m_refLight->mColorSpecular);
+	m_lightData.direction = convertAiToVector(m_refLight->mDirection);
+	m_lightData.position = convertAiToVector(m_refLight->mPosition);
+	m_lightData.attenuationConstant = m_refLight->mAttenuationConstant;
+	m_lightData.attenuationLinear = m_refLight->mAttenuationLinear;
+	m_lightData.attenuationQuadratic = m_refLight->mAttenuationQuadratic;
 }

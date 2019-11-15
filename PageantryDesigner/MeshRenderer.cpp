@@ -12,7 +12,8 @@ MeshRenderer::MeshRenderer(GraphicsPanel* parent) : RendererBase(parent)
 MeshRenderer::MeshRenderer(GraphicsPanel* parent, const QString& importPath) : RendererBase(parent)
 {
 	m_meshManager.reset(new MeshManager(this));
-	importModel(importPath);
+	if(!importPath.isEmpty())
+		importModel(importPath);
 }
 
 MeshRenderer::~MeshRenderer()
@@ -43,7 +44,7 @@ void MeshRenderer::loadTexture(const QString& texturePath, const QString& meshNa
 	if (meshObj && !texturePath.isEmpty())
 	{
 		meshObj->initTexture(texturePath);
-		meshObj->initShaders("mesh_vertex.glsl", "texture_frag.glsl");
+		meshObj->initShaders("mesh_vertex.glsl", "light_frag.glsl");
 	}
 }
 
@@ -83,11 +84,14 @@ void MeshRenderer::Draw()
 		pObj->Draw();
 }
 
-void MeshRenderer::createPrimitive(int count)
+void MeshRenderer::createCube(int count)
 {
 	for (int i = 0; i < count; ++i)
-	{
-		m_primitiveObjects.emplace_back(new PrimitiveObject());
-		m_primitiveObjects.back()->generateCube();
-	}
+		m_primitiveObjects.emplace_back(new PrimitiveObject(Primitive::Type::Cube));
+}
+
+void MeshRenderer::createQuad(int count)
+{
+	for (int i = 0; i < count; ++i)
+		m_primitiveObjects.emplace_back(new PrimitiveObject(Primitive::Type::Quad));
 }

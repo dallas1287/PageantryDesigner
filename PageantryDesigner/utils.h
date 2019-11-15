@@ -29,35 +29,35 @@ const std::vector<GLushort> QuadOutlineIndices =
 const std::vector<VertexData> CubeTemplate =
 {
 	//face 1 Z+
-	{ QVector3D(X + Y + Z), QVector3D(1.0, 1.0, 0.0) }, // top right
-	{ QVector3D(-X + Y + Z), QVector3D(1.0, 0.0, 0.0) }, // bottom right
-	{ QVector3D(-X - Y + Z), QVector3D(0.0, 0.0, 0.0) }, // bottom left
-	{ QVector3D(X - Y + Z), QVector3D(0.0, 1.0, 0.0) },  // top left 
+	{ QVector3D(X + Y + Z), QVector3D(1.0, 1.0, 0.0), QVector3D(0.0, 0.0, 1.0) }, // top right
+	{ QVector3D(-X + Y + Z), QVector3D(1.0, 0.0, 0.0), QVector3D(0.0, 0.0, 1.0) }, // bottom right
+	{ QVector3D(-X - Y + Z), QVector3D(0.0, 0.0, 0.0), QVector3D(0.0, 0.0, 1.0) }, // bottom left
+	{ QVector3D(X - Y + Z), QVector3D(0.0, 1.0, 0.0), QVector3D(0.0, 0.0, 1.0) },  // top left 
 	//face 2 Y-
-	{ QVector3D(X - Y - Z), QVector3D(1.0, 1.0, 0.0) }, // top right
-	{ QVector3D(X - Y + Z), QVector3D(1.0, 0.0, 0.0) }, // bottom right
-	{ QVector3D(-X - Y + Z), QVector3D(0.0, 0.0, 0.0) }, // bottom left
-	{ QVector3D(-X - Y - Z), QVector3D(0.0, 1.0, 0.0) },  // top left 
+	{ QVector3D(X - Y - Z), QVector3D(1.0, 1.0, 0.0), QVector3D(0.0, -1.0, 0.0) }, // top right
+	{ QVector3D(X - Y + Z), QVector3D(1.0, 0.0, 0.0), QVector3D(0.0, -1.0, 0.0) }, // bottom right
+	{ QVector3D(-X - Y + Z), QVector3D(0.0, 0.0, 0.0), QVector3D(0.0, -1.0, 0.0) }, // bottom left
+	{ QVector3D(-X - Y - Z), QVector3D(0.0, 1.0, 0.0), QVector3D(0.0, -1.0, 0.0) },  // top left 
 	//face 3 X-
-	{ QVector3D(-X - Y - Z), QVector3D(1.0, 1.0, 0.0) }, // top right
-	{ QVector3D(-X - Y + Z), QVector3D(1.0, 0.0, 0.0) }, // bottom right
-	{ QVector3D(-X + Y + Z), QVector3D(0.0, 0.0, 0.0) }, // bottom left
-	{ QVector3D(-X + Y - Z), QVector3D(0.0, 1.0, 0.0) },  // top left 
+	{ QVector3D(-X - Y - Z), QVector3D(1.0, 1.0, 0.0), QVector3D(-1.0, 0.0, 0.0) }, // top right
+	{ QVector3D(-X - Y + Z), QVector3D(1.0, 0.0, 0.0), QVector3D(-1.0, 0.0, 0.0) }, // bottom right
+	{ QVector3D(-X + Y + Z), QVector3D(0.0, 0.0, 0.0), QVector3D(-1.0, 0.0, 0.0) }, // bottom left
+	{ QVector3D(-X + Y - Z), QVector3D(0.0, 1.0, 0.0), QVector3D(-1.0, 0.0, 0.0) },  // top left 
 	//face 4 Z-
-	{ QVector3D(-X + Y - Z), QVector3D(1.0, 1.0, 0.0) }, // top right
-	{ QVector3D(X + Y - Z), QVector3D(1.0, 0.0, 0.0) }, // bottom right
-	{ QVector3D(X - Y - Z), QVector3D(0.0, 0.0, 0.0) }, // bottom left
-	{ QVector3D(-X - Y - Z), QVector3D(0.0, 1.0, 0.0) },  // top left 
+	{ QVector3D(-X + Y - Z), QVector3D(1.0, 1.0, 0.0), QVector3D(0.0, 0.0, -1.0) }, // top right
+	{ QVector3D(X + Y - Z), QVector3D(1.0, 0.0, 0.0), QVector3D(0.0, 0.0, -1.0) }, // bottom right
+	{ QVector3D(X - Y - Z), QVector3D(0.0, 0.0, 0.0), QVector3D(0.0, 0.0, -1.0) }, // bottom left
+	{ QVector3D(-X - Y - Z), QVector3D(0.0, 1.0, 0.0), QVector3D(0.0, 0.0, -1.0) },  // top left 
 	//face 5 X+
-	{ QVector3D(X + Y - Z), QVector3D(1.0, 1.0, 0.0) }, // top right
-	{ QVector3D(X + Y + Z), QVector3D(1.0, 0.0, 0.0) }, // bottom right
-	{ QVector3D(X - Y + Z), QVector3D(0.0, 0.0, 0.0) }, // bottom left
-	{ QVector3D(X - Y - Z), QVector3D(0.0, 1.0, 0.0) },  // top left 
+	{ QVector3D(X + Y - Z), QVector3D(1.0, 1.0, 0.0), QVector3D(1.0, 0.0, 0.0) }, // top right
+	{ QVector3D(X + Y + Z), QVector3D(1.0, 0.0, 0.0), QVector3D(1.0, 0.0, 0.0) }, // bottom right
+	{ QVector3D(X - Y + Z), QVector3D(0.0, 0.0, 0.0), QVector3D(1.0, 0.0, 0.0) }, // bottom left
+	{ QVector3D(X - Y - Z), QVector3D(0.0, 1.0, 0.0), QVector3D(1.0, 0.0, 0.0) },  // top left 
 	//face 6 Y+
-	{ QVector3D(-X + Y - Z), QVector3D(1.0, 1.0, 0.0) }, // top right
-	{ QVector3D(-X + Y + Z), QVector3D(1.0, 0.0, 0.0) }, // bottom right
-	{ QVector3D(X + Y + Z), QVector3D(0.0, 0.0, 0.0) }, // bottom left
-	{ QVector3D(X + Y - Z), QVector3D(0.0, 1.0, 0.0) },  // top left 
+	{ QVector3D(-X + Y - Z), QVector3D(1.0, 1.0, 0.0), QVector3D(0.0, 1.0, 0.0) }, // top right
+	{ QVector3D(-X + Y + Z), QVector3D(1.0, 0.0, 0.0), QVector3D(0.0, 1.0, 0.0) }, // bottom right
+	{ QVector3D(X + Y + Z), QVector3D(0.0, 0.0, 0.0), QVector3D(0.0, 1.0, 0.0) }, // bottom left
+	{ QVector3D(X + Y - Z), QVector3D(0.0, 1.0, 0.0), QVector3D(0.0, 1.0, 0.0) },  // top left 
 
 
 };
@@ -164,7 +164,7 @@ std::string quaternionToStdString(const aiQuaternion& quad, int precision = 2);
 QString quaternionToString(const QQuaternion& quat, int precision = 2);
 std::string quaternionToStdString(const QQuaternion& quat, int precision = 2);
 
-QVector4D convertAiToVector(const aiColor3D& color);
+QVector3D convertAiToVector(const aiColor3D& color);
 QVector3D convertAiToVector(const aiVector3D& vector);
 
 QVector4D gammaCorrected(const QVector4D& linear);

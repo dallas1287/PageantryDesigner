@@ -31,6 +31,7 @@ public:
 	virtual ~GraphicsObject();
 	QOpenGLShaderProgram* ShaderProgram() const { return m_program.get(); }
 	QOpenGLTexture* Texture() const { return m_texture.get(); }
+	QOpenGLTexture* SpecularTexture() const { return m_specularTexture.get(); }
 	QOpenGLVertexArrayObject& Vao();
 	QOpenGLBuffer Vbo();
 	QOpenGLBuffer Ebo();
@@ -48,6 +49,7 @@ public:
 	void initBuffers(VertexDataPool& data, IndexPool& indices);
 	void initShaders(const QString& vertexPath, const QString& fragmentPath);
 	void initTexture(const QString& path);
+	void initSpecularTexture(const QString& path);
 	void setupAttributes();
 	void setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection);
 	virtual void Draw();
@@ -71,6 +73,7 @@ private:
 	QOpenGLVertexArrayObject m_vao;
 	QOpenGLBuffer m_vbo, m_ebo;
 	std::unique_ptr<QOpenGLTexture> m_texture;
+	std::unique_ptr<QOpenGLTexture> m_specularTexture;
 	ShaderAttributes m_shaderAttributes;
 };
 

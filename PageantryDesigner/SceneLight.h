@@ -1,6 +1,7 @@
 #pragma once
 #include "Includes/assimp/scene.h"
 #include "SceneObject.h"
+#include "common.h"
 #include <QVector4D>
 #include <QVector3D>
 
@@ -10,23 +11,28 @@ public:
 	SceneLight() {}
 	SceneLight(aiLight* refLight);
 	~SceneLight() {}
-	const QVector4D& getAmbient() { return m_ambientColor; }
-	const QVector4D& getDiffuse() { return m_diffuseColor; }
-	const QVector4D& getSpecular() { return m_specularColor; }
-	const QVector3D& getDirection() { return m_direction; }
-	const QVector3D& getPosition() { return m_position; }
+	const QVector3D& getAmbient() { return m_lightData.ambient; }
+	void setAmbient(const QVector3D& amb) { m_lightData.ambient = amb; }
+	const QVector3D& getDiffuse() { return m_lightData.diffuse; }
+	void setDiffuse(const QVector3D& dif) { m_lightData.diffuse = dif; }
+	const QVector3D& getSpecular() { return m_lightData.specular; }
+	void setSpecular(const QVector3D& spec) { m_lightData.specular = spec; }
+	const QVector3D& getDirection() { return m_lightData.direction; }
+	void setDirection(const QVector3D& dir) { m_lightData.direction; }
+	const QVector3D& getPosition() { return m_lightData.position; }
+	void setPosition(const QVector3D& pos) { m_lightData.position = pos; }
+	const float setAttenuationConstant(const float val) { m_lightData.attenuationConstant = val; }
+	float getAttenuationConstant() { return m_lightData.attenuationConstant; }
+	const float setAttenuationLinear(const float val) { m_lightData.attenuationLinear = val; }
+	float getAttenuationLinear() { return m_lightData.attenuationLinear; }
+	const float setAttenuationQuadratic(const float val) { m_lightData.attenuationQuadratic = val; }
+	float getAttenuationQuadratic() { return m_lightData.attenuationQuadratic; }
 
 private:
 	void init();
 
 	aiLight* m_refLight = nullptr;
-	QVector4D m_ambientColor;
-	QVector4D m_diffuseColor;
-	QVector4D m_specularColor;
-	QVector3D m_direction;
-	QVector3D m_position;
-	float m_attenuationConstant = 0.0;
-	float m_attenuationLinear = 0.0;
-	float m_attenuationQuadratic = 0.0;
+	LightData m_lightData;
+
 };
 

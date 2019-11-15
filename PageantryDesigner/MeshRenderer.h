@@ -18,7 +18,8 @@ public:
 	void initTextures(const QString& path);
 
 	std::vector<PrimitiveObject*>& PrimitiveObjects() { return m_primitiveObjects; }
-	void createPrimitive(int count);
+	void createCube(int count = 1);
+	void createQuad(int count = 1);
 
 protected:
 	virtual void initialize() override;

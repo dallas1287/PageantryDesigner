@@ -64,6 +64,21 @@ void GraphicsObject::initTexture(const QString& path)
 	m_texture->setWrapMode(QOpenGLTexture::Repeat);
 }
 
+void GraphicsObject::initSpecularTexture(const QString& path)
+{
+	//OpenGL flips the image so it needs to be mirrored when created
+	m_specularTexture.reset(new QOpenGLTexture(QImage(path).mirrored()));
+
+	// Set nearest filtering mode for texture minification
+	m_specularTexture->setMinificationFilter(QOpenGLTexture::Nearest);
+
+	// Set bilinear filtering mode for texture magnification
+	m_specularTexture->setMagnificationFilter(QOpenGLTexture::Linear);
+
+	// Wrap texture coordinates by repeating
+	m_specularTexture->setWrapMode(QOpenGLTexture::Repeat);
+}
+
 void GraphicsObject::setupAttributes()
 {
 	m_shaderAttributes.m_posAttr = m_program->attributeLocation("posAttr");
@@ -109,8 +124,21 @@ void GraphicsObject::bindToDraw()
 	if (!m_program)
 		return;
 	m_program->bind();
-	if(m_texture)
-		m_texture->bind();
+
+	if (m_texture)
+	{
+		glActiveTexture(GL_TEXTURE3);
+		m_texture->bind(GL_TEXTURE3);
+	}
+	if (m_specularTexture)
+	{
+		glActiveTexture(GL_TEXTURE2);
+		m_specularTexture->bind(GL_TEXTURE2);
+	}
+
+	m_program->setUniformValue("material.diffuse", GL_TEXTURE3 - GL_TEXTURE0);
+	m_program->setUniformValue("material.specular", GL_TEXTURE2 - GL_TEXTURE0);
+
 	m_vao.bind();
 }
 
@@ -119,6 +147,8 @@ void GraphicsObject::releaseFromDraw()
 	m_vao.release();
 	if(m_texture && m_texture->isBound())
 		m_texture->release();
+	if (m_specularTexture && m_specularTexture->isBound())
+		m_specularTexture->release();
 	if(m_program)
 		m_program->release();
 }

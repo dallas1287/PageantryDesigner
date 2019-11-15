@@ -1,5 +1,5 @@
-#version 330 core
-out vec4 FragColor;
+#version 440
+//out vec4 FragColor;
 
 struct Material {
     vec3 ambient;
@@ -23,6 +23,9 @@ uniform vec3 viewPos;
 uniform Material material;
 uniform Light light;
 
+//testing from original color
+in vec4 color;
+
 void main()
 {
     // ambient
@@ -41,5 +44,6 @@ void main()
     vec3 specular = light.specular * (spec * material.specular);  
         
     vec3 result = ambient + diffuse + specular;
-    FragColor = vec4(result, 1.0);
+    //FragColor = vec4(result, 1.0);
+	gl_FragColor = vec4(result, 1.0);
 } 

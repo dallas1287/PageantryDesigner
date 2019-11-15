@@ -179,6 +179,14 @@
     <None Include="color_frag.glsl">
       <Filter>shaders</Filter>
     </None>
-    <None Include="light_frag.glsl" />
+    <None Include="light_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="lightTex_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="multiLight_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
