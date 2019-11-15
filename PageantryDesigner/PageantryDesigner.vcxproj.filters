@@ -34,9 +34,6 @@
     <ClCompile Include="GraphicsPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FloorRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GraphicsObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

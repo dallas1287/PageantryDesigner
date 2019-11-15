@@ -4,8 +4,6 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include <QOpenGLBuffer>
-#include <QOpenGLVertexArrayObject>
-#include "FloorRenderer.h"
 #include "MeshRenderer.h"
 #include "SceneCamera.h"
 
@@ -53,7 +51,6 @@ private:
 	QPoint m_lastPos;
 	bool m_middlePressed = false;
 	SceneCamera m_camera;
-	std::unique_ptr<FloorRenderer> m_floorRenderer;
 	std::unique_ptr<MeshRenderer> m_MeshRenderer;
 };
 

@@ -9,6 +9,15 @@
 
 typedef std::vector<GLushort> IndexPool;
 
+static const unsigned int HAS_DIRECTIONAL_LIGHTS = 0x01;
+static const unsigned int HAS_POINT_LIGHTS = 0x02;
+static const unsigned int HAS_SPOTLIGHTS = 0x04;
+static const unsigned int USES_LIGHTS = 0x08;
+static const unsigned int USES_MATERIAL_DATA = 0x10;
+static const unsigned int USES_COLOR_DATA = 0x20;
+
+static const char* SCENE_DATA = "sceneData";
+
 struct ShaderAttributes
 {
 	GLuint m_posAttr = -1;
@@ -46,12 +55,16 @@ public:
 	GLuint BoneAttr1() { return m_shaderAttributes.m_boneTransform1; }
 	GLuint BoneAttr2() { return m_shaderAttributes.m_boneTransform2; }
 	GLuint BoneAttr3() { return m_shaderAttributes.m_boneTransform3; }
+	void initBuffers() { initBuffers(m_vertexData, m_indices); }
 	void initBuffers(VertexDataPool& data, IndexPool& indices);
 	void initShaders(const QString& vertexPath, const QString& fragmentPath);
 	void initTexture(const QString& path);
 	void initSpecularTexture(const QString& path);
 	void setupAttributes();
 	void setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection);
+	void setSceneData(unsigned int data) { m_sceneDataMask = data; setSceneDataUniform(); }
+	void setSceneDataUniform();
+	unsigned int getSceneData() { return m_sceneDataMask; }
 	virtual void Draw();
 	void bindAll();
 	void releaseAll();
@@ -62,6 +75,10 @@ public:
 	void setMeshColor(QVector4D& color) { m_meshColor = gammaCorrected(color); }
 	QVector4D& getMeshColor() { return m_meshColor; }
 	void applyMeshColor();
+	void setMaterialData(MaterialData& mdata) { m_materialData = mdata; }
+	MaterialData& getMaterialData() { return m_materialData; }
+	bool isUsingMaterialData() { return m_usingMaterialData; }
+	void setUsingMaterialData(bool usingMd) { m_usingMaterialData = usingMd; }
 
 protected:
 	std::vector<VertexData> m_vertexData;
@@ -72,8 +89,11 @@ private:
 	std::unique_ptr<QOpenGLShaderProgram> m_program;
 	QOpenGLVertexArrayObject m_vao;
 	QOpenGLBuffer m_vbo, m_ebo;
+	MaterialData m_materialData;
+	bool m_usingMaterialData = false;
 	std::unique_ptr<QOpenGLTexture> m_texture;
 	std::unique_ptr<QOpenGLTexture> m_specularTexture;
 	ShaderAttributes m_shaderAttributes;
+	unsigned int m_sceneDataMask = USES_COLOR_DATA; //defaults to color data because that is set to a guaranteed default value that will actually render (BLACK)
 };
 

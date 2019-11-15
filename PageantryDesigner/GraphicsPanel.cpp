@@ -36,7 +36,6 @@ void GraphicsPanel::initializeGL()
 {
 	initializeOpenGLFunctions();
 	setBackground(background);
-	m_floorRenderer.reset(new FloorRenderer(this));
 	//m_MeshRenderer.reset(new MeshRenderer(this, "../N&I_rig_baked.fbx"));
 	//m_MeshRenderer = new MeshRenderer(this, "../modeltest7_multi.fbx");
 	//m_MeshRenderer.reset(new MeshRenderer(this, "../cylinderTest2.fbx"));
@@ -52,14 +51,23 @@ void GraphicsPanel::initializeGL()
 	m_MeshRenderer.reset(new MeshRenderer(this));
 
 	m_MeshRenderer->createCube(3);
+	m_MeshRenderer->createQuad();
 	for (auto pObj : m_MeshRenderer->PrimitiveObjects())
 	{
-		pObj->setMeshColor(QVector4D(.992, .996, .435, 1.0));
-		pObj->applyMeshColor();
-		pObj->initTexture("../container2.png");
-		pObj->initSpecularTexture("../container2_specular.png");
+		if (pObj->getType() == Primitive::Type::Cube)
+		{
+			pObj->initTexture("../container2.png");
+			pObj->initSpecularTexture("../container2_specular.png");
+			pObj->setSceneData(USES_MATERIAL_DATA | USES_LIGHTS | HAS_DIRECTIONAL_LIGHTS | HAS_POINT_LIGHTS | HAS_SPOTLIGHTS);
+		}
+		else if (pObj->getType() == Primitive::Type::Quad)
+		{
+			pObj->initTexture("../wood.png");
+			pObj->initShaders("floor_vertex.glsl", "floor_fragment.glsl");
+			pObj->initBuffers();
+		}
 	}
-	m_MeshRenderer->createQuad();
+
 	populateAnimCb();
 	populateMeshesCb();
 
@@ -83,9 +91,6 @@ void GraphicsPanel::myPaint()
 
 	QMatrix4x4 model;
 
-	//m_floorRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
-	//m_floorRenderer->Draw();
-
 	m_MeshRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 
 	/*if (m_frame % 1 == 0)
@@ -100,35 +105,13 @@ void GraphicsPanel::myPaint()
 	model.setToIdentity();
 	model.translate(QVector3D(-3.0, 0.0, 0.0));
 	m_MeshRenderer->PrimitiveObjects()[2]->setMVP(model, m_camera.View(), m_camera.Perspective());
-	/*for (auto mesh : m_MeshRenderer->PrimitiveObjects())
-	{
-		mesh->ShaderProgram()->bind();
-		mesh->ShaderProgram()->setUniformValue("viewPos", m_camera.Position());
-
-		mesh->ShaderProgram()->setUniformValue("light.position", m_camera.Position());
-		mesh->ShaderProgram()->setUniformValue("light.direction", m_camera.Front());
-		mesh->ShaderProgram()->setUniformValue("light.ambient", .2, .2, .2);
-		mesh->ShaderProgram()->setUniformValue("light.diffuse", .8, .8, .8);
-		mesh->ShaderProgram()->setUniformValue("light.specular", 1.0, 1.0, 1.0);
-		mesh->ShaderProgram()->setUniformValue("light.constant", 1.0f);
-		mesh->ShaderProgram()->setUniformValue("light.linear", 0.09f);
-		mesh->ShaderProgram()->setUniformValue("light.quadratic", 0.032f);
-		mesh->ShaderProgram()->setUniformValue("light.cutoff", (float)qCos(qDegreesToRadians(12.5)));
-		mesh->ShaderProgram()->setUniformValue("light.outerCutoff", (float)qCos(qDegreesToRadians(17.5)));
-
-		//mesh->ShaderProgram()->setUniformValue("material.ambient", 1.0, 0.5, 0.31);
-		//mesh->ShaderProgram()->setUniformValue("material.diffuse", 1.0, 0.5, 0.31);
-		//mesh->ShaderProgram()->setUniformValue("material.specular", 0.8, 0.8, 0.8);
-		mesh->ShaderProgram()->setUniformValue("material.shininess", 64.0f);
-		mesh->ShaderProgram()->release();
-	}*/
 
 	for (auto mesh : m_MeshRenderer->PrimitiveObjects())
 	{
 		mesh->ShaderProgram()->bind();
 		mesh->ShaderProgram()->setUniformValue("material.shininess", 64.0f);
 		mesh->ShaderProgram()->setUniformValue("viewPos", m_camera.Position());
-		mesh->ShaderProgram()->setUniformValue("dirLight.direction", 2.0, -2.0, 2.0);
+		mesh->ShaderProgram()->setUniformValue("dirLight.direction", 0.0, -3.0, 0.0);
 		mesh->ShaderProgram()->setUniformValue("dirLight.ambient", .1, .1, .8);
 		mesh->ShaderProgram()->setUniformValue("dirLight.diffuse", .1, .1, .8);
 		mesh->ShaderProgram()->setUniformValue("dirLight.specular", .5, .5, .5);
@@ -179,20 +162,15 @@ void GraphicsPanel::myPaint()
 		mesh->ShaderProgram()->release();
 	}
 
+	
+	/*for (auto mesh : m_MeshRenderer->PrimitiveObjects())
+	{
+		if (mesh->getType() == Primitive::Type::Quad)
+		{
+			mesh->setMVP(model, m_camera.View(), m_camera.Perspective());
+		}
+	}*/
 	m_MeshRenderer->Draw();
-
-	/*glActiveTexture(GL_TEXTURE3);
-	mesh->Texture()->bind(GL_TEXTURE3);
-
-	//glActiveTexture(GL_TEXTURE0);
-	//mesh->SpecularTexture()->bind();
-
-	mesh->ShaderProgram()->setUniformValue("material.diffuse", GL_TEXTURE3);
-	mesh->ShaderProgram()->setUniformValue("material.specular", GL_TEXTURE0);
-
-	mesh->bindToDraw();
-	glDrawElements(GL_TRIANGLES, mesh->getIndices().size(), GL_UNSIGNED_SHORT, 0);
-	mesh->releaseFromDraw();*/
 
 	++m_frame;	
 	painter.end();

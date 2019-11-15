@@ -18,6 +18,15 @@ struct VertexData
 		QVector4D col = QVector4D(), QMatrix4x4 trans = QMatrix4x4()) : 
 		position(position), texCoord(texCoord), normal(norm), color(col), transform(trans) {};
 	~VertexData() {};
+	VertexData& operator=(const VertexData& other)
+	{
+		position = other.position;
+		texCoord = other.texCoord;
+		normal = other.normal;
+		color = other.color;
+		transform = other.transform;
+		return *this;
+	}
 
 	QVector3D position;
 	QVector3D texCoord;
@@ -31,6 +40,14 @@ struct MaterialData
 {
 	MaterialData(QVector3D amb = QVector3D(), QVector3D dif = QVector3D(), QVector3D spec = QVector3D(), float shine = 1.0) : ambient(amb), diffuse(dif), specular(spec), shininess(shine) {}
 	~MaterialData() {}
+	MaterialData& operator=(const MaterialData& other)
+	{
+		ambient = other.ambient;
+		diffuse = other.diffuse;
+		specular = other.specular;
+		shininess = other.shininess;
+		return *this;
+	}
 
 	QVector3D ambient;
 	QVector3D diffuse;
@@ -53,6 +70,19 @@ struct LightData
 		float con = 0.0, float lin = 0.0, float quad = 0.0) : 
 		ambient(amb), diffuse(dif), specular(spec), position(pos), direction(dir), attenuationConstant(con), attenuationLinear(lin), attenuationQuadratic(quad) {}
 	~LightData() {}
+	LightData& operator=(const LightData& other)
+	{
+		ambient = other.ambient;
+		diffuse = other.diffuse;
+		specular = other.specular;
+		position = other.position;
+		direction = other.direction;
+		attenuationConstant = other.attenuationConstant;
+		attenuationLinear = other.attenuationLinear;
+		attenuationQuadratic = other.attenuationQuadratic;
+		type = other.type;
+		return *this;
+	}
 
 	QVector3D ambient;
 	QVector3D diffuse;

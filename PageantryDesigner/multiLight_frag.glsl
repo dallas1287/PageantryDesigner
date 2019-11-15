@@ -1,5 +1,12 @@
 #version 440
-//out vec4 FragColor;
+const uint HAS_DIRECTIONAL_LIGHTS = 0x01;
+const uint HAS_POINT_LIGHTS = 0x02;
+const uint HAS_SPOTLIGHTS = 0x04;
+const uint USES_LIGHTS = 0x08;
+const uint USES_MATERIAL_DATA = 0x10;
+const uint USES_COLOR_DATA = 0x20;
+
+const vec4 DEFAULT_BLACK = vec4(0.0, 0.0, 0.0, 1.0);
 
 struct Material {
     sampler2D diffuse;
@@ -47,12 +54,14 @@ struct SpotLight {
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
+in vec4 color;
 
 uniform vec3 viewPos;
 uniform DirLight dirLight;
 uniform PointLight pointLights[NR_POINT_LIGHTS];
 uniform SpotLight spotLight;
 uniform Material material;
+uniform int sceneData;
 
 // function prototypes
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
@@ -64,22 +73,32 @@ void main()
     // properties
     vec3 norm = normalize(Normal);
     vec3 viewDir = normalize(viewPos - FragPos);
-    
-    // == =====================================================
-    // Our lighting is set up in 3 phases: directional, point lights and an optional flashlight
-    // For each phase, a calculate function is defined that calculates the corresponding color
-    // per lamp. In the main() function we take all the calculated colors and sum them up for
-    // this fragment's final color.
-    // == =====================================================
-    // phase 1: directional lighting
-    vec3 result = CalcDirLight(dirLight, norm, viewDir);
-    // phase 2: point lights
-    for(int i = 0; i < NR_POINT_LIGHTS; i++)
-        result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);    
-    // phase 3: spot light
-    result += CalcSpotLight(spotLight, norm, FragPos, viewDir);    
-    
-    gl_FragColor = vec4(result, 1.0);
+   
+	if((sceneData & USES_LIGHTS) != 0)
+	{
+		vec3 result = vec3(0.0, 0.0, 1.0);
+		// phase 1: directional lighting
+		if((sceneData & HAS_DIRECTIONAL_LIGHTS) != 0)
+		result = CalcDirLight(dirLight, norm, viewDir);
+		// phase 2: point lights
+		if((sceneData & HAS_POINT_LIGHTS) != 0)
+		{
+			for(int i = 0; i < NR_POINT_LIGHTS; i++)
+				result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);    
+		}
+		// phase 3: spot light
+		if((sceneData & HAS_SPOTLIGHTS) != 0)
+			result += CalcSpotLight(spotLight, norm, FragPos, viewDir);    
+		gl_FragColor = vec4(result, 1.0);
+    }
+	else if((sceneData & USES_COLOR_DATA) != 0)
+	{
+		gl_FragColor = color;
+	}
+	else
+	{
+		gl_FragColor = DEFAULT_BLACK;
+	}
 }
 
 // calculates the color when using a directional light.

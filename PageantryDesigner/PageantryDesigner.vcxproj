@@ -98,7 +98,6 @@
     <ClCompile Include="Bone.cpp" />
     <ClCompile Include="BoneRig.cpp" />
     <ClCompile Include="Conversions.cpp" />
-    <ClCompile Include="FloorRenderer.cpp" />
     <ClCompile Include="GraphicsObject.cpp" />
     <ClCompile Include="GraphicsPanel.cpp" />
     <ClCompile Include="main.cpp" />

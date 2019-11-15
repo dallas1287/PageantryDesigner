@@ -103,6 +103,13 @@ void GraphicsObject::setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& pro
 	m_program->release();
 }
 
+void GraphicsObject::setSceneDataUniform()
+{
+	m_program->bind();
+	m_program->setUniformValue(SCENE_DATA, m_sceneDataMask);
+	m_program->release();
+}
+
 void GraphicsObject::bindAll()
 {
 	m_program->bind();
@@ -127,17 +134,16 @@ void GraphicsObject::bindToDraw()
 
 	if (m_texture)
 	{
-		glActiveTexture(GL_TEXTURE3);
-		m_texture->bind(GL_TEXTURE3);
+		glActiveTexture(GL_TEXTURE0);
+		m_texture->bind(GL_TEXTURE0);
+		m_program->setUniformValue("material.diffuse", GL_TEXTURE0 - GL_TEXTURE0);
 	}
 	if (m_specularTexture)
 	{
-		glActiveTexture(GL_TEXTURE2);
-		m_specularTexture->bind(GL_TEXTURE2);
+		glActiveTexture(GL_TEXTURE1);
+		m_specularTexture->bind(GL_TEXTURE1);
+		m_program->setUniformValue("material.specular", GL_TEXTURE1 - GL_TEXTURE0);
 	}
-
-	m_program->setUniformValue("material.diffuse", GL_TEXTURE3 - GL_TEXTURE0);
-	m_program->setUniformValue("material.specular", GL_TEXTURE2 - GL_TEXTURE0);
 
 	m_vao.bind();
 }
@@ -155,6 +161,9 @@ void GraphicsObject::releaseFromDraw()
 
 void GraphicsObject::initBuffers(VertexDataPool& data, IndexPool& indices)
 {
+	if (data.empty() || indices.empty())
+		return;
+	
 	bindAll();
 	Vbo().allocate(&data[0], data.size() * sizeof(VertexData));
 
@@ -215,6 +224,8 @@ void GraphicsObject::applyMeshColor()
 {
 	for (int i = 0; i < m_vertexData.size(); ++i)
 		m_vertexData[i].color = m_meshColor;
+
+	m_materialData.diffuse = QVector3D(m_meshColor);
 
 	initBuffers(m_vertexData, m_indices);
 }
