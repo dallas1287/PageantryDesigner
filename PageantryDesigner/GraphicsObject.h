@@ -13,8 +13,8 @@ static const unsigned int HAS_DIRECTIONAL_LIGHTS = 0x01;
 static const unsigned int HAS_POINT_LIGHTS = 0x02;
 static const unsigned int HAS_SPOTLIGHTS = 0x04;
 static const unsigned int USES_LIGHTS = 0x08;
-static const unsigned int USES_MATERIAL_DATA = 0x10;
-static const unsigned int USES_COLOR_DATA = 0x20;
+static const unsigned int USES_MATERIAL_TEXTURES = 0x10;
+static const unsigned int HAS_COLOR_DATA = 0x20;
 
 static const char* SCENE_DATA = "sceneData";
 
@@ -94,6 +94,6 @@ private:
 	std::unique_ptr<QOpenGLTexture> m_texture;
 	std::unique_ptr<QOpenGLTexture> m_specularTexture;
 	ShaderAttributes m_shaderAttributes;
-	unsigned int m_sceneDataMask = USES_COLOR_DATA; //defaults to color data because that is set to a guaranteed default value that will actually render (BLACK)
+	unsigned int m_sceneDataMask = HAS_COLOR_DATA; //defaults to color data because that is set to a guaranteed default value that will actually render...MAYBE...should test
 };
 

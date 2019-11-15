@@ -58,7 +58,7 @@ void GraphicsPanel::initializeGL()
 		{
 			pObj->initTexture("../container2.png");
 			pObj->initSpecularTexture("../container2_specular.png");
-			pObj->setSceneData(USES_MATERIAL_DATA | USES_LIGHTS | HAS_DIRECTIONAL_LIGHTS | HAS_POINT_LIGHTS | HAS_SPOTLIGHTS);
+			pObj->setSceneData(USES_MATERIAL_TEXTURES | USES_LIGHTS | HAS_DIRECTIONAL_LIGHTS | HAS_POINT_LIGHTS | HAS_SPOTLIGHTS);
 		}
 		else if (pObj->getType() == Primitive::Type::Quad)
 		{
@@ -109,6 +109,10 @@ void GraphicsPanel::myPaint()
 	for (auto mesh : m_MeshRenderer->PrimitiveObjects())
 	{
 		mesh->ShaderProgram()->bind();
+
+		mesh->ShaderProgram()->setUniformValue("material.diffuse", .1, .1, .1);
+		mesh->ShaderProgram()->setUniformValue("material.specular", 1.0, 1.0, 1.0);
+
 		mesh->ShaderProgram()->setUniformValue("material.shininess", 64.0f);
 		mesh->ShaderProgram()->setUniformValue("viewPos", m_camera.Position());
 		mesh->ShaderProgram()->setUniformValue("dirLight.direction", 0.0, -3.0, 0.0);

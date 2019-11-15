@@ -134,15 +134,15 @@ void GraphicsObject::bindToDraw()
 
 	if (m_texture)
 	{
-		glActiveTexture(GL_TEXTURE0);
-		m_texture->bind(GL_TEXTURE0);
-		m_program->setUniformValue("material.diffuse", GL_TEXTURE0 - GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE3);
+		m_texture->bind(GL_TEXTURE3);
+		m_program->setUniformValue("material.diffuseTex", GL_TEXTURE3 - GL_TEXTURE0);
 	}
 	if (m_specularTexture)
 	{
-		glActiveTexture(GL_TEXTURE1);
-		m_specularTexture->bind(GL_TEXTURE1);
-		m_program->setUniformValue("material.specular", GL_TEXTURE1 - GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE4);
+		m_specularTexture->bind(GL_TEXTURE4);
+		m_program->setUniformValue("material.specularTex", GL_TEXTURE4 - GL_TEXTURE0);
 	}
 
 	m_vao.bind();

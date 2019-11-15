@@ -141,12 +141,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="color_frag.glsl" />
-    <None Include="dots_fragment.glsl" />
-    <None Include="dots_vertex.glsl" />
     <None Include="floor_fragment.glsl" />
     <None Include="floor_vertex.glsl" />
-    <None Include="grid_fragment.glsl" />
-    <None Include="grid_vertex.glsl" />
     <None Include="lightTex_frag.glsl" />
     <None Include="light_frag.glsl" />
     <None Include="mesh_fragment.glsl" />

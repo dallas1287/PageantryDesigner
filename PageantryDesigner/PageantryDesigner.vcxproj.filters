@@ -152,18 +152,6 @@
     <None Include="floor_vertex.glsl">
       <Filter>shaders</Filter>
     </None>
-    <None Include="grid_fragment.glsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="grid_vertex.glsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="dots_fragment.glsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="dots_vertex.glsl">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="mesh_fragment.glsl">
       <Filter>shaders</Filter>
     </None>
