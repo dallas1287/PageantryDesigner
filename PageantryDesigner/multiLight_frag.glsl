@@ -79,7 +79,7 @@ void main()
    
 	if((sceneData & USES_LIGHTS) != 0)
 	{
-		vec3 result = vec3(0.0, 0.0, 1.0);
+		vec3 result = vec3(0.0, 0.0, 0.0);
 		if((sceneData & HAS_DIRECTIONAL_LIGHTS) != 0)
 			result = CalcDirLight(dirLight, norm, viewDir, (sceneData & USES_MATERIAL_TEXTURES) != 0);
 

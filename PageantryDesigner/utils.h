@@ -6,10 +6,10 @@
 
 const std::vector<VertexData> QuadTemplate =
 {
-	{ QVector3D(X + Y), QVector3D(1.0, 1.0, 0.0) }, // top right
-	{ QVector3D(X - Y), QVector3D(1.0, 0.0, 0.0) }, // bottom right
-	{ QVector3D(-X - Y), QVector3D(0.0, 0.0, 0.0) }, // bottom left
-	{ QVector3D(-X + Y), QVector3D(0.0, 1.0, 0.0) }  // top left 
+	{ QVector3D(X + Y), QVector3D(1.0, 1.0, 0.0), QVector3D(0.0, 1.0, 0.0) }, // top right
+	{ QVector3D(X - Y), QVector3D(1.0, 0.0, 0.0), QVector3D(0.0, 1.0, 0.0) }, // bottom right
+	{ QVector3D(-X - Y), QVector3D(0.0, 0.0, 0.0), QVector3D(0.0, 1.0, 0.0) }, // bottom left
+	{ QVector3D(-X + Y), QVector3D(0.0, 1.0, 0.0), QVector3D(0.0, 1.0, 0.0) }  // top left 
 };
 
 const std::vector<GLushort> QuadIndices =

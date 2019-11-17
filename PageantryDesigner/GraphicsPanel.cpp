@@ -49,9 +49,10 @@ void GraphicsPanel::initializeGL()
 	//m_MeshRenderer->getMeshManager()->getMeshes()[0]->initTexture("../container2.png");
 	//m_MeshRenderer->getMeshManager()->getMeshes()[0]->initSpecularTexture("../container2_specular.png");
 	m_MeshRenderer.reset(new MeshRenderer(this));
-
-	m_MeshRenderer->createCube(3);
+	
 	m_MeshRenderer->createQuad();
+	//m_MeshRenderer->createCube(3);
+
 	for (auto pObj : m_MeshRenderer->PrimitiveObjects())
 	{
 		if (pObj->getType() == Primitive::Type::Cube)
@@ -63,8 +64,7 @@ void GraphicsPanel::initializeGL()
 		else if (pObj->getType() == Primitive::Type::Quad)
 		{
 			pObj->initTexture("../wood.png");
-			pObj->initShaders("floor_vertex.glsl", "floor_fragment.glsl");
-			pObj->initBuffers();
+			pObj->setSceneData(USES_MATERIAL_TEXTURES | USES_LIGHTS | HAS_POINT_LIGHTS/*| HAS_DIRECTIONAL_LIGHTS  | HAS_SPOTLIGHTS*/);
 		}
 	}
 
@@ -88,6 +88,7 @@ void GraphicsPanel::myPaint()
 
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(0.1, 0.1, 0.1, 1.0);
 
 	QMatrix4x4 model;
 
@@ -99,19 +100,39 @@ void GraphicsPanel::myPaint()
 		updateFrameCt(m_MeshRenderer->getMeshManager()->getFrameCt());
 	}
 	m_MeshRenderer->Draw();*/
+
+	model.rotate(-90.0, X);
+	model.scale(10);
 	m_MeshRenderer->PrimitiveObjects()[0]->setMVP(model, m_camera.View(), m_camera.Perspective());
-	model.translate(QVector3D(3.0, 0.0, 0.0));
+	/*model.setToIdentity();
 	m_MeshRenderer->PrimitiveObjects()[1]->setMVP(model, m_camera.View(), m_camera.Perspective());
+	model.translate(QVector3D(3.0, 0.0, 0.0));
+	m_MeshRenderer->PrimitiveObjects()[2]->setMVP(model, m_camera.View(), m_camera.Perspective());
 	model.setToIdentity();
 	model.translate(QVector3D(-3.0, 0.0, 0.0));
-	m_MeshRenderer->PrimitiveObjects()[2]->setMVP(model, m_camera.View(), m_camera.Perspective());
+	m_MeshRenderer->PrimitiveObjects()[3]->setMVP(model, m_camera.View(), m_camera.Perspective());
+	model.setToIdentity();*/
 
+	tempLightSetup();
+
+	m_MeshRenderer->Draw();
+
+	++m_frame;	
+	painter.end();
+	updateCameraStats();
+	update();
+}
+
+void GraphicsPanel::tempLightSetup()
+{
 	for (auto mesh : m_MeshRenderer->PrimitiveObjects())
 	{
 		mesh->ShaderProgram()->bind();
 
 		mesh->ShaderProgram()->setUniformValue("material.diffuse", .1, .1, .1);
 		mesh->ShaderProgram()->setUniformValue("material.specular", 1.0, 1.0, 1.0);
+
+		mesh->ShaderProgram()->setUniformValue("blinn", m_blinn);
 
 		mesh->ShaderProgram()->setUniformValue("material.shininess", 64.0f);
 		mesh->ShaderProgram()->setUniformValue("viewPos", m_camera.Position());
@@ -120,9 +141,9 @@ void GraphicsPanel::myPaint()
 		mesh->ShaderProgram()->setUniformValue("dirLight.diffuse", .1, .1, .8);
 		mesh->ShaderProgram()->setUniformValue("dirLight.specular", .5, .5, .5);
 
-		mesh->ShaderProgram()->setUniformValue("pointLights[0].position", 0.0, -3.0, 0.0);
+		mesh->ShaderProgram()->setUniformValue("pointLights[0].position", 0.0, 0.5, 0.0);
 		mesh->ShaderProgram()->setUniformValue("pointLights[0].ambient", .05, .05, .05);
-		mesh->ShaderProgram()->setUniformValue("pointLights[0].diffuse", 1.0, .09, .5);
+		mesh->ShaderProgram()->setUniformValue("pointLights[0].diffuse", 1.0, 1.0, 1.0);
 		mesh->ShaderProgram()->setUniformValue("pointLights[0].specular", 1.0, 1.0, 1.0);
 		mesh->ShaderProgram()->setUniformValue("pointLights[0].constant", 1.0f);
 		mesh->ShaderProgram()->setUniformValue("pointLights[0].linear", 0.09f);
@@ -152,34 +173,19 @@ void GraphicsPanel::myPaint()
 		mesh->ShaderProgram()->setUniformValue("pointLights[3].linear", 0.09f);
 		mesh->ShaderProgram()->setUniformValue("pointLights[3].quadratic", 0.032f);
 
-		mesh->ShaderProgram()->setUniformValue("spotLight.position", m_camera.Position());
-		mesh->ShaderProgram()->setUniformValue("spotLight.direction", m_camera.Front());
-		mesh->ShaderProgram()->setUniformValue("spotLight.ambient", 0.0, 0.0, 0.0);
-		mesh->ShaderProgram()->setUniformValue("spotLight.diffuse", 0.0, 1.0, 0.0);
+		mesh->ShaderProgram()->setUniformValue("spotLight.position", /*m_camera.Position()*/ 0.0, 3.0, 0.0);
+		mesh->ShaderProgram()->setUniformValue("spotLight.direction", /*m_camera.Front()*/ 0.0, -1.0, 0.0);
+		mesh->ShaderProgram()->setUniformValue("spotLight.ambient", 0.1, 0.1, 0.1);
+		mesh->ShaderProgram()->setUniformValue("spotLight.diffuse", 1.0, 1.0, 1.0);
 		mesh->ShaderProgram()->setUniformValue("spotLight.specular", 1.0, 1.0, 1.0);
 		mesh->ShaderProgram()->setUniformValue("spotLight.constant", 1.0f);
 		mesh->ShaderProgram()->setUniformValue("spotLight.linear", 0.09f);
 		mesh->ShaderProgram()->setUniformValue("spotLight.quadratic", 0.032f);
 		mesh->ShaderProgram()->setUniformValue("spotLight.cutOff", (float)qCos(qDegreesToRadians(12.5)));
-		mesh->ShaderProgram()->setUniformValue("spotLight.outerCutOff", (float)qCos(qDegreesToRadians(15.0)));
+		mesh->ShaderProgram()->setUniformValue("spotLight.outerCutOff", (float)qCos(qDegreesToRadians(25.0)));
 
 		mesh->ShaderProgram()->release();
 	}
-
-	
-	/*for (auto mesh : m_MeshRenderer->PrimitiveObjects())
-	{
-		if (mesh->getType() == Primitive::Type::Quad)
-		{
-			mesh->setMVP(model, m_camera.View(), m_camera.Perspective());
-		}
-	}*/
-	m_MeshRenderer->Draw();
-
-	++m_frame;	
-	painter.end();
-	updateCameraStats();
-	update();
 }
 
 void GraphicsPanel::paintGL()
@@ -299,6 +305,9 @@ void GraphicsPanel::keyPressEvent(QKeyEvent* event)
 		break;
 	case Qt::Key_Minus:
 		m_MeshRenderer->getMeshManager()->decrementFrame();
+		break;
+	case Qt::Key_B:
+		m_blinn ^= true;
 		break;
 	default:
 		return;

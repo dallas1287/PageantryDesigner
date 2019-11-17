@@ -27,6 +27,7 @@ void TopWindow::updateFrameCt(int value)
 
 void TopWindow::updateCameraStats()
 {
+	ui.label_FrameCt->setText(m_gPanel->getBlinn() ? "On" : "Off"); //this is doing double duty for lighting tests
 	ui.labelCamPos->setText("Position: " + vectorToString(m_gPanel->getCamera().Position(), 2));
 	ui.labelCamLookAt->setText("LookAt: " + vectorToString(m_gPanel->getCamera().Target(), 2));
 	ui.labelCamFront->setText("Front: " + vectorToString(m_gPanel->getCamera().Front(), 2));
@@ -57,7 +58,6 @@ void TopWindow::onMbActionClicked(QAction* action)
 	fdialog.setFileMode(QFileDialog::ExistingFile);
 
 	QString fileName = fdialog.getOpenFileName(this, "Choose File to Import", QStandardPaths::writableLocation(QStandardPaths::StandardLocation::HomeLocation));
-	//m_gPanel->getFigureRenderer()->importModel(fileName, true);
 	m_gPanel->importModel(fileName);
 	m_gPanel->populateAnimCb();
 	m_gPanel->populateMeshesCb();

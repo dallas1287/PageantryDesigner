@@ -79,6 +79,9 @@
     <ClCompile Include="MeshRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ShadowMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="TopWindow.h">
@@ -144,6 +147,9 @@
     <ClInclude Include="MeshRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ShadowMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="floor_fragment.glsl">
@@ -171,6 +177,15 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="multiLight_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="blinnLight_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadowMap_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadowMap_vs.glsl">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

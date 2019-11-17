@@ -26,6 +26,7 @@ public:
 	void populateAnimCb();
 	void populateMeshesCb();
 	void importModel(const QString& importPath);
+	bool getBlinn() const { return m_blinn; }
 
 public slots:
 	void onAnimCbChanged(int index);
@@ -44,6 +45,9 @@ protected:
 private:
 	void setBackground(QVector4D background);
 	void myPaint();
+
+	void tempLightSetup();
+	bool m_blinn = false;
 
 	QWidget* m_parent = nullptr;
 	unsigned int m_frame = 0;

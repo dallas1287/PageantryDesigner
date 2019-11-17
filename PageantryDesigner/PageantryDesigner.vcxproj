@@ -110,6 +110,7 @@
     <ClCompile Include="SceneLight.cpp" />
     <ClCompile Include="SceneNode.cpp" />
     <ClCompile Include="SceneObject.cpp" />
+    <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="TopWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -132,6 +133,7 @@
     <ClInclude Include="SceneLight.h" />
     <ClInclude Include="SceneNode.h" />
     <ClInclude Include="SceneObject.h" />
+    <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="utils.h" />
     <QtMoc Include="GraphicsPanel.h" />
     <ClInclude Include="Bone.h" />
@@ -140,6 +142,7 @@
     <ClInclude Include="SceneCamera.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="blinnLight_frag.glsl" />
     <None Include="color_frag.glsl" />
     <None Include="floor_fragment.glsl" />
     <None Include="floor_vertex.glsl" />
@@ -148,6 +151,8 @@
     <None Include="mesh_fragment.glsl" />
     <None Include="mesh_vertex.glsl" />
     <None Include="multiLight_frag.glsl" />
+    <None Include="shadowMap_frag.glsl" />
+    <None Include="shadowMap_vs.glsl" />
     <None Include="texture_frag.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
