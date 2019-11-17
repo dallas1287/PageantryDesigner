@@ -62,6 +62,7 @@ public:
 	void initSpecularTexture(const QString& path);
 	void setupAttributes();
 	void setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection);
+	QMatrix4x4& getModelMatrix() { return m_modelMatrix; }
 	void setSceneData(unsigned int data) { m_sceneDataMask = data; setSceneDataUniform(); }
 	void setSceneDataUniform();
 	unsigned int getSceneData() { return m_sceneDataMask; }
@@ -94,6 +95,7 @@ private:
 	std::unique_ptr<QOpenGLTexture> m_texture;
 	std::unique_ptr<QOpenGLTexture> m_specularTexture;
 	ShaderAttributes m_shaderAttributes;
+	QMatrix4x4 m_modelMatrix;
 	unsigned int m_sceneDataMask = HAS_COLOR_DATA; //defaults to color data because that is set to a guaranteed default value that will actually render...MAYBE...should test
 };
 

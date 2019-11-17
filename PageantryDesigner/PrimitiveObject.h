@@ -13,8 +13,6 @@ namespace Primitive
 
 class PrimitiveObject : public GraphicsObject
 {
-
-
 public:
 	PrimitiveObject();
 	PrimitiveObject(enum Primitive::Type type);

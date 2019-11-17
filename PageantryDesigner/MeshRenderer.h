@@ -2,6 +2,7 @@
 #include "RendererBase.h"
 #include "MeshManager.h"
 #include "PrimitiveObject.h"
+#include "ShadowMap.h"
 
 class MeshRenderer : public RendererBase
 {
@@ -14,8 +15,10 @@ public:
 	void loadTexture(const QString& texturePath, const QString& meshName);
 	virtual void Draw() override;
 	virtual void setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection) override;
+	void DrawToShadowMap(const QVector3D& lightPos);
 	MeshManager* getMeshManager() { return m_meshManager.get(); }
 	void initTextures(const QString& path);
+	ShadowMap* getShadowMap() { return m_shadowMap.get(); }
 
 	std::vector<PrimitiveObject*>& PrimitiveObjects() { return m_primitiveObjects; }
 	void createCube(int count = 1);
@@ -30,5 +33,6 @@ private:
 
 	std::unique_ptr<MeshManager> m_meshManager;
 	std::vector<PrimitiveObject*> m_primitiveObjects;
+	std::unique_ptr<ShadowMap> m_shadowMap;
 };
 

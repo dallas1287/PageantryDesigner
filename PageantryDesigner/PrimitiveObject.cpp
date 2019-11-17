@@ -26,7 +26,8 @@ PrimitiveObject::~PrimitiveObject()
 
 void PrimitiveObject::initialize()
 {
-	initShaders("mesh_vertex.glsl", "blinnLight_frag.glsl");
+	//initShaders("mesh_vertex.glsl", "blinnLight_frag.glsl");
+	initShaders("shadowMap_vs.glsl", "shadowMap_frag.glsl");
 	initBuffers(m_vertexData, m_indices);
 }
 

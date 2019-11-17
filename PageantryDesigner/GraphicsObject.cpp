@@ -97,6 +97,7 @@ void GraphicsObject::setupAttributes()
 void GraphicsObject::setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection)
 {
 	m_program->bind();
+	m_modelMatrix = model;
 	m_program->setUniformValue(ModelAttr(), model);
 	m_program->setUniformValue(ViewAttr(), view);
 	m_program->setUniformValue(ProjAttr(), projection);

@@ -5,6 +5,7 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLExtraFunctions>
+#include <QMatrix4x4>
 
 static const int SHADOW_MAP_WIDTH = 1024;
 static const int SHADOW_MAP_HEIGHT = 1024;
@@ -27,6 +28,11 @@ public:
 	void initFrameBuffer();
 	void bindToDraw();
 	void setViewport();
+	void setLightSpaceMatrix(const QVector3D& lightPos);
+	const QMatrix4x4& getLightSpaceMatrix() { return m_lightSpaceMatrix; }
+	void setShaderLightSpaceMatrix();
+	void setModelUniform(const QMatrix4x4& model);
+	void saveBufferAsImage();
 
 private:
 	std::unique_ptr<QOpenGLShaderProgram> m_program;
@@ -34,6 +40,11 @@ private:
 	QOpenGLBuffer m_vbo, m_ebo;
 	std::unique_ptr<QOpenGLFramebufferObject> m_fbo;
 	GLuint m_posAttr = -1;
+	float m_nearPlane = 0.1;
+	float m_farPlane = 10.0;
+	QMatrix4x4 m_projection;
+	QMatrix4x4 m_view;
+	QMatrix4x4 m_lightSpaceMatrix;
 
 	std::unique_ptr<QOpenGLTexture> m_depthMapTexture;
 

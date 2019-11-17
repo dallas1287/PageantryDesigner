@@ -1,6 +1,7 @@
 #pragma once
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
+#include <QOpenGLExtraFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include <QOpenGLBuffer>
@@ -9,7 +10,7 @@
 
 #define USE_COLLADA 0
 
-class GraphicsPanel : public QOpenGLWidget, protected QOpenGLFunctions
+class GraphicsPanel : public QOpenGLWidget, protected QOpenGLExtraFunctions
 {
 	Q_OBJECT
 public:

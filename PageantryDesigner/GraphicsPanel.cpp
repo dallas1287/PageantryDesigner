@@ -51,7 +51,7 @@ void GraphicsPanel::initializeGL()
 	m_MeshRenderer.reset(new MeshRenderer(this));
 	
 	m_MeshRenderer->createQuad();
-	//m_MeshRenderer->createCube(3);
+	m_MeshRenderer->createCube(3);
 
 	for (auto pObj : m_MeshRenderer->PrimitiveObjects())
 	{
@@ -104,18 +104,24 @@ void GraphicsPanel::myPaint()
 	model.rotate(-90.0, X);
 	model.scale(10);
 	m_MeshRenderer->PrimitiveObjects()[0]->setMVP(model, m_camera.View(), m_camera.Perspective());
-	/*model.setToIdentity();
+	model.setToIdentity();
 	m_MeshRenderer->PrimitiveObjects()[1]->setMVP(model, m_camera.View(), m_camera.Perspective());
 	model.translate(QVector3D(3.0, 0.0, 0.0));
 	m_MeshRenderer->PrimitiveObjects()[2]->setMVP(model, m_camera.View(), m_camera.Perspective());
 	model.setToIdentity();
 	model.translate(QVector3D(-3.0, 0.0, 0.0));
 	m_MeshRenderer->PrimitiveObjects()[3]->setMVP(model, m_camera.View(), m_camera.Perspective());
-	model.setToIdentity();*/
+	model.setToIdentity();
 
-	tempLightSetup();
+	//tempLightSetup();
+	//m_MeshRenderer->Draw();
 
-	m_MeshRenderer->Draw();
+	//m_MeshRenderer->DrawToShadowMap(QVector3D(0.0, 3.0, 0.0));
+
+	m_MeshRenderer->getShadowMap()->initFrameBuffer();
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		qDebug() << "OpenGL Frambuffer status not complete.";
 
 	++m_frame;	
 	painter.end();

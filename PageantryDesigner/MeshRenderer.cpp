@@ -7,6 +7,7 @@
 MeshRenderer::MeshRenderer(GraphicsPanel* parent) : RendererBase(parent)
 {
 	m_meshManager.reset(new MeshManager(this));
+	m_shadowMap.reset(new ShadowMap());
 }
 
 MeshRenderer::MeshRenderer(GraphicsPanel* parent, const QString& importPath) : RendererBase(parent)
@@ -82,6 +83,29 @@ void MeshRenderer::Draw()
 
 	for (auto pObj : m_primitiveObjects)
 		pObj->Draw();
+}
+
+void MeshRenderer::DrawToShadowMap(const QVector3D& lightPos)
+{
+	getShadowMap()->initDepthMap();
+	getShadowMap()->initFrameBuffer();
+	glViewport(0, 0, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
+	getShadowMap()->setLightSpaceMatrix(lightPos);
+
+	for (auto mesh : m_meshManager->getMeshes())
+	{
+		mesh->ShaderProgram()->setUniformValue("model", mesh->getModelMatrix());
+		mesh->ShaderProgram()->setUniformValue("lightSpaceMatrix", getShadowMap()->getLightSpaceMatrix());
+		mesh->Draw();
+	}
+	for (auto pObj : m_primitiveObjects)
+	{
+		pObj->ShaderProgram()->setUniformValue("model", pObj->getModelMatrix());
+		pObj->ShaderProgram()->setUniformValue("lightSpaceMatrix", getShadowMap()->getLightSpaceMatrix());
+		pObj->Draw();
+	}
+	//getShadowMap()->ShaderProgram()->release();
+	getShadowMap()->saveBufferAsImage();
 }
 
 void MeshRenderer::createCube(int count)
