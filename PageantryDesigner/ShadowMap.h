@@ -20,6 +20,7 @@ public:
 	ShadowMap();
 	virtual ~ShadowMap();
 	QOpenGLTexture* DepthMap() const { return m_depthMapTexture.get(); }
+	QOpenGLFramebufferObject* Fbo() { return m_fbo.get(); }
 	void initDepthMap();
 	void initFrameBuffer();
 	void setViewport();
@@ -29,11 +30,12 @@ public:
 	void setModelUniform(const QMatrix4x4& model);
 	void saveBufferAsImage();
 	GraphicsObject* getQuad() { return m_quad.get(); }
+	std::unique_ptr<QOpenGLFramebufferObject> m_fbo;
 
 private:
-	std::unique_ptr<QOpenGLFramebufferObject> m_fbo;
-	float m_nearPlane = 0.1;
-	float m_farPlane = 10.0;
+
+	float m_nearPlane = 1.0;
+	float m_farPlane = 7.5;
 	QMatrix4x4 m_projection;
 	QMatrix4x4 m_view;
 	QMatrix4x4 m_lightSpaceMatrix;

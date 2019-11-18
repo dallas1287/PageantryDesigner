@@ -35,6 +35,8 @@ void GraphicsPanel::importModel(const QString& importPath)
 static unsigned int planeVAO;
 static unsigned int depthMap;
 static unsigned int depthMapFBO;
+static float near_plane = 1.0f, far_plane = 7.5f;
+
 void GraphicsPanel::initializeGL()
 {
 	initializeOpenGLFunctions();
@@ -85,9 +87,21 @@ void GraphicsPanel::initializeGL()
 	populateAnimCb();
 	populateMeshesCb();
 
-	const qreal retinaScale = devicePixelRatio();
-	glViewport(0, 0, width() * retinaScale, height() * retinaScale);
+	resetViewPort();
 
+	standardInitPlane();
+	initFrameBuffer();
+
+	m_MeshRenderer->getShadowMap()->initShaders("shadowMap_vs.glsl", "shadowMap_frag.glsl");
+	
+	// shader configuration
+	// --------------------
+	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->bind();
+	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("depthMap", GL_TEXTURE0 - GL_TEXTURE0);
+}
+
+void GraphicsPanel::standardInitPlane()
+{
 	float planeVertices[] = {
 		// positions            // normals         // texcoords
 		 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
@@ -112,11 +126,10 @@ void GraphicsPanel::initializeGL()
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glBindVertexArray(0);
+}
 
-	// load textures
-	// -------------
-	//unsigned int woodTexture = loadTexture(FileSystem::getPath("resources/textures/wood.png").c_str());
-
+void GraphicsPanel::standardInitFrameBuffer()
+{
 	// configure depth map FBO
 	// -----------------------
 	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
@@ -129,6 +142,9 @@ void GraphicsPanel::initializeGL()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	m_MeshRenderer->getShadowMap()->initDepthMap();
+
 	// attach depth texture as FBO's depth buffer
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
@@ -137,16 +153,36 @@ void GraphicsPanel::initializeGL()
 	glDrawBuffers(1, &buf);
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
-	m_MeshRenderer->getShadowMap()->initShaders("shadowMap_vs.glsl", "shadowMap_frag.glsl");
-	m_MeshRenderer->getShadowMap()->initTexture("../wood.png");
-	
-	// shader configuration
-	// --------------------
-	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->bind();
-	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("depthMap", 0);
-	
+void GraphicsPanel::initFrameBuffer()
+{
+	// configure depth map FBO
+	// -----------------------
+	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	m_MeshRenderer->getShadowMap()->m_fbo.reset(new QOpenGLFramebufferObject(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, QOpenGLFramebufferObject::Attachment::Depth));
+	GLuint handle = m_MeshRenderer->getShadowMap()->Fbo()->handle();
 
+	if (!m_MeshRenderer->getShadowMap()->DepthMap()|| !m_MeshRenderer->getShadowMap()->DepthMap()->isCreated())
+		m_MeshRenderer->getShadowMap()->initDepthMap();
+
+	m_MeshRenderer->getShadowMap()->Fbo()->bind();
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_MeshRenderer->getShadowMap()->DepthMap()->textureId(), 0);
+	//this differs from the example in LearOpenGL in that it calls glDrawBuffer(GL_NONE) which doesn't seem to be available in the qt OpenGLExtraFunctions 
+	GLenum buf = GL_NONE;
+	glDrawBuffers(1, &buf);
+	glReadBuffer(GL_NONE);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		qDebug() << "OpenGL Frambuffer status not complete.";
+
+	m_MeshRenderer->getShadowMap()->Fbo()->release();
+}
+
+void GraphicsPanel::resetViewPort()
+{
+	const qreal retinaScale = devicePixelRatio();
+	glViewport(0, 0, width() * retinaScale, height() * retinaScale);
 }
 
 void GraphicsPanel::setBackground(QVector4D background)
@@ -162,51 +198,70 @@ void GraphicsPanel::myPaint()
 
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//glClearColor(0.1, 0.1, 0.1, 1.0);
 
+	writeToFrameBuffer();
+
+	// reset viewport
+	resetViewPort();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	renderDepthMap();
+
+	++m_frame;	
+	painter.end();
+	updateCameraStats();
+	update();
+}
+
+void GraphicsPanel::standardWriteToFrameBuffer()
+{
 	QVector3D lightPos(-2.0f, 4.0f, -1.0);
 
-	QMatrix4x4 lightProjection, lightView;
-	QMatrix4x4 lightSpaceMatrix;
-	float near_plane = 1.0f, far_plane = 7.5f;
-	lightProjection.ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-	lightView.lookAt(lightPos, QVector3D(), QVector3D(0.0, 1.0, 0.0));
-	lightSpaceMatrix = lightProjection * lightView;
-	// render scene from light's point of view
+	m_MeshRenderer->getShadowMap()->setLightSpaceMatrix(lightPos);
 	m_MeshRenderer->getShadowMap()->ShaderProgram()->bind();
-	m_MeshRenderer->getShadowMap()->ShaderProgram()->setUniformValue("lightSpaceMatrix", lightSpaceMatrix);
 
-	//not a part of the original code
-	m_MeshRenderer->getShadowMap()->initDepthMap();
-
-	glViewport(0, 0, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
+	m_MeshRenderer->getShadowMap()->setViewport();
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, /*woodTexture*/ m_MeshRenderer->getShadowMap()->Texture()->textureId());
 	renderScene(m_MeshRenderer->getShadowMap()->ShaderProgram());
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
-	// reset viewport
-	const qreal retinaScale = devicePixelRatio();
-	glViewport(0, 0, width() * retinaScale, height() * retinaScale);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+void GraphicsPanel::writeToFrameBuffer()
+{
+	QVector3D lightPos(-2.0f, 4.0f, -1.0);
 
-	// render Depth map to quad for visual debugging
-	// ---------------------------------------------
+	m_MeshRenderer->getShadowMap()->setLightSpaceMatrix(lightPos);
+	m_MeshRenderer->getShadowMap()->ShaderProgram()->bind();
+
+	m_MeshRenderer->getShadowMap()->setViewport();
+	m_MeshRenderer->getShadowMap()->Fbo()->bind();
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glActiveTexture(GL_TEXTURE0);
+	renderScene(m_MeshRenderer->getShadowMap()->ShaderProgram());
+	m_MeshRenderer->getShadowMap()->Fbo()->release();
+}
+
+void GraphicsPanel::standardRenderDepthMap()
+{
 	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->bind();
 	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("near_plane", near_plane);
 	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("far_plane", far_plane);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, depthMap);
 	renderQuad();
+}
 
-
-
-	++m_frame;	
-	painter.end();
-	updateCameraStats();
-	update();
+void GraphicsPanel::renderDepthMap()
+{
+	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->bind();
+	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("near_plane", near_plane);
+	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("far_plane", far_plane);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_MeshRenderer->getShadowMap()->DepthMap()->textureId());
+	m_MeshRenderer->getShadowMap()->getQuad()->Draw();
 }
 
 // renders the 3D scene

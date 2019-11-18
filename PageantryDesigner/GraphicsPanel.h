@@ -23,6 +23,7 @@ public:
 	void setAnimationFrame(int value);
 	bool isPaused() { return m_paused; }
 	void onPlayClicked();
+	void resetViewPort();
 	MeshRenderer* getMeshRenderer() { return m_MeshRenderer.get(); }
 	void populateAnimCb();
 	void populateMeshesCb();
@@ -47,6 +48,14 @@ private:
 	void setBackground(QVector4D background);
 	void myPaint();
 
+	void initFrameBuffer();
+	void writeToFrameBuffer();
+	void renderDepthMap();
+
+	void standardInitPlane();
+	void standardInitFrameBuffer();
+	void standardWriteToFrameBuffer();
+	void standardRenderDepthMap();
 	void renderScene(QOpenGLShaderProgram* program);
 	void renderCube();
 	void renderQuad();

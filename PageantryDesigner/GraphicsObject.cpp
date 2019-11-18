@@ -34,7 +34,7 @@ QOpenGLBuffer GraphicsObject::Ebo()
 	return m_ebo;
 }
 
-void GraphicsObject::initShaders(const QString& vertexPath, const QString& fragmentPath)
+void GraphicsObject::initShaders(const QString& vertexPath, const QString& fragmentPath, bool setup)
 {
 	m_program.reset(new QOpenGLShaderProgram);
 	if (!m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, vertexPath))
@@ -46,7 +46,8 @@ void GraphicsObject::initShaders(const QString& vertexPath, const QString& fragm
 		qDebug() << m_program->log();
 		return;
 	}
-	setupAttributes();
+	if(setup)
+		setupAttributes();
 }
 
 void GraphicsObject::initTexture(const QString& path)

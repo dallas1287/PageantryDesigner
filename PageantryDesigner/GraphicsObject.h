@@ -57,7 +57,7 @@ public:
 	GLuint BoneAttr3() { return m_shaderAttributes.m_boneTransform3; }
 	void initBuffers() { initBuffers(m_vertexData, m_indices); }
 	void initBuffers(VertexDataPool& data, IndexPool& indices);
-	void initShaders(const QString& vertexPath, const QString& fragmentPath);
+	void initShaders(const QString& vertexPath, const QString& fragmentPath, bool setup = true);
 	void initTexture(const QString& path);
 	void initSpecularTexture(const QString& path);
 	void setupAttributes();

@@ -10,7 +10,6 @@ ShadowMap::ShadowMap() : GraphicsObject()
 	m_quad->setVertexData(vdata);
 	m_quad->setIndices(idata);
 	m_quad->initShaders("depthMap_vs.glsl", "depthMap_frag.glsl");
-	//m_quad->initShaders("mesh_vertex.glsl", "texture_frag.glsl");
 	m_quad->initBuffers();
 }
 
@@ -22,7 +21,7 @@ void ShadowMap::initDepthMap()
 {
 	//creates an object that can be bound later to a GL_TEXTURE_2D
 	m_depthMapTexture.reset(new QOpenGLTexture(QOpenGLTexture::Target::Target2D));
-	m_depthMapTexture->setFormat(QOpenGLTexture::D16);
+	m_depthMapTexture->setFormat(QOpenGLTexture::DepthFormat);
 	m_depthMapTexture->setDepthStencilMode(QOpenGLTexture::DepthMode);
 	m_depthMapTexture->setSize(1024, 1024);
 	m_depthMapTexture->setMinificationFilter(QOpenGLTexture::Nearest);
@@ -50,6 +49,8 @@ void ShadowMap::initFrameBuffer()
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		qDebug() << "OpenGL Frambuffer status not complete.";
+
+	m_fbo->release();
 }
 
 void ShadowMap::setViewport()
@@ -59,9 +60,10 @@ void ShadowMap::setViewport()
 
 void ShadowMap::setLightSpaceMatrix(const QVector3D& lightPos)
 {
+	m_projection.setToIdentity();
 	m_projection.ortho(-10.0, 10.0, -10.0, 10.0, m_nearPlane, m_farPlane);
 	m_view.setToIdentity();
-	m_view.lookAt(lightPos, QVector3D(0.0, 0.0, 0.0), Y);
+	m_view.lookAt(lightPos, QVector3D(), Y);
 	m_lightSpaceMatrix = m_projection * m_view;
 	setShaderLightSpaceMatrix();
 }
