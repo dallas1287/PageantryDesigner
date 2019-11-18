@@ -144,6 +144,8 @@
   <ItemGroup>
     <None Include="blinnLight_frag.glsl" />
     <None Include="color_frag.glsl" />
+    <None Include="depthMap_frag.glsl" />
+    <None Include="depthMap_vs.glsl" />
     <None Include="floor_fragment.glsl" />
     <None Include="floor_vertex.glsl" />
     <None Include="lightTex_frag.glsl" />

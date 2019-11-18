@@ -32,6 +32,9 @@ void GraphicsPanel::importModel(const QString& importPath)
 	m_MeshRenderer.reset(new MeshRenderer(this, importPath));
 }
 
+static unsigned int planeVAO;
+static unsigned int depthMap;
+static unsigned int depthMapFBO;
 void GraphicsPanel::initializeGL()
 {
 	initializeOpenGLFunctions();
@@ -50,7 +53,7 @@ void GraphicsPanel::initializeGL()
 	//m_MeshRenderer->getMeshManager()->getMeshes()[0]->initSpecularTexture("../container2_specular.png");
 	m_MeshRenderer.reset(new MeshRenderer(this));
 	
-	m_MeshRenderer->createQuad();
+	/*m_MeshRenderer->createQuad();
 	m_MeshRenderer->createCube(3);
 
 	for (auto pObj : m_MeshRenderer->PrimitiveObjects())
@@ -64,15 +67,86 @@ void GraphicsPanel::initializeGL()
 		else if (pObj->getType() == Primitive::Type::Quad)
 		{
 			pObj->initTexture("../wood.png");
-			pObj->setSceneData(USES_MATERIAL_TEXTURES | USES_LIGHTS | HAS_POINT_LIGHTS/*| HAS_DIRECTIONAL_LIGHTS  | HAS_SPOTLIGHTS*/);
+			pObj->setSceneData(USES_MATERIAL_TEXTURES | USES_LIGHTS | HAS_POINT_LIGHTS| HAS_DIRECTIONAL_LIGHTS  | HAS_SPOTLIGHTS);
 		}
 	}
+
+	//framebuffer test initialization
+	std::vector<VertexData> vdata;
+	std::vector<GLushort> idata;
+	ShapeMaker::Cube::createCube(vdata, idata);
+	m_MeshRenderer->getShadowMap()->setVertexData(vdata);
+	m_MeshRenderer->getShadowMap()->setIndices(idata);
+	//m_MeshRenderer->getShadowMap()->initShaders(SHADOW_MAP_VS, SHADOW_MAP_FRAG);
+	m_MeshRenderer->getShadowMap()->initShaders("mesh_vertex.glsl", "color_frag.glsl");
+	m_MeshRenderer->getShadowMap()->initBuffers(vdata, idata);
+	m_MeshRenderer->getShadowMap()->getQuad()->initTexture("../tattoo_comic.jpg");*/
 
 	populateAnimCb();
 	populateMeshesCb();
 
 	const qreal retinaScale = devicePixelRatio();
 	glViewport(0, 0, width() * retinaScale, height() * retinaScale);
+
+	float planeVertices[] = {
+		// positions            // normals         // texcoords
+		 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+		-25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
+		-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+
+		 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+		-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+		 25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 10.0f
+	};
+	// plane VAO
+	unsigned int planeVBO;
+	glGenVertexArrays(1, &planeVAO);
+	glGenBuffers(1, &planeVBO);
+	glBindVertexArray(planeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glBindVertexArray(0);
+
+	// load textures
+	// -------------
+	//unsigned int woodTexture = loadTexture(FileSystem::getPath("resources/textures/wood.png").c_str());
+
+	// configure depth map FBO
+	// -----------------------
+	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	glGenFramebuffers(1, &depthMapFBO);
+	// create depth texture	
+	glGenTextures(1, &depthMap);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	// attach depth texture as FBO's depth buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+	//glDrawBuffer(GL_NONE);
+	GLenum buf = GL_NONE;
+	glDrawBuffers(1, &buf);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	m_MeshRenderer->getShadowMap()->initShaders("shadowMap_vs.glsl", "shadowMap_frag.glsl");
+	m_MeshRenderer->getShadowMap()->initTexture("../wood.png");
+	
+	// shader configuration
+	// --------------------
+	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->bind();
+	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("depthMap", 0);
+	
+
 }
 
 void GraphicsPanel::setBackground(QVector4D background)
@@ -88,45 +162,252 @@ void GraphicsPanel::myPaint()
 
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(0.1, 0.1, 0.1, 1.0);
+	//glClearColor(0.1, 0.1, 0.1, 1.0);
 
-	QMatrix4x4 model;
+	QVector3D lightPos(-2.0f, 4.0f, -1.0);
 
-	m_MeshRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
+	QMatrix4x4 lightProjection, lightView;
+	QMatrix4x4 lightSpaceMatrix;
+	float near_plane = 1.0f, far_plane = 7.5f;
+	lightProjection.ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+	lightView.lookAt(lightPos, QVector3D(), QVector3D(0.0, 1.0, 0.0));
+	lightSpaceMatrix = lightProjection * lightView;
+	// render scene from light's point of view
+	m_MeshRenderer->getShadowMap()->ShaderProgram()->bind();
+	m_MeshRenderer->getShadowMap()->ShaderProgram()->setUniformValue("lightSpaceMatrix", lightSpaceMatrix);
 
-	/*if (m_frame % 1 == 0)
-	{
-		m_MeshRenderer->getMeshManager()->animate();
-		updateFrameCt(m_MeshRenderer->getMeshManager()->getFrameCt());
-	}
-	m_MeshRenderer->Draw();*/
+	//not a part of the original code
+	m_MeshRenderer->getShadowMap()->initDepthMap();
 
-	model.rotate(-90.0, X);
-	model.scale(10);
-	m_MeshRenderer->PrimitiveObjects()[0]->setMVP(model, m_camera.View(), m_camera.Perspective());
-	model.setToIdentity();
-	m_MeshRenderer->PrimitiveObjects()[1]->setMVP(model, m_camera.View(), m_camera.Perspective());
-	model.translate(QVector3D(3.0, 0.0, 0.0));
-	m_MeshRenderer->PrimitiveObjects()[2]->setMVP(model, m_camera.View(), m_camera.Perspective());
-	model.setToIdentity();
-	model.translate(QVector3D(-3.0, 0.0, 0.0));
-	m_MeshRenderer->PrimitiveObjects()[3]->setMVP(model, m_camera.View(), m_camera.Perspective());
-	model.setToIdentity();
+	glViewport(0, 0, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, /*woodTexture*/ m_MeshRenderer->getShadowMap()->Texture()->textureId());
+	renderScene(m_MeshRenderer->getShadowMap()->ShaderProgram());
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	//tempLightSetup();
-	//m_MeshRenderer->Draw();
+	// reset viewport
+	const qreal retinaScale = devicePixelRatio();
+	glViewport(0, 0, width() * retinaScale, height() * retinaScale);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//m_MeshRenderer->DrawToShadowMap(QVector3D(0.0, 3.0, 0.0));
+	// render Depth map to quad for visual debugging
+	// ---------------------------------------------
+	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->bind();
+	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("near_plane", near_plane);
+	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("far_plane", far_plane);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	renderQuad();
 
-	m_MeshRenderer->getShadowMap()->initFrameBuffer();
 
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		qDebug() << "OpenGL Frambuffer status not complete.";
 
 	++m_frame;	
 	painter.end();
 	updateCameraStats();
 	update();
+}
+
+// renders the 3D scene
+// --------------------
+void GraphicsPanel::renderScene(QOpenGLShaderProgram* shader)
+{
+	// floor
+	QMatrix4x4 model;
+	shader->setUniformValue("model", model);
+	glBindVertexArray(planeVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	// cubes
+	model.translate(0.0f, 1.5f, 0.0);
+	model.scale(0.5);
+	shader->setUniformValue("model", model);
+	renderCube();
+	model.setToIdentity();
+	model.translate(2.0f, 0.0f, 1.0);
+	model.scale(0.5);
+	shader->setUniformValue("model", model);
+	renderCube();
+	model.setToIdentity();
+	model.translate(-1.0f, 0.0f, 2.0);
+	model.rotate(60.0, QVector3D(1.0, 0.0, 1.0).normalized());
+	model.scale(0.25);
+	shader->setUniformValue("model", model);
+	renderCube();
+}
+
+
+// renderCube() renders a 1x1 3D cube in NDC.
+// -------------------------------------------------
+unsigned int cubeVAO = 0;
+unsigned int cubeVBO = 0;
+void GraphicsPanel::renderCube()
+{
+	// initialize (if necessary)
+	if (cubeVAO == 0)
+	{
+		float vertices[] = {
+			// back face
+			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+			 1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+			-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+			// front face
+			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+			 1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+			-1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+			// left face
+			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+			-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+			-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+			// right face
+			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+			 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
+			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+			 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+			// bottom face
+			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+			 1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+			-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+			// top face
+			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+			 1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+			 1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+			 1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+			-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
+		};
+		glGenVertexArrays(1, &cubeVAO);
+		glGenBuffers(1, &cubeVBO);
+		// fill buffer
+		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		// link vertex attributes
+		glBindVertexArray(cubeVAO);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+	// render Cube
+	glBindVertexArray(cubeVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+}
+
+// renderQuad() renders a 1x1 XY quad in NDC
+// -----------------------------------------
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
+void GraphicsPanel::renderQuad()
+{
+	if (quadVAO == 0)
+	{
+		float quadVertices[] = {
+			// positions        // texture Coords
+			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+		};
+		// setup plane VAO
+		glGenVertexArrays(1, &quadVAO);
+		glGenBuffers(1, &quadVBO);
+		glBindVertexArray(quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	}
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+}
+
+void GraphicsPanel::Animating()
+{
+	QMatrix4x4 model;
+	m_MeshRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
+
+	if (m_frame % 1 == 0)
+	{
+		m_MeshRenderer->getMeshManager()->animate();
+		updateFrameCt(m_MeshRenderer->getMeshManager()->getFrameCt());
+	}
+	m_MeshRenderer->Draw();
+}
+
+void GraphicsPanel::FrameBufferKinda()
+{
+	QMatrix4x4 model;
+	m_MeshRenderer->getShadowMap()->setLightSpaceMatrix(QVector3D(0.0, 3.0, 0.0));
+	m_MeshRenderer->getShadowMap()->setModelUniform(model);
+
+	m_MeshRenderer->getShadowMap()->setViewport();
+	m_MeshRenderer->getShadowMap()->initFrameBuffer();
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		qDebug() << "OpenGL Frambuffer status not complete.";
+
+	m_MeshRenderer->getShadowMap()->setMVP(model, m_camera.View(), m_camera.Perspective());
+	m_MeshRenderer->getShadowMap()->bindToDraw();
+	m_MeshRenderer->getShadowMap()->Draw();
+	m_MeshRenderer->getShadowMap()->releaseFromDraw();
+	//m_MeshRenderer->getShadowMap()->saveBufferAsImage();
+	model.scale(5.0);
+	GraphicsObject* obj = m_MeshRenderer->getShadowMap()->getQuad();
+	obj->setMVP(model, m_camera.View(), m_camera.Perspective());
+	if (!obj->ShaderProgram())
+		return;
+	obj->ShaderProgram()->bind();
+
+	if (obj->Texture())
+	{
+		glActiveTexture(GL_TEXTURE3);
+		obj->Texture()->bind(GL_TEXTURE3);
+		obj->ShaderProgram()->setUniformValue("tex", GL_TEXTURE3 - GL_TEXTURE0);
+	}
+	obj->Vao().bind();
+	m_MeshRenderer->getShadowMap()->getQuad()->Draw();
+	m_MeshRenderer->getShadowMap()->getQuad()->releaseFromDraw();
+}
+
+void GraphicsPanel::DrawLighting()
+{
+	QMatrix4x4 model;
+	//model.rotate(-90.0, X);
+	//model.scale(10);
+	//m_MeshRenderer->PrimitiveObjects()[0]->setMVP(model, m_camera.View(), m_camera.Perspective());
+	//model.setToIdentity();
+	m_MeshRenderer->PrimitiveObjects()[0]->setMVP(model, m_camera.View(), m_camera.Perspective());
+	model.translate(QVector3D(3.0, 0.0, 0.0));
+	m_MeshRenderer->PrimitiveObjects()[1]->setMVP(model, m_camera.View(), m_camera.Perspective());
+	model.setToIdentity();
+	model.translate(QVector3D(-3.0, 0.0, 0.0));
+	m_MeshRenderer->PrimitiveObjects()[2]->setMVP(model, m_camera.View(), m_camera.Perspective());
+	model.setToIdentity();
+
+	//tempLightSetup();
+	//m_MeshRenderer->Draw();
 }
 
 void GraphicsPanel::tempLightSetup()
@@ -147,9 +428,9 @@ void GraphicsPanel::tempLightSetup()
 		mesh->ShaderProgram()->setUniformValue("dirLight.diffuse", .1, .1, .8);
 		mesh->ShaderProgram()->setUniformValue("dirLight.specular", .5, .5, .5);
 
-		mesh->ShaderProgram()->setUniformValue("pointLights[0].position", 0.0, 0.5, 0.0);
+		mesh->ShaderProgram()->setUniformValue("pointLights[0].position", 0.0, -3.0, 0.0);
 		mesh->ShaderProgram()->setUniformValue("pointLights[0].ambient", .05, .05, .05);
-		mesh->ShaderProgram()->setUniformValue("pointLights[0].diffuse", 1.0, 1.0, 1.0);
+		mesh->ShaderProgram()->setUniformValue("pointLights[0].diffuse", 1.0, .09, .5);
 		mesh->ShaderProgram()->setUniformValue("pointLights[0].specular", 1.0, 1.0, 1.0);
 		mesh->ShaderProgram()->setUniformValue("pointLights[0].constant", 1.0f);
 		mesh->ShaderProgram()->setUniformValue("pointLights[0].linear", 0.09f);
@@ -179,8 +460,8 @@ void GraphicsPanel::tempLightSetup()
 		mesh->ShaderProgram()->setUniformValue("pointLights[3].linear", 0.09f);
 		mesh->ShaderProgram()->setUniformValue("pointLights[3].quadratic", 0.032f);
 
-		mesh->ShaderProgram()->setUniformValue("spotLight.position", /*m_camera.Position()*/ 0.0, 3.0, 0.0);
-		mesh->ShaderProgram()->setUniformValue("spotLight.direction", /*m_camera.Front()*/ 0.0, -1.0, 0.0);
+		mesh->ShaderProgram()->setUniformValue("spotLight.position", m_camera.Position());
+		mesh->ShaderProgram()->setUniformValue("spotLight.direction", m_camera.Front());
 		mesh->ShaderProgram()->setUniformValue("spotLight.ambient", 0.1, 0.1, 0.1);
 		mesh->ShaderProgram()->setUniformValue("spotLight.diffuse", 1.0, 1.0, 1.0);
 		mesh->ShaderProgram()->setUniformValue("spotLight.specular", 1.0, 1.0, 1.0);
@@ -188,7 +469,7 @@ void GraphicsPanel::tempLightSetup()
 		mesh->ShaderProgram()->setUniformValue("spotLight.linear", 0.09f);
 		mesh->ShaderProgram()->setUniformValue("spotLight.quadratic", 0.032f);
 		mesh->ShaderProgram()->setUniformValue("spotLight.cutOff", (float)qCos(qDegreesToRadians(12.5)));
-		mesh->ShaderProgram()->setUniformValue("spotLight.outerCutOff", (float)qCos(qDegreesToRadians(25.0)));
+		mesh->ShaderProgram()->setUniformValue("spotLight.outerCutOff", (float)qCos(qDegreesToRadians(17.5)));
 
 		mesh->ShaderProgram()->release();
 	}

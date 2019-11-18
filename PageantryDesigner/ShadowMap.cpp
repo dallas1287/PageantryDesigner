@@ -1,42 +1,21 @@
 #include "ShadowMap.h"
 #include "utils.h"
 
-ShadowMap::ShadowMap()
+ShadowMap::ShadowMap() : GraphicsObject()
 {
-	initializeOpenGLFunctions();
+	m_quad.reset(new GraphicsObject());
+	VertexDataPool vdata;
+	IndexPool idata;
+	ShapeMaker::Quad::createQuad(vdata, idata);
+	m_quad->setVertexData(vdata);
+	m_quad->setIndices(idata);
+	m_quad->initShaders("depthMap_vs.glsl", "depthMap_frag.glsl");
+	//m_quad->initShaders("mesh_vertex.glsl", "texture_frag.glsl");
+	m_quad->initBuffers();
 }
 
 ShadowMap::~ShadowMap()
 {
-}
-
-QOpenGLVertexArrayObject& ShadowMap::Vao()
-{
-	if (!m_vao.isCreated())
-		m_vao.create();
-	return m_vao;
-}
-
-QOpenGLBuffer ShadowMap::Vbo()
-{
-	if (!m_vbo.isCreated())
-		m_vbo.create();
-	return m_vbo;
-}
-
-void ShadowMap::initShader()
-{
-	m_program.reset(new QOpenGLShaderProgram);
-	if (!m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, SHADOW_MAP_VS))
-		qDebug() << m_program->log();
-	if (!m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, SHADOW_MAP_FRAG))
-		qDebug() << m_program->log();
-	if (!m_program->link())
-	{
-		qDebug() << m_program->log();
-		return;
-	}
-	m_posAttr = m_program->attributeLocation("posAttr");
 }
 
 void ShadowMap::initDepthMap()
@@ -73,20 +52,6 @@ void ShadowMap::initFrameBuffer()
 		qDebug() << "OpenGL Frambuffer status not complete.";
 }
 
-void ShadowMap::bindToDraw()
-{
-	if (!m_program)
-		return;
-	m_program->bind();
-
-	if (m_depthMapTexture)
-	{
-		glActiveTexture(GL_TEXTURE6);
-		m_depthMapTexture->bind(GL_TEXTURE6);
-		m_program->setUniformValue("depthMap", GL_TEXTURE6 - GL_TEXTURE0);
-	}
-}
-
 void ShadowMap::setViewport()
 {
 	glViewport(0, 0, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
@@ -103,20 +68,20 @@ void ShadowMap::setLightSpaceMatrix(const QVector3D& lightPos)
 
 void ShadowMap::setShaderLightSpaceMatrix()
 {
-	if (!m_program)
+	if (!ShaderProgram())
 		return;
-	m_program->bind();
-	m_program->setUniformValue("lightSpaceMatrix", m_lightSpaceMatrix);
-	m_program->release();
+	ShaderProgram()->bind();
+	ShaderProgram()->setUniformValue("lightSpaceMatrix", m_lightSpaceMatrix);
+	ShaderProgram()->release();
 }
 
 void ShadowMap::setModelUniform(const QMatrix4x4& model)
 {
-	if (!m_program)
+	if (!ShaderProgram())
 		return;
-	m_program->bind();
-	m_program->setUniformValue("model", m_lightSpaceMatrix);
-	m_program->release();
+	ShaderProgram()->bind();
+	ShaderProgram()->setUniformValue("model", m_lightSpaceMatrix);
+	ShaderProgram()->release();
 }
 
 void ShadowMap::saveBufferAsImage()

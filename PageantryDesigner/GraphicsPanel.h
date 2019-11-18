@@ -47,6 +47,12 @@ private:
 	void setBackground(QVector4D background);
 	void myPaint();
 
+	void renderScene(QOpenGLShaderProgram* program);
+	void renderCube();
+	void renderQuad();
+	void Animating();
+	void FrameBufferKinda();
+	void DrawLighting();
 	void tempLightSetup();
 	bool m_blinn = false;
 

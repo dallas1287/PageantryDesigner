@@ -72,7 +72,9 @@ public:
 	void bindToDraw();
 	void releaseFromDraw();
 	std::vector<VertexData>& getVertexData() { return m_vertexData; }
+	void setVertexData(std::vector<VertexData>& vdata) { m_vertexData.clear();  m_vertexData.assign(vdata.begin(), vdata.end()); }
 	std::vector<GLushort>& getIndices() { return m_indices; }
+	void setIndices(std::vector<GLushort>& idata) { m_indices.clear(); m_indices.assign(idata.begin(), idata.end()); }
 	void setMeshColor(QVector4D& color) { m_meshColor = gammaCorrected(color); }
 	QVector4D& getMeshColor() { return m_meshColor; }
 	void applyMeshColor();
