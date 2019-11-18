@@ -90,7 +90,8 @@ void ShadowMap::saveBufferAsImage()
 {
 	if (m_fbo->isValid())
 	{
-		QImage image = m_fbo->toImage();
+		QImage fboImage(m_fbo->toImage());
+		QImage image(fboImage.constBits(), fboImage.width(), fboImage.height(), QImage::Format_Grayscale8);
 		image.save("../bufferOutput.png");
 	}
 	else 

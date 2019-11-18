@@ -53,14 +53,10 @@ private:
 	void renderDepthMap();
 
 	void standardInitPlane();
-	void standardInitFrameBuffer();
-	void standardWriteToFrameBuffer();
-	void standardRenderDepthMap();
 	void renderScene(QOpenGLShaderProgram* program);
 	void renderCube();
-	void renderQuad();
+
 	void Animating();
-	void FrameBufferKinda();
 	void DrawLighting();
 	void tempLightSetup();
 	bool m_blinn = false;

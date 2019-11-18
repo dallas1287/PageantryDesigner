@@ -128,33 +128,6 @@ void GraphicsPanel::standardInitPlane()
 	glBindVertexArray(0);
 }
 
-void GraphicsPanel::standardInitFrameBuffer()
-{
-	// configure depth map FBO
-	// -----------------------
-	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-	glGenFramebuffers(1, &depthMapFBO);
-	// create depth texture	
-	glGenTextures(1, &depthMap);
-	glBindTexture(GL_TEXTURE_2D, depthMap);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	m_MeshRenderer->getShadowMap()->initDepthMap();
-
-	// attach depth texture as FBO's depth buffer
-	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
-	//glDrawBuffer(GL_NONE);
-	GLenum buf = GL_NONE;
-	glDrawBuffers(1, &buf);
-	glReadBuffer(GL_NONE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 void GraphicsPanel::initFrameBuffer()
 {
 	// configure depth map FBO
@@ -213,21 +186,6 @@ void GraphicsPanel::myPaint()
 	update();
 }
 
-void GraphicsPanel::standardWriteToFrameBuffer()
-{
-	QVector3D lightPos(-2.0f, 4.0f, -1.0);
-
-	m_MeshRenderer->getShadowMap()->setLightSpaceMatrix(lightPos);
-	m_MeshRenderer->getShadowMap()->ShaderProgram()->bind();
-
-	m_MeshRenderer->getShadowMap()->setViewport();
-	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glActiveTexture(GL_TEXTURE0);
-	renderScene(m_MeshRenderer->getShadowMap()->ShaderProgram());
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 void GraphicsPanel::writeToFrameBuffer()
 {
 	QVector3D lightPos(-2.0f, 4.0f, -1.0);
@@ -241,17 +199,8 @@ void GraphicsPanel::writeToFrameBuffer()
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glActiveTexture(GL_TEXTURE0);
 	renderScene(m_MeshRenderer->getShadowMap()->ShaderProgram());
-	m_MeshRenderer->getShadowMap()->Fbo()->release();
-}
 
-void GraphicsPanel::standardRenderDepthMap()
-{
-	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->bind();
-	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("near_plane", near_plane);
-	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("far_plane", far_plane);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, depthMap);
-	renderQuad();
+	m_MeshRenderer->getShadowMap()->Fbo()->release();
 }
 
 void GraphicsPanel::renderDepthMap()
@@ -367,37 +316,6 @@ void GraphicsPanel::renderCube()
 	glBindVertexArray(0);
 }
 
-// renderQuad() renders a 1x1 XY quad in NDC
-// -----------------------------------------
-unsigned int quadVAO = 0;
-unsigned int quadVBO;
-void GraphicsPanel::renderQuad()
-{
-	if (quadVAO == 0)
-	{
-		float quadVertices[] = {
-			// positions        // texture Coords
-			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-		};
-		// setup plane VAO
-		glGenVertexArrays(1, &quadVAO);
-		glGenBuffers(1, &quadVBO);
-		glBindVertexArray(quadVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	}
-	glBindVertexArray(quadVAO);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glBindVertexArray(0);
-}
-
 void GraphicsPanel::Animating()
 {
 	QMatrix4x4 model;
@@ -409,41 +327,6 @@ void GraphicsPanel::Animating()
 		updateFrameCt(m_MeshRenderer->getMeshManager()->getFrameCt());
 	}
 	m_MeshRenderer->Draw();
-}
-
-void GraphicsPanel::FrameBufferKinda()
-{
-	QMatrix4x4 model;
-	m_MeshRenderer->getShadowMap()->setLightSpaceMatrix(QVector3D(0.0, 3.0, 0.0));
-	m_MeshRenderer->getShadowMap()->setModelUniform(model);
-
-	m_MeshRenderer->getShadowMap()->setViewport();
-	m_MeshRenderer->getShadowMap()->initFrameBuffer();
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		qDebug() << "OpenGL Frambuffer status not complete.";
-
-	m_MeshRenderer->getShadowMap()->setMVP(model, m_camera.View(), m_camera.Perspective());
-	m_MeshRenderer->getShadowMap()->bindToDraw();
-	m_MeshRenderer->getShadowMap()->Draw();
-	m_MeshRenderer->getShadowMap()->releaseFromDraw();
-	//m_MeshRenderer->getShadowMap()->saveBufferAsImage();
-	model.scale(5.0);
-	GraphicsObject* obj = m_MeshRenderer->getShadowMap()->getQuad();
-	obj->setMVP(model, m_camera.View(), m_camera.Perspective());
-	if (!obj->ShaderProgram())
-		return;
-	obj->ShaderProgram()->bind();
-
-	if (obj->Texture())
-	{
-		glActiveTexture(GL_TEXTURE3);
-		obj->Texture()->bind(GL_TEXTURE3);
-		obj->ShaderProgram()->setUniformValue("tex", GL_TEXTURE3 - GL_TEXTURE0);
-	}
-	obj->Vao().bind();
-	m_MeshRenderer->getShadowMap()->getQuad()->Draw();
-	m_MeshRenderer->getShadowMap()->getQuad()->releaseFromDraw();
 }
 
 void GraphicsPanel::DrawLighting()
