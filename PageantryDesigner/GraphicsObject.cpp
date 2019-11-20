@@ -213,6 +213,62 @@ void GraphicsObject::initBuffers(VertexDataPool& data, IndexPool& indices)
 	releaseAll();
 }
 
+void GraphicsObject::setupBuffers(VertexDataPool& data, IndexPool& indices)
+{
+	if (data.empty() || indices.empty())
+		return;
+
+	m_vao.bind();
+	m_vbo.bind();
+	m_ebo.bind();
+	m_vbo.allocate(&data[0], data.size() * sizeof(VertexData));
+
+	int offset = 0;
+
+	glEnableVertexAttribArray(Shader::Position);
+	glVertexAttribPointer(Shader::Position, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offset);
+
+	offset += sizeof(decltype(data[0].position));
+
+	glEnableVertexAttribArray(Shader::TexCoords);
+	glVertexAttribPointer(Shader::TexCoords, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offset);
+
+	offset += sizeof(decltype(data[0].texCoord));
+
+	glEnableVertexAttribArray(Shader::Normal);
+	glVertexAttribPointer(Shader::Normal, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offset);
+
+	offset += sizeof(decltype(data[0].normal));
+
+	glEnableVertexAttribArray(Shader::Color);
+	glVertexAttribPointer(Shader::Color, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offset);
+
+	offset += sizeof(decltype(data[0].color));
+
+	glEnableVertexAttribArray(Shader::Bone0);
+	glVertexAttribPointer(Shader::Bone0, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offset);
+
+	offset += sizeof(QVector4D);
+
+	glEnableVertexAttribArray(Shader::Bone1);
+	glVertexAttribPointer(Shader::Bone1, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offset);
+
+	offset += sizeof(QVector4D);
+
+	glEnableVertexAttribArray(Shader::Bone2);
+	glVertexAttribPointer(Shader::Bone2, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offset);
+
+	offset += sizeof(QVector4D);
+
+	glEnableVertexAttribArray(Shader::Bone3);
+	glVertexAttribPointer(Shader::Bone3, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offset);
+
+	Ebo().allocate(&indices[0], indices.size() * sizeof(GLushort));
+	m_vao.release();
+	m_ebo.release();
+	m_vbo.release();
+}
+
 void GraphicsObject::Draw()
 {
 	if (getIndices().empty())

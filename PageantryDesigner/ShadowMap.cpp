@@ -85,15 +85,3 @@ void ShadowMap::setModelUniform(const QMatrix4x4& model)
 	ShaderProgram()->setUniformValue("model", m_lightSpaceMatrix);
 	ShaderProgram()->release();
 }
-
-void ShadowMap::saveBufferAsImage()
-{
-	if (m_fbo->isValid())
-	{
-		QImage fboImage(m_fbo->toImage());
-		QImage image(fboImage.constBits(), fboImage.width(), fboImage.height(), QImage::Format_Grayscale8);
-		image.save("../bufferOutput.png");
-	}
-	else 
-		qDebug() << "INVALID FrameBuffer: Cant Save image";
-}

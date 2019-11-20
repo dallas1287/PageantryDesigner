@@ -20,6 +20,7 @@ public:
 	void initialize();
 	void generateQuad();
 	void generateCube();
+	void resize(float scale);
 	void setType(int type);
 	int getType() { return m_type; }
 

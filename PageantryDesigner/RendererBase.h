@@ -1,5 +1,5 @@
 #pragma once
-#include <QOpenGLFunctions>
+#include <QOpenGLExtraFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include <QOpenGLBuffer>
@@ -8,7 +8,7 @@
 struct VertexData;
 class GraphicsPanel;
 
-class RendererBase : protected QOpenGLFunctions
+class RendererBase : protected QOpenGLExtraFunctions
 {
 public:
 	RendererBase();

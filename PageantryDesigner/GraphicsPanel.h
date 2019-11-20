@@ -48,14 +48,6 @@ private:
 	void setBackground(QVector4D background);
 	void myPaint();
 
-	void initFrameBuffer();
-	void writeToFrameBuffer();
-	void renderDepthMap();
-
-	void standardInitPlane();
-	void renderScene(QOpenGLShaderProgram* program);
-	void renderCube();
-
 	void Animating();
 	void DrawLighting();
 	void tempLightSetup();

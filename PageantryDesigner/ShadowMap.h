@@ -27,8 +27,11 @@ public:
 	void setLightSpaceMatrix(const QVector3D& lightPos);
 	const QMatrix4x4& getLightSpaceMatrix() { return m_lightSpaceMatrix; }
 	void setShaderLightSpaceMatrix();
+	float getNearPlane() { return m_nearPlane; }
+	void setNearPlane(float val) { m_nearPlane = val; }
+	float getFarPlane() { return m_farPlane; }
+	void setFarPlane(float val) { m_farPlane = val; }
 	void setModelUniform(const QMatrix4x4& model);
-	void saveBufferAsImage();
 	GraphicsObject* getQuad() { return m_quad.get(); }
 	std::unique_ptr<QOpenGLFramebufferObject> m_fbo;
 

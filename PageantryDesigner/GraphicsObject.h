@@ -18,6 +18,25 @@ static const unsigned int HAS_COLOR_DATA = 0x20;
 
 static const char* SCENE_DATA = "sceneData";
 
+namespace Shader
+{
+	enum Attributes
+	{
+		Position = 0,
+		Color,
+		TexCoords,
+		Normal,
+		Bone0,
+		Bone1,
+		Bone2,
+		Bone3,
+		Model,
+		View,
+		Projection,
+		SceneData
+	};
+};
+
 struct ShaderAttributes
 {
 	GLuint m_posAttr = -1;
@@ -57,6 +76,8 @@ public:
 	GLuint BoneAttr3() { return m_shaderAttributes.m_boneTransform3; }
 	void initBuffers() { initBuffers(m_vertexData, m_indices); }
 	void initBuffers(VertexDataPool& data, IndexPool& indices);
+	void setupBuffers() { setupBuffers(m_vertexData, m_indices); }
+	void setupBuffers(VertexDataPool& data, IndexPool& indices);
 	void initShaders(const QString& vertexPath, const QString& fragmentPath, bool setup = true);
 	void initTexture(const QString& path);
 	void initSpecularTexture(const QString& path);

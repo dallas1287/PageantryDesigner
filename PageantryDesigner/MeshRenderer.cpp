@@ -54,11 +54,27 @@ void MeshRenderer::initialize()
 	RendererBase::initialize();
 }
 
-//generic shader initialization. this most likely will get re-initialized per mesh 
 void MeshRenderer::initShaders(const QString& vertexPath, const QString& fragmentPath)
 {
-	for (auto mesh : m_meshManager->getMeshes())
-		mesh->initShaders("mesh_vertex.glsl", "mesh_fragment.glsl");
+	m_program.reset(new QOpenGLShaderProgram);
+	if (!m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, vertexPath))
+		qDebug() << m_program->log();
+	if (!m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, fragmentPath))
+		qDebug() << m_program->log();
+	if (!m_program->link())
+	{
+		qDebug() << m_program->log();
+		return;
+	}
+
+	m_program->bindAttributeLocation("posAttr", Shader::Position);
+	m_program->bindAttributeLocation("texCoordAttr", Shader::TexCoords);
+	m_program->bindAttributeLocation("normAttr", Shader::Normal);
+	m_program->bindAttributeLocation("colAttr", Shader::Color);
+	m_program->bindAttributeLocation("boneTransform0", Shader::Bone0);
+	m_program->bindAttributeLocation("boneTransform1", Shader::Bone1);
+	m_program->bindAttributeLocation("boneTransform2", Shader::Bone2);
+	m_program->bindAttributeLocation("boneTransform3", Shader::Bone3);
 }
 
 void MeshRenderer::initTextures(const QString& path)
@@ -70,10 +86,74 @@ void MeshRenderer::initTextures(const QString& path)
 		mesh->initTexture(path);
 }
 
+void MeshRenderer::initFrameBuffer()
+{
+	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	getShadowMap()->m_fbo.reset(new QOpenGLFramebufferObject(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, QOpenGLFramebufferObject::Attachment::Depth));
+
+	if (!getShadowMap()->DepthMap() || !getShadowMap()->DepthMap()->isCreated())
+		getShadowMap()->initDepthMap();
+
+	getShadowMap()->Fbo()->bind();
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, getShadowMap()->DepthMap()->textureId(), 0);
+	//this differs from the example in LearOpenGL in that it calls glDrawBuffer(GL_NONE) which doesn't seem to be available in the qt OpenGLExtraFunctions 
+	GLenum buf = GL_NONE;
+	glDrawBuffers(1, &buf);
+	glReadBuffer(GL_NONE);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		qDebug() << "OpenGL Frambuffer status not complete.";
+
+	getShadowMap()->Fbo()->release();
+}
+
+void MeshRenderer::writeFrameBuffer()
+{
+	QVector3D lightPos(-2.0f, 4.0f, -1.0);
+
+	getShadowMap()->setLightSpaceMatrix(lightPos);
+	if (!ShaderProgram())
+		return;
+	ShaderProgram()->bind();
+	ShaderProgram()->setUniformValue("lightSpaceMatrix", getShadowMap()->getLightSpaceMatrix());
+	ShaderProgram()->release();
+	ShaderProgram()->bind();
+
+	getShadowMap()->setViewport();
+	getShadowMap()->Fbo()->bind();
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glActiveTexture(GL_TEXTURE0);
+	QMatrix4x4 model;
+	float inc = 0.0;
+	for (auto pObj : PrimitiveObjects())
+	{
+		if (pObj->getType() == Primitive::Quad)
+		{			
+			model.setToIdentity();
+			model.rotate(-90.0, X);
+			setMVP(model, model, model);
+			Draw(pObj);
+		}
+		else
+		{
+			model.setToIdentity();
+			model.translate(inc, inc / 2, 0.0);
+			inc += 3.0;
+			setMVP(model, model, model); //this doesn't need view/projection TODO: add more specific functions to handle this
+			Draw(pObj);
+		}
+	}
+	getShadowMap()->Fbo()->release();
+}
+
 void MeshRenderer::setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection)
 {
-	for (auto mesh : m_meshManager->getMeshes())
-		mesh->setMVP(model, view, projection);
+	m_program->bind();
+	m_program->setUniformValue(m_program->uniformLocation("model"), model);
+	m_program->setUniformValue(m_program->uniformLocation("view"), view);
+	m_program->setUniformValue(m_program->uniformLocation("projection"), projection);
+	m_program->release();
 }
 
 void MeshRenderer::Draw()
@@ -85,27 +165,29 @@ void MeshRenderer::Draw()
 		pObj->Draw();
 }
 
-void MeshRenderer::DrawToShadowMap(const QVector3D& lightPos)
+void MeshRenderer::Draw(GraphicsObject* obj)
 {
-	getShadowMap()->initDepthMap();
-	getShadowMap()->initFrameBuffer();
-	glViewport(0, 0, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
-	getShadowMap()->setLightSpaceMatrix(lightPos);
+	ShaderProgram()->bind();
+	obj->Vao().bind();
+	glDrawElements(GL_TRIANGLES, obj->getIndices().size(), GL_UNSIGNED_SHORT, 0);
+	obj->Vao().release();
+	ShaderProgram()->release();
+}
 
-	for (auto mesh : m_meshManager->getMeshes())
-	{
-		mesh->ShaderProgram()->setUniformValue("model", mesh->getModelMatrix());
-		mesh->ShaderProgram()->setUniformValue("lightSpaceMatrix", getShadowMap()->getLightSpaceMatrix());
-		mesh->Draw();
-	}
-	for (auto pObj : m_primitiveObjects)
-	{
-		pObj->ShaderProgram()->setUniformValue("model", pObj->getModelMatrix());
-		pObj->ShaderProgram()->setUniformValue("lightSpaceMatrix", getShadowMap()->getLightSpaceMatrix());
-		pObj->Draw();
-	}
-	//getShadowMap()->ShaderProgram()->release();
-	getShadowMap()->saveBufferAsImage();
+void MeshRenderer::DrawAll()
+{
+	for (GraphicsObject* obj : PrimitiveObjects())
+		Draw(obj);
+}
+
+void MeshRenderer::renderShadowDepthMap()
+{
+	getShadowMap()->getQuad()->ShaderProgram()->bind();
+	getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("near_plane", getShadowMap()->getNearPlane());
+	getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("far_plane", getShadowMap()->getFarPlane());
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, getShadowMap()->DepthMap()->textureId());
+	getShadowMap()->getQuad()->Draw();
 }
 
 void MeshRenderer::createCube(int count)

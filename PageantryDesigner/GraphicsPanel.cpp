@@ -32,11 +32,6 @@ void GraphicsPanel::importModel(const QString& importPath)
 	m_MeshRenderer.reset(new MeshRenderer(this, importPath));
 }
 
-static unsigned int planeVAO;
-static unsigned int depthMap;
-static unsigned int depthMapFBO;
-static float near_plane = 1.0f, far_plane = 7.5f;
-
 void GraphicsPanel::initializeGL()
 {
 	initializeOpenGLFunctions();
@@ -72,84 +67,21 @@ void GraphicsPanel::initializeGL()
 			pObj->setSceneData(USES_MATERIAL_TEXTURES | USES_LIGHTS | HAS_POINT_LIGHTS| HAS_DIRECTIONAL_LIGHTS  | HAS_SPOTLIGHTS);
 		}
 	}
-
-	//framebuffer test initialization
-	std::vector<VertexData> vdata;
-	std::vector<GLushort> idata;
-	ShapeMaker::Cube::createCube(vdata, idata);
-	m_MeshRenderer->getShadowMap()->setVertexData(vdata);
-	m_MeshRenderer->getShadowMap()->setIndices(idata);
-	//m_MeshRenderer->getShadowMap()->initShaders(SHADOW_MAP_VS, SHADOW_MAP_FRAG);
-	m_MeshRenderer->getShadowMap()->initShaders("mesh_vertex.glsl", "color_frag.glsl");
-	m_MeshRenderer->getShadowMap()->initBuffers(vdata, idata);
-	m_MeshRenderer->getShadowMap()->getQuad()->initTexture("../tattoo_comic.jpg");*/
-
+	*/
 	populateAnimCb();
 	populateMeshesCb();
 
 	resetViewPort();
 
-	standardInitPlane();
-	initFrameBuffer();
+	m_MeshRenderer->createCube(3);
+	m_MeshRenderer->createQuad();
+	m_MeshRenderer->PrimitiveObjects().back()->resize(25.0);
+	m_MeshRenderer->initShaders("shadowMap_vs.glsl", "shadowMap_frag.glsl");
 
-	m_MeshRenderer->getShadowMap()->initShaders("shadowMap_vs.glsl", "shadowMap_frag.glsl");
+	m_MeshRenderer->initFrameBuffer();
 	
-	// shader configuration
-	// --------------------
 	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->bind();
 	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("depthMap", GL_TEXTURE0 - GL_TEXTURE0);
-}
-
-void GraphicsPanel::standardInitPlane()
-{
-	float planeVertices[] = {
-		// positions            // normals         // texcoords
-		 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-		-25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
-		-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
-
-		 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
-		-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
-		 25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 10.0f
-	};
-	// plane VAO
-	unsigned int planeVBO;
-	glGenVertexArrays(1, &planeVAO);
-	glGenBuffers(1, &planeVBO);
-	glBindVertexArray(planeVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glBindVertexArray(0);
-}
-
-void GraphicsPanel::initFrameBuffer()
-{
-	// configure depth map FBO
-	// -----------------------
-	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-	m_MeshRenderer->getShadowMap()->m_fbo.reset(new QOpenGLFramebufferObject(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, QOpenGLFramebufferObject::Attachment::Depth));
-	GLuint handle = m_MeshRenderer->getShadowMap()->Fbo()->handle();
-
-	if (!m_MeshRenderer->getShadowMap()->DepthMap()|| !m_MeshRenderer->getShadowMap()->DepthMap()->isCreated())
-		m_MeshRenderer->getShadowMap()->initDepthMap();
-
-	m_MeshRenderer->getShadowMap()->Fbo()->bind();
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_MeshRenderer->getShadowMap()->DepthMap()->textureId(), 0);
-	//this differs from the example in LearOpenGL in that it calls glDrawBuffer(GL_NONE) which doesn't seem to be available in the qt OpenGLExtraFunctions 
-	GLenum buf = GL_NONE;
-	glDrawBuffers(1, &buf);
-	glReadBuffer(GL_NONE);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		qDebug() << "OpenGL Frambuffer status not complete.";
-
-	m_MeshRenderer->getShadowMap()->Fbo()->release();
 }
 
 void GraphicsPanel::resetViewPort()
@@ -172,148 +104,17 @@ void GraphicsPanel::myPaint()
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	writeToFrameBuffer();
+	m_MeshRenderer->writeFrameBuffer();
 
-	// reset viewport
 	resetViewPort();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	renderDepthMap();
+	m_MeshRenderer->renderShadowDepthMap();
 
 	++m_frame;	
 	painter.end();
 	updateCameraStats();
 	update();
-}
-
-void GraphicsPanel::writeToFrameBuffer()
-{
-	QVector3D lightPos(-2.0f, 4.0f, -1.0);
-
-	m_MeshRenderer->getShadowMap()->setLightSpaceMatrix(lightPos);
-	m_MeshRenderer->getShadowMap()->ShaderProgram()->bind();
-
-	m_MeshRenderer->getShadowMap()->setViewport();
-	m_MeshRenderer->getShadowMap()->Fbo()->bind();
-
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glActiveTexture(GL_TEXTURE0);
-	renderScene(m_MeshRenderer->getShadowMap()->ShaderProgram());
-
-	m_MeshRenderer->getShadowMap()->Fbo()->release();
-}
-
-void GraphicsPanel::renderDepthMap()
-{
-	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->bind();
-	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("near_plane", near_plane);
-	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("far_plane", far_plane);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_MeshRenderer->getShadowMap()->DepthMap()->textureId());
-	m_MeshRenderer->getShadowMap()->getQuad()->Draw();
-}
-
-// renders the 3D scene
-// --------------------
-void GraphicsPanel::renderScene(QOpenGLShaderProgram* shader)
-{
-	// floor
-	QMatrix4x4 model;
-	shader->setUniformValue("model", model);
-	glBindVertexArray(planeVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	// cubes
-	model.translate(0.0f, 1.5f, 0.0);
-	model.scale(0.5);
-	shader->setUniformValue("model", model);
-	renderCube();
-	model.setToIdentity();
-	model.translate(2.0f, 0.0f, 1.0);
-	model.scale(0.5);
-	shader->setUniformValue("model", model);
-	renderCube();
-	model.setToIdentity();
-	model.translate(-1.0f, 0.0f, 2.0);
-	model.rotate(60.0, QVector3D(1.0, 0.0, 1.0).normalized());
-	model.scale(0.25);
-	shader->setUniformValue("model", model);
-	renderCube();
-}
-
-
-// renderCube() renders a 1x1 3D cube in NDC.
-// -------------------------------------------------
-unsigned int cubeVAO = 0;
-unsigned int cubeVBO = 0;
-void GraphicsPanel::renderCube()
-{
-	// initialize (if necessary)
-	if (cubeVAO == 0)
-	{
-		float vertices[] = {
-			// back face
-			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-			 1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
-			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-			-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
-			// front face
-			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-			 1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
-			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-			-1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
-			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-			// left face
-			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-			-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
-			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-			-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-			// right face
-			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-			 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
-			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-			 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
-			// bottom face
-			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-			 1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
-			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-			-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-			// top face
-			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-			 1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-			 1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
-			 1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-			-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
-		};
-		glGenVertexArrays(1, &cubeVAO);
-		glGenBuffers(1, &cubeVBO);
-		// fill buffer
-		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-		// link vertex attributes
-		glBindVertexArray(cubeVAO);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-	}
-	// render Cube
-	glBindVertexArray(cubeVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-	glBindVertexArray(0);
 }
 
 void GraphicsPanel::Animating()
