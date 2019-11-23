@@ -75,6 +75,7 @@ void GraphicsPanel::initializeGL()
 
 	m_MeshRenderer->createCube(3);
 	m_MeshRenderer->createQuad();
+	m_MeshRenderer->PrimitiveObjects().back()->initTexture("../wood.png");
 	m_MeshRenderer->PrimitiveObjects().back()->resize(25.0);
 	m_MeshRenderer->initShaders("shadowMap_vs.glsl", "shadowMap_frag.glsl");
 
@@ -109,7 +110,40 @@ void GraphicsPanel::myPaint()
 	resetViewPort();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	m_MeshRenderer->renderShadowDepthMap();
+	//m_MeshRenderer->renderShadowDepthMap();
+
+	m_MeshRenderer->initShaders("shadows_vs.glsl", "shadows_frag.glsl");
+	m_MeshRenderer->setMVP(QMatrix4x4(), m_camera.View(), m_camera.Perspective());
+	m_MeshRenderer->ShaderProgram()->bind();
+	m_MeshRenderer->ShaderProgram()->setUniformValue("lightPos", QVector3D(-2.0f, 4.0f, -1.0));
+	m_MeshRenderer->ShaderProgram()->setUniformValue("lightSpaceMatrix", m_MeshRenderer->getShadowMap()->getLightSpaceMatrix());
+	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("diffuseTexture", GL_TEXTURE0 - GL_TEXTURE0);
+	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("shadowMap", GL_TEXTURE1 - GL_TEXTURE0);
+	m_MeshRenderer->ShaderProgram()->release();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_MeshRenderer->PrimitiveObjects().back()->Texture()->textureId());
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_MeshRenderer->getShadowMap()->DepthMap()->textureId());
+	QMatrix4x4 model;
+	float inc = 0.0;
+	for (auto pObj : m_MeshRenderer->PrimitiveObjects())
+	{
+		if (pObj->getType() == Primitive::Quad)
+		{
+			model.setToIdentity();
+			model.rotate(-90.0, X);
+			m_MeshRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
+			m_MeshRenderer->Draw(pObj);
+		}
+		else
+		{
+			model.setToIdentity();
+			model.translate(inc, inc / 2, 0.0);
+			inc += 3.0;
+			m_MeshRenderer->setMVP(model, m_camera.View(), m_camera.Perspective()); //this doesn't need view/projection TODO: add more specific functions to handle this
+			m_MeshRenderer->Draw(pObj);
+		}
+	}
 
 	++m_frame;	
 	painter.end();

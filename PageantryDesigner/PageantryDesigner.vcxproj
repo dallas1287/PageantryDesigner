@@ -155,6 +155,8 @@
     <None Include="multiLight_frag.glsl" />
     <None Include="shadowMap_frag.glsl" />
     <None Include="shadowMap_vs.glsl" />
+    <None Include="shadows_frag.glsl" />
+    <None Include="shadows_vs.glsl" />
     <None Include="texture_frag.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

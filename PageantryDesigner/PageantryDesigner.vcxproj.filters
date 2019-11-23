@@ -194,5 +194,11 @@
     <None Include="depthMap_vs.glsl">
       <Filter>shaders</Filter>
     </None>
+    <None Include="shadows_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadows_vs.glsl">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
