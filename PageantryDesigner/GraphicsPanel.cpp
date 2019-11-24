@@ -105,32 +105,35 @@ void GraphicsPanel::myPaint()
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	m_MeshRenderer->initShaders("shadowMap_vs.glsl", "shadowMap_frag.glsl");
 	m_MeshRenderer->writeFrameBuffer();
 
 	resetViewPort();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(0.1, 0.1, 0.1, 1.0);
 
 	//m_MeshRenderer->renderShadowDepthMap();
 
 	m_MeshRenderer->initShaders("shadows_vs.glsl", "shadows_frag.glsl");
-	m_MeshRenderer->setMVP(QMatrix4x4(), m_camera.View(), m_camera.Perspective());
 	m_MeshRenderer->ShaderProgram()->bind();
 	m_MeshRenderer->ShaderProgram()->setUniformValue("lightPos", QVector3D(-2.0f, 4.0f, -1.0));
+	m_MeshRenderer->ShaderProgram()->setUniformValue("viewPos", m_camera.Position());
 	m_MeshRenderer->ShaderProgram()->setUniformValue("lightSpaceMatrix", m_MeshRenderer->getShadowMap()->getLightSpaceMatrix());
-	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("diffuseTexture", GL_TEXTURE0 - GL_TEXTURE0);
-	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("shadowMap", GL_TEXTURE1 - GL_TEXTURE0);
+	m_MeshRenderer->ShaderProgram()->setUniformValue("diffuseTexture", GL_TEXTURE0 - GL_TEXTURE0);
+	m_MeshRenderer->ShaderProgram()->setUniformValue("shadowMap", GL_TEXTURE1 - GL_TEXTURE0);
 	m_MeshRenderer->ShaderProgram()->release();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_MeshRenderer->PrimitiveObjects().back()->Texture()->textureId());
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, m_MeshRenderer->getShadowMap()->DepthMap()->textureId());
 	QMatrix4x4 model;
-	float inc = 0.0;
+	int ct = 0;
 	for (auto pObj : m_MeshRenderer->PrimitiveObjects())
 	{
 		if (pObj->getType() == Primitive::Quad)
 		{
 			model.setToIdentity();
+			model.translate(0.0, -0.5, 0.0);
 			model.rotate(-90.0, X);
 			m_MeshRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 			m_MeshRenderer->Draw(pObj);
@@ -138,10 +141,25 @@ void GraphicsPanel::myPaint()
 		else
 		{
 			model.setToIdentity();
-			model.translate(inc, inc / 2, 0.0);
-			inc += 3.0;
-			m_MeshRenderer->setMVP(model, m_camera.View(), m_camera.Perspective()); //this doesn't need view/projection TODO: add more specific functions to handle this
+			if (ct == 0)
+			{
+				model.translate(0.0, 1.5, 0.0);
+				model.scale(0.5);
+			}
+			else if (ct == 1)
+			{
+				model.translate(2.0, 0.0, 1.0);
+				model.scale(0.5);
+			}
+			else if (ct == 2)
+			{
+				model.translate(-1.0, 0.0, 2.0);
+				model.rotate(60.0, QVector3D(1.0, 0.0, 1.0));
+				model.scale(.25);
+			}
+			m_MeshRenderer->setMVP(model, m_camera.View(), m_camera.Perspective());
 			m_MeshRenderer->Draw(pObj);
+			ct++;
 		}
 	}
 
@@ -179,8 +197,8 @@ void GraphicsPanel::DrawLighting()
 	m_MeshRenderer->PrimitiveObjects()[2]->setMVP(model, m_camera.View(), m_camera.Perspective());
 	model.setToIdentity();
 
-	//tempLightSetup();
-	//m_MeshRenderer->Draw();
+	tempLightSetup();
+	m_MeshRenderer->Draw();
 }
 
 void GraphicsPanel::tempLightSetup()

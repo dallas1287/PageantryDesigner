@@ -117,7 +117,6 @@ void MeshRenderer::writeFrameBuffer()
 	ShaderProgram()->bind();
 	ShaderProgram()->setUniformValue("lightSpaceMatrix", getShadowMap()->getLightSpaceMatrix());
 	ShaderProgram()->release();
-	ShaderProgram()->bind();
 
 	getShadowMap()->setViewport();
 	getShadowMap()->Fbo()->bind();
@@ -125,12 +124,13 @@ void MeshRenderer::writeFrameBuffer()
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glActiveTexture(GL_TEXTURE0);
 	QMatrix4x4 model;
-	float inc = 0.0;
+	int ct = 0;
 	for (auto pObj : PrimitiveObjects())
 	{
 		if (pObj->getType() == Primitive::Quad)
 		{			
 			model.setToIdentity();
+			model.translate(0.0, -0.5, 0.0);
 			model.rotate(-90.0, X);
 			setMVP(model, model, model);
 			Draw(pObj);
@@ -138,10 +138,25 @@ void MeshRenderer::writeFrameBuffer()
 		else
 		{
 			model.setToIdentity();
-			model.translate(inc, inc / 2, 0.0);
-			inc += 3.0;
+			if (ct == 0)
+			{
+				model.translate(0.0, 1.5, 0.0);
+				model.scale(0.5);
+			}
+			else if (ct == 1)
+			{
+				model.translate(2.0, 0.0, 1.0);
+				model.scale(0.5);
+			}
+			else if (ct == 2)
+			{
+				model.translate(-1.0, 0.0, 2.0);
+				model.rotate(60.0, QVector3D(1.0, 0.0, 1.0));
+				model.scale(.25);
+			}
 			setMVP(model, model, model); //this doesn't need view/projection TODO: add more specific functions to handle this
 			Draw(pObj);
+			ct++;
 		}
 	}
 	getShadowMap()->Fbo()->release();
