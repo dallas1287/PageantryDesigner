@@ -23,7 +23,7 @@ void ShadowMap::initDepthMap()
 	m_depthMapTexture.reset(new QOpenGLTexture(QOpenGLTexture::Target::Target2D));
 	m_depthMapTexture->setFormat(QOpenGLTexture::DepthFormat);
 	m_depthMapTexture->setDepthStencilMode(QOpenGLTexture::DepthMode);
-	m_depthMapTexture->setSize(1024, 1024);
+	m_depthMapTexture->setSize(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
 	m_depthMapTexture->setMinificationFilter(QOpenGLTexture::Nearest);
 	m_depthMapTexture->setMagnificationFilter(QOpenGLTexture::Nearest);
 	m_depthMapTexture->setWrapMode(QOpenGLTexture::Repeat);
@@ -82,6 +82,6 @@ void ShadowMap::setModelUniform(const QMatrix4x4& model)
 	if (!ShaderProgram())
 		return;
 	ShaderProgram()->bind();
-	ShaderProgram()->setUniformValue("model", m_lightSpaceMatrix);
+	ShaderProgram()->setUniformValue("model", model);
 	ShaderProgram()->release();
 }

@@ -77,7 +77,9 @@ void GraphicsPanel::initializeGL()
 	m_MeshRenderer->createQuad();
 	m_MeshRenderer->PrimitiveObjects().back()->initTexture("../wood.png");
 	m_MeshRenderer->PrimitiveObjects().back()->resize(25.0);
-	m_MeshRenderer->initShaders("shadowMap_vs.glsl", "shadowMap_frag.glsl");
+	
+	m_MeshRenderer->initShaders("shadows_vs.glsl", "shadows_frag.glsl");
+	m_MeshRenderer->getShadowMap()->initShaders("shadowMap_vs.glsl", "shadowMap_frag.glsl");
 
 	m_MeshRenderer->initFrameBuffer();
 	
@@ -105,7 +107,6 @@ void GraphicsPanel::myPaint()
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	m_MeshRenderer->initShaders("shadowMap_vs.glsl", "shadowMap_frag.glsl");
 	m_MeshRenderer->writeFrameBuffer();
 
 	resetViewPort();
@@ -114,7 +115,6 @@ void GraphicsPanel::myPaint()
 
 	//m_MeshRenderer->renderShadowDepthMap();
 
-	m_MeshRenderer->initShaders("shadows_vs.glsl", "shadows_frag.glsl");
 	m_MeshRenderer->ShaderProgram()->bind();
 	m_MeshRenderer->ShaderProgram()->setUniformValue("lightPos", QVector3D(-2.0f, 4.0f, -1.0));
 	m_MeshRenderer->ShaderProgram()->setUniformValue("viewPos", m_camera.Position());

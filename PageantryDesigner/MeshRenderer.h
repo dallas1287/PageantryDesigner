@@ -4,6 +4,15 @@
 #include "PrimitiveObject.h"
 #include "ShadowMap.h"
 
+namespace DrawType
+{
+	enum
+	{
+		Screen,
+		Shadow
+	};
+}
+
 class MeshRenderer : public RendererBase
 {
 public:
@@ -17,7 +26,7 @@ public:
 	void importModel(const QString& importPath, bool reset = false);
 	void loadTexture(const QString& texturePath, const QString& meshName);
 
-	void Draw(GraphicsObject* obj);
+	void Draw(GraphicsObject* obj, int type = DrawType::Screen);
 	void DrawAll();
 	void renderShadowDepthMap();
 	MeshManager* getMeshManager() { return m_meshManager.get(); }

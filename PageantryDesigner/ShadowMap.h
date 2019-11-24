@@ -8,8 +8,8 @@
 #include <QMatrix4x4>
 #include "GraphicsObject.h"
 
-static const int SHADOW_MAP_WIDTH = 1024;
-static const int SHADOW_MAP_HEIGHT = 1024;
+static const int SHADOW_MAP_WIDTH = 2048;
+static const int SHADOW_MAP_HEIGHT = 2048;
 
 static const char* SHADOW_MAP_VS = "shadowMap_vs.glsl";
 static const char* SHADOW_MAP_FRAG = "shadowMap_frag.glsl";
@@ -33,6 +33,7 @@ public:
 	void setFarPlane(float val) { m_farPlane = val; }
 	void setModelUniform(const QMatrix4x4& model);
 	GraphicsObject* getQuad() { return m_quad.get(); }
+
 	std::unique_ptr<QOpenGLFramebufferObject> m_fbo;
 
 private:

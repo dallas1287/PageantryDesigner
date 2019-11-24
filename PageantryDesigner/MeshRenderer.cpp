@@ -88,7 +88,6 @@ void MeshRenderer::initTextures(const QString& path)
 
 void MeshRenderer::initFrameBuffer()
 {
-	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 	getShadowMap()->m_fbo.reset(new QOpenGLFramebufferObject(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, QOpenGLFramebufferObject::Attachment::Depth));
 
 	if (!getShadowMap()->DepthMap() || !getShadowMap()->DepthMap()->isCreated())
@@ -112,11 +111,6 @@ void MeshRenderer::writeFrameBuffer()
 	QVector3D lightPos(-2.0f, 4.0f, -1.0);
 
 	getShadowMap()->setLightSpaceMatrix(lightPos);
-	if (!ShaderProgram())
-		return;
-	ShaderProgram()->bind();
-	ShaderProgram()->setUniformValue("lightSpaceMatrix", getShadowMap()->getLightSpaceMatrix());
-	ShaderProgram()->release();
 
 	getShadowMap()->setViewport();
 	getShadowMap()->Fbo()->bind();
@@ -132,8 +126,8 @@ void MeshRenderer::writeFrameBuffer()
 			model.setToIdentity();
 			model.translate(0.0, -0.5, 0.0);
 			model.rotate(-90.0, X);
-			setMVP(model, model, model);
-			Draw(pObj);
+			getShadowMap()->setModelUniform(model);
+			Draw(pObj, DrawType::Shadow);
 		}
 		else
 		{
@@ -154,8 +148,8 @@ void MeshRenderer::writeFrameBuffer()
 				model.rotate(60.0, QVector3D(1.0, 0.0, 1.0));
 				model.scale(.25);
 			}
-			setMVP(model, model, model); //this doesn't need view/projection TODO: add more specific functions to handle this
-			Draw(pObj);
+			getShadowMap()->setModelUniform(model);
+			Draw(pObj, DrawType::Shadow);
 			ct++;
 		}
 	}
@@ -180,13 +174,21 @@ void MeshRenderer::Draw()
 		pObj->Draw();
 }
 
-void MeshRenderer::Draw(GraphicsObject* obj)
+void MeshRenderer::Draw(GraphicsObject* obj, int type)
 {
-	ShaderProgram()->bind();
+	QOpenGLShaderProgram* shaderProgram = nullptr;
+	if (type == DrawType::Screen)
+		shaderProgram = ShaderProgram();
+	else if (type == DrawType::Shadow)
+		shaderProgram = getShadowMap()->ShaderProgram();
+	else
+		return;
+
+	shaderProgram->bind();
 	obj->Vao().bind();
 	glDrawElements(GL_TRIANGLES, obj->getIndices().size(), GL_UNSIGNED_SHORT, 0);
 	obj->Vao().release();
-	ShaderProgram()->release();
+	shaderProgram->release();
 }
 
 void MeshRenderer::DrawAll()
