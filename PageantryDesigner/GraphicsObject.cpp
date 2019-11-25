@@ -34,13 +34,19 @@ QOpenGLBuffer GraphicsObject::Ebo()
 	return m_ebo;
 }
 
-void GraphicsObject::initShaders(const QString& vertexPath, const QString& fragmentPath, bool setup)
+void GraphicsObject::initShaders(const QString& vertexPath, const QString& fragmentPath, const QString& geometryPath, bool setup)
 {
 	m_program.reset(new QOpenGLShaderProgram);
 	if (!m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, vertexPath))
 		qDebug() << m_program->log();
 	if (!m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, fragmentPath))
 		qDebug() << m_program->log();
+	if (!geometryPath.isEmpty())
+	{
+		if (!m_program->addShaderFromSourceFile(QOpenGLShader::Geometry, geometryPath))
+			qDebug() << m_program->log();
+	}
+
 	if (!m_program->link())
 	{
 		qDebug() << m_program->log();

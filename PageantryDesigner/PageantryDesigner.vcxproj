@@ -98,12 +98,14 @@
     <ClCompile Include="Bone.cpp" />
     <ClCompile Include="BoneRig.cpp" />
     <ClCompile Include="Conversions.cpp" />
+    <ClCompile Include="DirectionalShadowMap.cpp" />
     <ClCompile Include="GraphicsObject.cpp" />
     <ClCompile Include="GraphicsPanel.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MeshManager.cpp" />
     <ClCompile Include="MeshObject.cpp" />
     <ClCompile Include="MeshRenderer.cpp" />
+    <ClCompile Include="PointShadowMap.cpp" />
     <ClCompile Include="PrimitiveObject.cpp" />
     <ClCompile Include="RendererBase.cpp" />
     <ClCompile Include="SceneCamera.cpp" />
@@ -111,6 +113,7 @@
     <ClCompile Include="SceneNode.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
+    <ClCompile Include="ShadowMapHandler.cpp" />
     <ClCompile Include="TopWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -125,15 +128,18 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="common.h" />
+    <ClInclude Include="DirectionalShadowMap.h" />
     <ClInclude Include="MeshManager.h" />
     <ClInclude Include="MeshObject.h" />
     <ClInclude Include="MeshRenderer.h" />
+    <ClInclude Include="PointShadowMap.h" />
     <ClInclude Include="PrimitiveObject.h" />
     <ClInclude Include="RendererBase.h" />
     <ClInclude Include="SceneLight.h" />
     <ClInclude Include="SceneNode.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="ShadowMap.h" />
+    <ClInclude Include="ShadowMapHandler.h" />
     <ClInclude Include="utils.h" />
     <QtMoc Include="GraphicsPanel.h" />
     <ClInclude Include="Bone.h" />
@@ -153,8 +159,13 @@
     <None Include="mesh_fragment.glsl" />
     <None Include="mesh_vertex.glsl" />
     <None Include="multiLight_frag.glsl" />
+    <None Include="shadowCubeMap_frag.glsl" />
+    <None Include="shadowCubeMap_gs.glsl" />
+    <None Include="shadowCubeMap_vs.glsl" />
     <None Include="shadowMap_frag.glsl" />
     <None Include="shadowMap_vs.glsl" />
+    <None Include="shadowsCube_frag.glsl" />
+    <None Include="shadowsCube_vs.glsl" />
     <None Include="shadows_frag.glsl" />
     <None Include="shadows_vs.glsl" />
     <None Include="texture_frag.glsl" />

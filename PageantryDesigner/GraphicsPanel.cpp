@@ -78,13 +78,15 @@ void GraphicsPanel::initializeGL()
 	m_MeshRenderer->PrimitiveObjects().back()->initTexture("../wood.png");
 	m_MeshRenderer->PrimitiveObjects().back()->resize(25.0);
 	
-	m_MeshRenderer->initShaders("shadows_vs.glsl", "shadows_frag.glsl");
-	m_MeshRenderer->getShadowMap()->initShaders("shadowMap_vs.glsl", "shadowMap_frag.glsl");
+	//m_MeshRenderer->initShaders("shadows_vs.glsl", "shadows_frag.glsl");
+	m_MeshRenderer->initShaders("shadowsCube_vs.glsl", "shadowsCube_frag.glsl");
+	m_MeshRenderer->SMHandler()->initShaders();
+	m_MeshRenderer->SMHandler()->setCurrentSM(ShadowType::Point);
 
-	m_MeshRenderer->initFrameBuffer();
+	m_MeshRenderer->initFrameBuffer(ShadowType::Point);
 	
-	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->bind();
-	m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("depthMap", GL_TEXTURE0 - GL_TEXTURE0);
+	//m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->bind();
+	//m_MeshRenderer->getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("depthMap", GL_TEXTURE0 - GL_TEXTURE0);
 }
 
 void GraphicsPanel::resetViewPort()
@@ -107,7 +109,8 @@ void GraphicsPanel::myPaint()
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	m_MeshRenderer->writeFrameBuffer();
+	//m_MeshRenderer->writeFrameBuffer();
+	m_MeshRenderer->writeCubeFrameBuffer();
 
 	resetViewPort();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -118,14 +121,32 @@ void GraphicsPanel::myPaint()
 	m_MeshRenderer->ShaderProgram()->bind();
 	m_MeshRenderer->ShaderProgram()->setUniformValue("lightPos", QVector3D(-2.0f, 4.0f, -1.0));
 	m_MeshRenderer->ShaderProgram()->setUniformValue("viewPos", m_camera.Position());
-	m_MeshRenderer->ShaderProgram()->setUniformValue("lightSpaceMatrix", m_MeshRenderer->getShadowMap()->getLightSpaceMatrix());
+	if (m_MeshRenderer->SMHandler()->currentSM()->getType() == ShadowType::Directional)
+		m_MeshRenderer->ShaderProgram()->setUniformValue("lightSpaceMatrix", m_MeshRenderer->SMHandler()->DirectionalSM()->getLightSpaceMatrix());
+
+	if (m_MeshRenderer->SMHandler()->currentSM()->getType() == ShadowType::Point)
+	{
+		//these are dumb and will be removed 
+		m_MeshRenderer->ShaderProgram()->setUniformValue("shadows", true);
+		m_MeshRenderer->ShaderProgram()->setUniformValue("reverse_normals", false);
+
+		m_MeshRenderer->setMVP(QMatrix4x4(), m_camera.View(), m_camera.Perspective());
+		m_MeshRenderer->ShaderProgram()->setUniformValue("far_plane", m_MeshRenderer->SMHandler()->currentSM()->getFarPlane());
+	}
+
 	m_MeshRenderer->ShaderProgram()->setUniformValue("diffuseTexture", GL_TEXTURE0 - GL_TEXTURE0);
 	m_MeshRenderer->ShaderProgram()->setUniformValue("shadowMap", GL_TEXTURE1 - GL_TEXTURE0);
 	m_MeshRenderer->ShaderProgram()->release();
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_MeshRenderer->PrimitiveObjects().back()->Texture()->textureId());
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, m_MeshRenderer->getShadowMap()->DepthMap()->textureId());
+
+	if(m_MeshRenderer->SMHandler()->currentSM()->getType() == ShadowType::Directional)
+		glBindTexture(GL_TEXTURE_2D, m_MeshRenderer->SMHandler()->DirectionalSM()->DepthMap()->textureId());
+	else if(m_MeshRenderer->SMHandler()->currentSM()->getType() == ShadowType::Point)
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_MeshRenderer->SMHandler()->PointSM()->DepthMap()->textureId());
+
 	QMatrix4x4 model;
 	int ct = 0;
 	for (auto pObj : m_MeshRenderer->PrimitiveObjects())

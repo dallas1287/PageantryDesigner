@@ -78,7 +78,7 @@ public:
 	void initBuffers(VertexDataPool& data, IndexPool& indices);
 	void setupBuffers() { setupBuffers(m_vertexData, m_indices); }
 	void setupBuffers(VertexDataPool& data, IndexPool& indices);
-	void initShaders(const QString& vertexPath, const QString& fragmentPath, bool setup = true);
+	void initShaders(const QString& vertexPath, const QString& fragmentPath, const QString& geometryPath = QString(), bool setup = true);
 	void initTexture(const QString& path);
 	void initSpecularTexture(const QString& path);
 	void setupAttributes();

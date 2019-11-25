@@ -8,11 +8,18 @@
 #include <QMatrix4x4>
 #include "GraphicsObject.h"
 
+namespace ShadowType
+{
+	enum
+	{
+		NoType = -1,
+		Directional = 0,
+		Point
+	};
+}
+
 static const int SHADOW_MAP_WIDTH = 2048;
 static const int SHADOW_MAP_HEIGHT = 2048;
-
-static const char* SHADOW_MAP_VS = "shadowMap_vs.glsl";
-static const char* SHADOW_MAP_FRAG = "shadowMap_frag.glsl";
 
 class ShadowMap : public GraphicsObject
 {
@@ -21,31 +28,28 @@ public:
 	virtual ~ShadowMap();
 	QOpenGLTexture* DepthMap() const { return m_depthMapTexture.get(); }
 	QOpenGLFramebufferObject* Fbo() { return m_fbo.get(); }
-	void initDepthMap();
-	void initFrameBuffer();
+	virtual void initDepthMap() = 0;
+	virtual void initFrameBuffer() = 0;
 	void setViewport();
-	void setLightSpaceMatrix(const QVector3D& lightPos);
-	const QMatrix4x4& getLightSpaceMatrix() { return m_lightSpaceMatrix; }
-	void setShaderLightSpaceMatrix();
 	float getNearPlane() { return m_nearPlane; }
 	void setNearPlane(float val) { m_nearPlane = val; }
 	float getFarPlane() { return m_farPlane; }
 	void setFarPlane(float val) { m_farPlane = val; }
 	void setModelUniform(const QMatrix4x4& model);
 	GraphicsObject* getQuad() { return m_quad.get(); }
+	int getType() { return m_type; }
 
 	std::unique_ptr<QOpenGLFramebufferObject> m_fbo;
 
-private:
+protected:
+	void initDepthQuad();
 
-	float m_nearPlane = 1.0;
-	float m_farPlane = 7.5;
-	QMatrix4x4 m_projection;
-	QMatrix4x4 m_view;
-	QMatrix4x4 m_lightSpaceMatrix;
+	float m_nearPlane = 0.0;
+	float m_farPlane = 0.0;
+
+	int m_type = ShadowType::NoType;
 
 	std::unique_ptr<QOpenGLTexture> m_depthMapTexture;
 	std::unique_ptr<GraphicsObject> m_quad;
-
 };
 

@@ -7,7 +7,7 @@
 MeshRenderer::MeshRenderer(GraphicsPanel* parent) : RendererBase(parent)
 {
 	m_meshManager.reset(new MeshManager(this));
-	m_shadowMap.reset(new ShadowMap());
+	m_shadowMapHandler.reset(new ShadowMapHandler());
 }
 
 MeshRenderer::MeshRenderer(GraphicsPanel* parent, const QString& importPath) : RendererBase(parent)
@@ -86,47 +86,55 @@ void MeshRenderer::initTextures(const QString& path)
 		mesh->initTexture(path);
 }
 
-void MeshRenderer::initFrameBuffer()
+void MeshRenderer::initFrameBuffer(int type)
 {
-	getShadowMap()->m_fbo.reset(new QOpenGLFramebufferObject(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, QOpenGLFramebufferObject::Attachment::Depth));
-
-	if (!getShadowMap()->DepthMap() || !getShadowMap()->DepthMap()->isCreated())
-		getShadowMap()->initDepthMap();
-
-	getShadowMap()->Fbo()->bind();
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, getShadowMap()->DepthMap()->textureId(), 0);
-	//this differs from the example in LearOpenGL in that it calls glDrawBuffer(GL_NONE) which doesn't seem to be available in the qt OpenGLExtraFunctions 
-	GLenum buf = GL_NONE;
-	glDrawBuffers(1, &buf);
-	glReadBuffer(GL_NONE);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		qDebug() << "OpenGL Frambuffer status not complete.";
-
-	getShadowMap()->Fbo()->release();
+	SMHandler()->initFrameBuffer(type);
 }
 
 void MeshRenderer::writeFrameBuffer()
 {
 	QVector3D lightPos(-2.0f, 4.0f, -1.0);
 
-	getShadowMap()->setLightSpaceMatrix(lightPos);
+	SMHandler()->DirectionalSM()->setLightSpaceMatrix(lightPos);
 
-	getShadowMap()->setViewport();
-	getShadowMap()->Fbo()->bind();
+	SMHandler()->DirectionalSM()->setViewport();
+	SMHandler()->DirectionalSM()->Fbo()->bind();
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glActiveTexture(GL_TEXTURE0);
+
+	tempRenderScene();
+	
+	SMHandler()->DirectionalSM()->Fbo()->release();
+}
+
+void MeshRenderer::writeCubeFrameBuffer()
+{
+	SMHandler()->PointSM()->setViewport();
+	SMHandler()->PointSM()->Fbo()->bind();
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+	SMHandler()->PointSM()->setShaderShadowTransforms();
+	SMHandler()->PointSM()->setShaderFarPlane();
+	SMHandler()->PointSM()->setShaderLightPosition(QVector3D());
+
+	tempRenderScene();
+
+	SMHandler()->PointSM()->Fbo()->release();
+}
+
+void MeshRenderer::tempRenderScene()
+{
 	QMatrix4x4 model;
 	int ct = 0;
 	for (auto pObj : PrimitiveObjects())
 	{
 		if (pObj->getType() == Primitive::Quad)
-		{			
+		{
 			model.setToIdentity();
 			model.translate(0.0, -0.5, 0.0);
 			model.rotate(-90.0, X);
-			getShadowMap()->setModelUniform(model);
+			SMHandler()->currentSM()->setModelUniform(model);
 			Draw(pObj, DrawType::Shadow);
 		}
 		else
@@ -148,12 +156,11 @@ void MeshRenderer::writeFrameBuffer()
 				model.rotate(60.0, QVector3D(1.0, 0.0, 1.0));
 				model.scale(.25);
 			}
-			getShadowMap()->setModelUniform(model);
+			SMHandler()->currentSM()->setModelUniform(model);
 			Draw(pObj, DrawType::Shadow);
 			ct++;
 		}
 	}
-	getShadowMap()->Fbo()->release();
 }
 
 void MeshRenderer::setMVP(QMatrix4x4& model, QMatrix4x4& view, QMatrix4x4& projection)
@@ -180,7 +187,7 @@ void MeshRenderer::Draw(GraphicsObject* obj, int type)
 	if (type == DrawType::Screen)
 		shaderProgram = ShaderProgram();
 	else if (type == DrawType::Shadow)
-		shaderProgram = getShadowMap()->ShaderProgram();
+		shaderProgram = SMHandler()->currentSM()->ShaderProgram();
 	else
 		return;
 
@@ -199,12 +206,12 @@ void MeshRenderer::DrawAll()
 
 void MeshRenderer::renderShadowDepthMap()
 {
-	getShadowMap()->getQuad()->ShaderProgram()->bind();
+	/*getShadowMap()->getQuad()->ShaderProgram()->bind();
 	getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("near_plane", getShadowMap()->getNearPlane());
 	getShadowMap()->getQuad()->ShaderProgram()->setUniformValue("far_plane", getShadowMap()->getFarPlane());
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, getShadowMap()->DepthMap()->textureId());
-	getShadowMap()->getQuad()->Draw();
+	getShadowMap()->getQuad()->Draw();*/
 }
 
 void MeshRenderer::createCube(int count)

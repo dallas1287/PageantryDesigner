@@ -82,6 +82,15 @@
     <ClCompile Include="ShadowMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ShadowMapHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectionalShadowMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PointShadowMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="TopWindow.h">
@@ -150,6 +159,15 @@
     <ClInclude Include="ShadowMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ShadowMapHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectionalShadowMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PointShadowMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="floor_fragment.glsl">
@@ -200,5 +218,16 @@
     <None Include="shadows_vs.glsl">
       <Filter>shaders</Filter>
     </None>
+    <None Include="shadowCubeMap_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadowCubeMap_gs.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadowCubeMap_vs.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadowsCube_vs.glsl" />
+    <None Include="shadowsCube_frag.glsl" />
   </ItemGroup>
 </Project>
