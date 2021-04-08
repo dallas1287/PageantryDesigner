@@ -1,8 +1,11 @@
 #pragma once
 #include <QString>
-const QVector3D X(1.0f, 0.0f, 0.0f);
-const QVector3D Y(0.0f, 1.0f, 0.0f);
-const QVector3D Z(0.0f, 0.0f, 1.0f);
+#include <unordered_map>
+#include "Bone.h"
+
+const QVector3D X(1.0, 0.0, 0.0);
+const QVector3D Y(0.0, 1.0, 0.0);
+const QVector3D Z(0.0, 0.0, 1.0);
 
 const QVector4D X4(1.0f, 0.0f, 0.0f, 0.0f);
 const QVector4D Y4(0.0f, 1.0f, 0.0f, 0.0f);
@@ -11,36 +14,83 @@ const QVector4D W4(0.0f, 0.0f, 0.0f, 1.0f);
 
 struct VertexData
 {
-	VertexData(QVector3D position = QVector3D(), QVector2D texCoord = QVector2D(), QVector3D norm = QVector3D(), QMatrix4x4 trans = QMatrix4x4()) : 
-		position(position), texCoord(texCoord), normal(norm), transform(trans) {};
+	VertexData(QVector3D position = QVector3D(), QVector3D texCoord = QVector3D(), QVector3D norm = QVector3D(), 
+		QVector4D col = QVector4D(), QMatrix4x4 trans = QMatrix4x4()) : 
+		position(position), texCoord(texCoord), normal(norm), color(col), transform(trans) {};
 	~VertexData() {};
-
-	const QString printData()
+	VertexData& operator=(const VertexData& other)
 	{
-		const float* tdata = transform.constData();
-		QString output = "Position: " + vectorToString(position) + QString("\n") +
-			"Tex Coords: " + vectorToString(texCoord) + QString("\n") +
-			"Normals: " + vectorToString(normal) + QString("\n") +
-			"Transform: " + tdata[0] + " " + tdata[1] + " " + tdata[2] + " " + tdata[3] + QString("\n") +
-			tdata[4] + " " + tdata[5] + " " + tdata[6] + " " + tdata[7] + QString("\n") +
-			tdata[8] + " " + tdata[9] + " " + tdata[10] + " " + tdata[11] + QString("\n") +
-			tdata[12] + " " + tdata[13] + " " + tdata[14] + " " + tdata[15];
-
-		return output;
-	}
-
-	const QString vectorToString(const QVector2D& vect)
-	{
-		return QString::number(vect.x()) + " " + QString::number(vect.y());
-	}
-
-	const QString vectorToString(const QVector3D& vect)
-	{
-		return QString::number(vect.x()) + " " + QString::number(vect.y()) + " " + QString::number(vect.z());
+		position = other.position;
+		texCoord = other.texCoord;
+		normal = other.normal;
+		color = other.color;
+		transform = other.transform;
+		return *this;
 	}
 
 	QVector3D position;
-	QVector2D texCoord;
+	QVector3D texCoord;
 	QVector3D normal;
+	QVector4D color;
 	QMatrix4x4 transform;
+};
+typedef std::vector<VertexData> VertexDataPool;
+
+struct MaterialData
+{
+	MaterialData(QVector3D amb = QVector3D(), QVector3D dif = QVector3D(), QVector3D spec = QVector3D(), float shine = 1.0) : ambient(amb), diffuse(dif), specular(spec), shininess(shine) {}
+	~MaterialData() {}
+	MaterialData& operator=(const MaterialData& other)
+	{
+		ambient = other.ambient;
+		diffuse = other.diffuse;
+		specular = other.specular;
+		shininess = other.shininess;
+		return *this;
+	}
+
+	QVector3D ambient;
+	QVector3D diffuse;
+	QVector3D specular;
+	float shininess = 1.0;
+};
+typedef std::vector<MaterialData> MaterialDataPool;
+
+struct LightData
+{
+	enum TYPE
+	{
+		Directional,
+		Point,
+		Spotlight,
+		Area
+	};
+
+	LightData(QVector3D amb = QVector3D(), QVector3D dif = QVector3D(), QVector3D spec = QVector3D(), QVector3D pos = QVector3D(), QVector3D dir = QVector3D(), 
+		float con = 0.0, float lin = 0.0, float quad = 0.0) : 
+		ambient(amb), diffuse(dif), specular(spec), position(pos), direction(dir), attenuationConstant(con), attenuationLinear(lin), attenuationQuadratic(quad) {}
+	~LightData() {}
+	LightData& operator=(const LightData& other)
+	{
+		ambient = other.ambient;
+		diffuse = other.diffuse;
+		specular = other.specular;
+		position = other.position;
+		direction = other.direction;
+		attenuationConstant = other.attenuationConstant;
+		attenuationLinear = other.attenuationLinear;
+		attenuationQuadratic = other.attenuationQuadratic;
+		type = other.type;
+		return *this;
+	}
+
+	QVector3D ambient;
+	QVector3D diffuse;
+	QVector3D specular;
+	QVector3D position;
+	QVector3D direction;
+	float attenuationConstant = 0.0;
+	float attenuationLinear = 0.0;
+	float attenuationQuadratic = 0.0;
+	int type = TYPE::Directional;
 };

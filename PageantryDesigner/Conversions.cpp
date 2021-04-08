@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <QtMath>
 
 QMatrix4x4 convertTransformMatrix(aiMatrix4x4& in)
 {
@@ -36,23 +37,74 @@ QMatrix4x4 translationVectorToMatrix(QVector3D& vector)
 {
 	QMatrix4x4 mat;
 	QVector4D translation(vector.x(), vector.y(), vector.z(), 1.0);
-	mat.setRow(3, translation); //this is counterintuitive as it sets the "column" in the visual sense
+	mat.setColumn(3, translation);
 	return mat;
 }
 
 QMatrix4x4 scalingVectorToMatrix(QVector3D& vector)
 {
 	QMatrix4x4 mat;
-	//see comment above setting row counterintuitively because it's actually the column,
-	//most likely due to them being considered "row major"
-	mat.setRow(0, mat.column(0) * vector.x());
-	mat.setRow(1, mat.column(1) * vector.y());
-	mat.setRow(2, mat.column(2) * vector.z());
+	mat.setColumn(0, mat.column(0) * vector.x());
+	mat.setColumn(1, mat.column(1) * vector.y());
+	mat.setColumn(2, mat.column(2) * vector.z());
 	return mat;
+}
+
+QString vectorToString(const aiVector3D& vector, int precision)
+{
+	return QString::number(vector.x, 'f', precision) + ", " + QString::number(vector.y, 'f', precision) + ", " + QString::number(vector.z, 'f', precision);
+}
+
+std::string vectorToStdString(const aiVector3D& vector, int precision)
+{
+	QString transformStr = vectorToString(vector, precision);
+	return transformStr.toLocal8Bit().constData();
+}
+
+QString vectorToString(const QVector3D& vector, int precision)
+{
+	return QString::number(vector.x(), 'f', precision) + ", " + QString::number(vector.y(), 'f', precision) + ", " + QString::number(vector.z(), 'f', precision);
 }
 
 std::string vectorToStdString(const QVector3D& vector, int precision)
 {
-	QString transformStr = QString::number(vector.x(), 'f', precision) + ", " + QString::number(vector.y(), 'f', precision) + ", " + QString::number(vector.z(), 'f', precision);
+	QString transformStr = vectorToString(vector, precision);
 	return transformStr.toLocal8Bit().constData();
+}
+
+QString quaternionToString(const aiQuaternion& quat, int precision)
+{
+	return QString::number(quat.w, 'f', precision) + ", " + QString::number(quat.x, 'f', precision) + ", " + QString::number(quat.y, 'f', precision) + QString::number(quat.z, 'f', precision);
+}
+
+std::string quaternionToStdString(const aiQuaternion& quat, int precision)
+{
+	QString quatStr = quaternionToString(quat, precision);
+	return quatStr.toLocal8Bit().constData();
+}
+
+QString quaternionToString(const QQuaternion& quat, int precision)
+{
+	return QString::number(quat.scalar(), 'f', precision) + ", " + QString::number(quat.x(), 'f', precision) + ", " + QString::number(quat.y(), 'f', precision) + ", " + QString::number(quat.z(), 'f', precision);
+}
+
+std::string quaternionToStdString(const QQuaternion& quat, int precision)
+{
+	QString quatStr = quaternionToString(quat, precision);
+	return quatStr.toLocal8Bit().constData();
+}
+
+QVector3D convertAiToVector(const aiColor3D& color)
+{
+	return QVector3D(color.r, color.g, color.b);
+}
+
+QVector3D convertAiToVector(const aiVector3D& vector)
+{
+	return QVector3D(vector.x, vector.y, vector.z);
+}
+
+QVector4D gammaCorrected(const QVector4D& input)
+{
+	return QVector4D(qPow(input.x(), (1 / 2.2)), qPow(input.y(), (1 / 2.2)), qPow(input.z(), (1 / 2.2)), 1.0);
 }

@@ -1,10 +1,12 @@
 #include "TopWindow.h"
 #include <QtWidgets/QApplication>
+#include <QScreen>
 #if _DEBUG
 	#define _CRTDBG_MAP_ALLOC
 	#include <stdlib.h>
 	#include <crtdbg.h>
 #endif
+
 int main(int argc, char *argv[])
 {
 #if _DEBUG
@@ -13,6 +15,6 @@ int main(int argc, char *argv[])
 #endif
 	QApplication a(argc, argv);
 	TopWindow w;
-	w.show();
+	w.showMaximized();
 	return a.exec();
 }

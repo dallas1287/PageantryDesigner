@@ -2,26 +2,21 @@
 #include "Includes/assimp/scene.h"
 #include <QString>
 #include <QMatrix4x4>
+#include <unordered_map>
 
-struct VertexWeight
-{
-	unsigned int vertexID = -1;
-	float weight = 0.0;
-
-	VertexWeight(unsigned int id, float wt) : vertexID(id), weight(wt) {}
-	~VertexWeight() {}
-};
+typedef std::unordered_map<int, float> VertexWeightMap;
 
 class Bone
 {
 public:
 	Bone() {};
+	Bone(aiBone* refBone) : m_refBone(refBone) { initBone(refBone); }
 	~Bone() {};
 	void initBone(aiBone* refBone);
 	const QString& getName() const { return m_name; }
 	const unsigned int WeightCount() const { return m_numWeights; }
 	const QMatrix4x4& OffsetMatrix() const { return m_OffsetMatrix; }
-	std::vector<VertexWeight>& VertexWeights() { return m_vertexWeights; }
+	VertexWeightMap& getVertexWeightMap() { return m_vertexWeightMap; }
 	float findVertexWeight(unsigned int id);
 	bool isModified() { return m_modified; }
 	void setModified(bool state = true) { m_modified = state; }
@@ -29,10 +24,11 @@ public:
 	QMatrix4x4& getTransform() { return m_transformMatrix; }
 
 private:
+	aiBone* m_refBone;
 	QString m_name;
 	unsigned int m_numWeights;
 	QMatrix4x4 m_OffsetMatrix;
-	std::vector<VertexWeight> m_vertexWeights;
+	VertexWeightMap m_vertexWeightMap;
 	bool m_modified = false;
 	QMatrix4x4 m_transformMatrix;
 };

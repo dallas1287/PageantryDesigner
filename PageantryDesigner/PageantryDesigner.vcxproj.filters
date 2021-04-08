@@ -31,31 +31,13 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TopWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GraphicsPanel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FloorRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DotsRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ItemRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GraphicsObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SceneCamera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FigureRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BoneRig.cpp">
@@ -68,6 +50,45 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Animation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TopWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneLight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PrimitiveObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RendererBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowMapHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectionalShadowMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PointShadowMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -90,28 +111,10 @@
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ShapeCreator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FloorRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DotsRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ItemRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GraphicsObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SceneCamera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FigureRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BoneRig.h">
@@ -129,6 +132,42 @@
     <ClInclude Include="Animation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SceneNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PrimitiveObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowMapHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectionalShadowMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PointShadowMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="floor_fragment.glsl">
@@ -137,23 +176,58 @@
     <None Include="floor_vertex.glsl">
       <Filter>shaders</Filter>
     </None>
-    <None Include="grid_fragment.glsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="grid_vertex.glsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="dots_fragment.glsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="dots_vertex.glsl">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="mesh_fragment.glsl">
       <Filter>shaders</Filter>
     </None>
     <None Include="mesh_vertex.glsl">
       <Filter>shaders</Filter>
     </None>
+    <None Include="texture_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="color_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="light_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="lightTex_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="multiLight_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="blinnLight_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadowMap_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadowMap_vs.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="depthMap_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="depthMap_vs.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadows_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadows_vs.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadowCubeMap_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadowCubeMap_gs.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadowCubeMap_vs.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadowsCube_vs.glsl" />
+    <None Include="shadowsCube_frag.glsl" />
   </ItemGroup>
 </Project>

@@ -31,6 +31,9 @@ bool AnimationNode::initialize()
 		VectorKey posKey;
 		posKey.time = key.mTime;
 		posKey.value = QVector3D (key.mValue.x, key.mValue.y, key.mValue.z);
+		posKey.matrix = translationVectorToMatrix(posKey.value);
+		QVector4D pt(0.0, 1.0, 0.0, 1.0);
+		QVector4D testpt = posKey.matrix * pt;
 		m_positionKeys.push_back(posKey);
 	}
 
@@ -38,9 +41,11 @@ bool AnimationNode::initialize()
 	for (int j = 0; j < m_ref->mNumRotationKeys; ++j)
 	{
 		aiQuatKey key = m_ref->mRotationKeys[j];
+		
 		QuaternionKey rotKey;
 		rotKey.time = key.mTime;
 		rotKey.value = QQuaternion(QVector4D(key.mValue.x, key.mValue.y, key.mValue.z, key.mValue.w));
+		rotKey.matrix = QMatrix4x4(rotKey.value.toRotationMatrix());
 		m_rotationKeys.push_back(rotKey);
 	}
 
@@ -50,7 +55,13 @@ bool AnimationNode::initialize()
 		aiVectorKey key = m_ref->mScalingKeys[i];
 		VectorKey scaleKey;
 		scaleKey.time = key.mTime;
-		scaleKey.value = QVector3D(key.mValue.x, key.mValue.y, key.mValue.z);
+		//this is dumb and needs to be rectified with how things are imported
+		if (key.mValue.x < 99.0)
+			scaleKey.value = QVector3D(key.mValue.x, key.mValue.y, key.mValue.z);
+		else
+			scaleKey.value = QVector3D(1.0, 1.0, 1.0);
+
+		scaleKey.matrix = scalingVectorToMatrix(scaleKey.value);
 		m_scalingKeys.push_back(scaleKey);
 	}
 
@@ -61,20 +72,44 @@ bool AnimationNode::initialize()
 		return false;
 	}
 
-	buildTransforms();
+	buildTransformKeys();
 
 	return true;
 }
 
-void AnimationNode::buildTransforms()
-{
+void AnimationNode::buildTransformKeys()
+{	
 	for (int i = 0; i < m_positionKeys.size(); ++i)
 	{
-		m_positionKeys[i].matrix = translationVectorToMatrix(m_positionKeys[i].value);
-		m_rotationKeys[i].matrix = QMatrix4x4(m_rotationKeys[i].value.toRotationMatrix());
-		m_scalingKeys[i].matrix = scalingVectorToMatrix(m_scalingKeys[i].value);
-		m_transforms.push_back(m_positionKeys[i].matrix * m_rotationKeys[i].matrix * m_scalingKeys[i].matrix);
+		TransformKey key;
+		key.time = m_positionKeys[i].time;
+		key.matrix = m_positionKeys[i].matrix * m_rotationKeys[i].matrix * m_scalingKeys[i].matrix;
+		m_transformKeys.push_back(key);
 	}
+}
+
+bool AnimationNode::getClosestTransform(int frame, QMatrix4x4& mat)
+{
+	if (m_transformKeys.empty())
+		return false;
+
+	for (int i = 0; i < m_transformKeys.size(); ++i)
+	{
+		if (qRound(m_transformKeys[i].time) < frame)
+			continue;
+		if (qRound(m_transformKeys[i].time) == frame)
+		{
+			mat = m_transformKeys[i].matrix;
+			return true;
+		}
+		if (qRound(m_transformKeys[i].time) > frame)
+		{
+			mat = m_transformKeys[i - 1].matrix;
+			return true;
+		}
+	}
+	mat = m_transformKeys.back().matrix;
+	return true;
 }
 
 Animation::Animation(aiAnimation* ref) : m_animRef(ref)
@@ -84,6 +119,8 @@ Animation::Animation(aiAnimation* ref) : m_animRef(ref)
 
 Animation::~Animation()
 {
+	for (auto anode : m_animNodes)
+		delete anode;
 }
 
 bool Animation::initialize()
@@ -95,37 +132,22 @@ bool Animation::initialize()
 		return false;
 	}
 
+	m_name = m_animRef->mName.data;
 	m_duration = m_animRef->mDuration;
 	m_fps = m_animRef->mTicksPerSecond;
 	m_numChannels = m_animRef->mNumChannels;
 
 	for (int i = 0; i < m_animRef->mNumChannels; ++i)
-	{
-		AnimationNode node(m_animRef->mChannels[i]);
-		m_animNodes.push_back(node);
-	}
+		m_animNodes.emplace_back(new AnimationNode(m_animRef->mChannels[i]));
 
 	return true;
 }
 
-AnimationNode& Animation::findAnimationNode(const QString& name)
+AnimationNode* Animation::findAnimationNode(const QString& name)
 {
-	auto node = std::find_if(m_animNodes.begin(), m_animNodes.end(), [&](auto node) {return node.getName() == name; });
-	if (node != m_animNodes.end())
-		return *node;
+	auto n = std::find_if(m_animNodes.begin(), m_animNodes.end(), [&](auto node) {return node->getName() == name; });
+	if (n != m_animNodes.end())
+		return *n;
 
-	//TODO: fix this, this is dumb
-	return *m_animNodes.begin();
-}
-
-void Animation::buildTransforms()
-{
-	for (auto anim : m_animNodes)
-	{
-		if (anim.getName() == "Armature")
-			continue;
-
-		for (int i = 0; i < anim.getPositionKeys().size(); ++i)
-			anim.getTransforms()[i];
-	}
+	return nullptr;
 }

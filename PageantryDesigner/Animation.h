@@ -5,8 +5,7 @@
 #include <QQuaternion>
 #include <QMatrix4x4>
 #include <vector>
-
-class MeshManager;
+#include "Bone.h"
 
 struct VectorKey
 {
@@ -22,26 +21,40 @@ struct QuaternionKey
 	QMatrix4x4 matrix;
 };
 
+struct TransformKey
+{
+	float time;
+	QMatrix4x4 matrix;
+};
+
+
 class AnimationNode
 {
 public:
+	AnimationNode() {};
 	AnimationNode(aiNodeAnim* node);
 	~AnimationNode();
 	bool initialize();
 	const QString& getName() const { return m_name; }
-	std::vector<QMatrix4x4>& getTransforms() { return m_transforms; }
+	std::vector<TransformKey>& getTransformKeys() { return m_transformKeys; }
 	std::vector<VectorKey>& getPositionKeys() { return m_positionKeys; }
 	std::vector<QuaternionKey>& getRotationKeys() { return m_rotationKeys; }
 	std::vector<VectorKey>& getScalingKeys() { return m_scalingKeys; }
+	bool getClosestTransform(int frame, QMatrix4x4& mat);
+
+	QQuaternion m_basis;
+
 private:
-	void buildTransforms();
+	void buildTransformKeys();
 
 	aiNodeAnim* m_ref;
 	QString m_name;
+	Bone* m_refBone;
 	std::vector<VectorKey> m_positionKeys;
 	std::vector<QuaternionKey> m_rotationKeys;
 	std::vector<VectorKey> m_scalingKeys;
-	std::vector<QMatrix4x4> m_transforms;
+	std::vector<TransformKey> m_transformKeys;
+	
 };
 
 class Animation
@@ -50,20 +63,19 @@ public:
 	Animation(aiAnimation* ref);
 	~Animation();
 	bool initialize();
+	const QString& getName() { return m_name; }
 	float getDuration() { return m_duration; }
 	float getFPS() { return m_fps; }
 	int getChannelCount() { return m_numChannels; }
-	std::vector<AnimationNode>& getAnimNodes() { return m_animNodes; }
-	AnimationNode& findAnimationNode(const QString& name);
+	std::vector<AnimationNode*>& getAnimNodes() { return m_animNodes; }
+	AnimationNode* findAnimationNode(const QString& name);
 
 private:
-	void buildTransforms();
-
 	aiAnimation* m_animRef;
 	QString m_name;
 	float m_duration;
 	float m_fps;
 	int m_numChannels;
-	std::vector<AnimationNode> m_animNodes;
+	std::vector<AnimationNode*> m_animNodes;
 };
 
